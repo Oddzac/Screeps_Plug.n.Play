@@ -73,7 +73,7 @@
                 this.memInit();
                 this.spawnMode();
                 //Clocking
-                Memory.spawnClock.ticksSinceLastSpawn++;
+                Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
                 
                 
                 //Dearly departed, we are gathered here today... (clear creep names)
@@ -333,7 +333,7 @@
                 
                 //Reset spawnClock average
                 console.log('AVG Interval Reset');
-                Memory.spawnTicks = [];
+                Memory.rooms[room.name].spawnTicks = [];
             },
           
         

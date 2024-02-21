@@ -120,7 +120,7 @@ var spawner = {
         }
         
         if (nextSpawnRole) {
-            const sinceLast = Memory.spawnClock.ticksSinceLastSpawn
+            const sinceLast = Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn
             console.log(`Time since last spawn: ${sinceLast}`);
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase);
         } else {
@@ -157,8 +157,8 @@ var spawner = {
             const totalCreeps = Object.keys(Game.creeps).length;
             console.log(`[spawnCreepWithRole] Spawned ${role} with ${JSON.stringify(body)}`)
             console.log(`[spawnCreepWithRole] Current Worker Counts - Total: ${totalCreeps}, Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
-            Memory.spawnTicks.push(Game.time);
-            Memory.spawnClock.ticksSinceLastSpawn = 0;
+            Memory.rooms[room.name].spawnTicks.push(Game.time);
+            Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn = 0;
             
             
         } else {
@@ -291,8 +291,8 @@ var spawner = {
     
     spawnClock: function() {
         // Initialize Memory Object for spawnClock if not present
-        if (!Memory.spawnClock) {
-            Memory.spawnClock = {
+        if (!Memory.rooms[room.name].spawnClock) {
+            Memory.rooms[room.name].spawnClock = {
                 lastSpawnInterval: 0,
                 averageInterval: 0,
                 intervalDifference: 0,
@@ -300,24 +300,24 @@ var spawner = {
             };
         }
         
-        if (!Memory.spawnTicks) {
-            Memory.spawnTicks = [];
+        if (!Memory.rooms[room.name].spawnTicks) {
+            Memory.rooms[room.name].spawnTicks = [];
         }
         
         // Calculate the average spawn interval
-        if (Memory.spawnTicks.length > 1) {
+        if (Memory.rooms[room.name].spawnTicks.length > 1) {
             let totalIntervals = 0;
-            for (let i = 1; i < Memory.spawnTicks.length; i++) {
-                totalIntervals += (Memory.spawnTicks[i] - Memory.spawnTicks[i - 1]);
+            for (let i = 1; i < Memory.rooms[room.name].spawnTicks.length; i++) {
+                totalIntervals += (Memory.rooms[room.name].spawnTicks[i] - Memory.rooms[room.name].spawnTicks[i - 1]);
             }
-            let averageInterval = totalIntervals / (Memory.spawnTicks.length - 1);
+            let averageInterval = totalIntervals / (Memory.rooms[room.name].spawnTicks.length - 1);
     
             // Calculate the difference from the last stored interval
-            let intervalDifference = averageInterval - Memory.spawnClock.lastSpawnInterval;
+            let intervalDifference = averageInterval - Memory.rooms[room.name].spawnClock.lastSpawnInterval;
     
             // Update the spawnClock memory object
-            Memory.spawnClock = {
-                lastSpawnInterval: Memory.spawnClock.averageInterval, // Update lastSpawnInterval to the previous average
+            Memory.rooms[room.name].spawnClock = {
+                lastSpawnInterval: Memory.rooms[room.name].spawnClock.averageInterval, // Update lastSpawnInterval to the previous average
                 averageInterval: averageInterval, // Update with the new average
                 intervalDifference: intervalDifference // Store the difference
             };

@@ -23,7 +23,7 @@ module.exports.loop = function() {
         }
 
         // Automatically spawn creeps as needed, maintain at least 3 harvesters
-        if (_.filter(Game.creeps, (creep) => creep.memory.role === 'harvester').length < 1 && !Game.spawns['Spawn1'].spawning && Memory.spawnClock.ticksSinceLastSpawn > 200) {
+        if (_.filter(Game.creeps, (creep) => creep.memory.role === 'harvester').length < 1 && !Game.spawns['Spawn1'].spawning && Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn > 200) {
             Game.spawns['Spawn1'].spawnCreep([MOVE, CARRY, WORK], Game.time, {memory: {role: 'harvester'}}); 
         } else {
             spawner.manageCreepSpawning(room);
@@ -77,17 +77,17 @@ global.STATS = function() {
         const maxEnergy = room.energyCapacityAvailable;
         const currentEnergy = room.energyAvailable;
         const energy2Use = Memory.rooms[room.name].spawnMode.energyToUse
-        const avgInterval = Memory.spawnClock.averageInterval;
+        const avgInterval = Memory.rooms[room.name].spawnClock.averageInterval;
         const collectionRate = energy2Use / avgInterval;
         
         console.log(`- Spawn mode: ${Memory.rooms[room.name].spawnMode.mode}`);
         console.log(`- Energy to use: ${energy2Use}`);
         console.log(`- Energy available: ${currentEnergy}`);
         console.log(`- Maximum energy: ${maxEnergy}`);
-        console.log(`- Spawn rate: ${Memory.spawnClock.averageInterval} ticks`);
-        console.log(`- Last spawn: ${Memory.spawnClock.ticksSinceLastSpawn} ticks ago`);
+        console.log(`- Spawn rate: ${Memory.rooms[room.name].spawnClock.averageInterval} ticks`);
+        console.log(`- Last spawn: ${Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn} ticks ago`);
         //console.log(`- Collection Rate: ${collectionRate} energy per tick`);
-        console.log(`- Spawn trend: ${Memory.spawnClock.intervalDifference}`);
+        console.log(`- Spawn trend: ${Memory.rooms[room.name].spawnClock.intervalDifference}`);
         if (Memory.rooms[room.name].nextSpawnRole) {
             console.log(`- Next spawn: ${Memory.rooms[room.name].nextSpawnRole}`);
         } else {
