@@ -291,44 +291,48 @@ var spawner = {
     
     spawnClock: function() {
         // Initialize Memory Object for spawnClock if not present
-        if (!Memory.rooms[room.name].spawnClock) {
-            Memory.rooms[room.name].spawnClock = {
-                lastSpawnInterval: 0,
-                averageInterval: 0,
-                intervalDifference: 0,
-                ticksSinceLastSpawn: 0
-            };
-        }
-        
-        if (!Memory.rooms[room.name].spawnTicks) {
-            Memory.rooms[room.name].spawnTicks = [];
-        }
-        
-        // Calculate the average spawn interval
-        if (Memory.rooms[room.name].spawnTicks.length > 1) {
-            let totalIntervals = 0;
-            for (let i = 1; i < Memory.rooms[room.name].spawnTicks.length; i++) {
-                totalIntervals += (Memory.rooms[room.name].spawnTicks[i] - Memory.rooms[room.name].spawnTicks[i - 1]);
+        for (const roomName in Game.rooms) {
+            const room = Game.rooms[roomName];
+       
+            if (!Memory.rooms[room.name].spawnClock) {
+                Memory.rooms[room.name].spawnClock = {
+                    lastSpawnInterval: 0,
+                    averageInterval: 0,
+                    intervalDifference: 0,
+                    ticksSinceLastSpawn: 0
+                };
             }
-            let averageInterval = totalIntervals / (Memory.rooms[room.name].spawnTicks.length - 1);
-    
-            // Calculate the difference from the last stored interval
-            let intervalDifference = averageInterval - Memory.rooms[room.name].spawnClock.lastSpawnInterval;
-    
-            // Update the spawnClock memory object
-            Memory.rooms[room.name].spawnClock = {
-                lastSpawnInterval: Memory.rooms[room.name].spawnClock.averageInterval, // Update lastSpawnInterval to the previous average
-                averageInterval: averageInterval, // Update with the new average
-                intervalDifference: intervalDifference // Store the difference
-            };
-    
-            // Optionally, log the update for monitoring
-            console.log(`Average spawn interval: ${averageInterval.toFixed(2)} ticks (Difference: ${intervalDifference.toFixed(2)} ticks)`);
             
-            return averageInterval;
-        } else {
-            console.log('Not enough data to calculate average spawn interval.');
-            return 255; // Return a high default value to indicate insufficient data
+            if (!Memory.rooms[room.name].spawnTicks) {
+                Memory.rooms[room.name].spawnTicks = [];
+            }
+            
+            // Calculate the average spawn interval
+            if (Memory.rooms[room.name].spawnTicks.length > 1) {
+                let totalIntervals = 0;
+                for (let i = 1; i < Memory.rooms[room.name].spawnTicks.length; i++) {
+                    totalIntervals += (Memory.rooms[room.name].spawnTicks[i] - Memory.rooms[room.name].spawnTicks[i - 1]);
+                }
+                let averageInterval = totalIntervals / (Memory.rooms[room.name].spawnTicks.length - 1);
+        
+                // Calculate the difference from the last stored interval
+                let intervalDifference = averageInterval - Memory.rooms[room.name].spawnClock.lastSpawnInterval;
+        
+                // Update the spawnClock memory object
+                Memory.rooms[room.name].spawnClock = {
+                    lastSpawnInterval: Memory.rooms[room.name].spawnClock.averageInterval, // Update lastSpawnInterval to the previous average
+                    averageInterval: averageInterval, // Update with the new average
+                    intervalDifference: intervalDifference // Store the difference
+                };
+        
+                // Optionally, log the update for monitoring
+                console.log(`Average spawn interval: ${averageInterval.toFixed(2)} ticks (Difference: ${intervalDifference.toFixed(2)} ticks)`);
+                
+                return averageInterval;
+            } else {
+                console.log('Not enough data to calculate average spawn interval.');
+                return 255; // Return a high default value to indicate insufficient data
+            }
         }
     },
 };
