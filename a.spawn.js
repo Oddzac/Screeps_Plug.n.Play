@@ -80,8 +80,9 @@ var spawner = {
     
 
 
-    manageCreepSpawning: function() {
+    manageCreepSpawning: function(room) {
         const energyAvailable = Game.spawns['Spawn1'].room.energyAvailable;
+        const phase = Memory.rooms[room.name].phase.Phase;
         // Determine spawn mode and adjust energyToUse based on this mode
         let energyToUse = Memory.spawnMode.energyToUse;
         //console.log('MCS Called');
@@ -112,17 +113,17 @@ var spawner = {
         if (nextSpawnRole) {
             const sinceLast = Memory.spawnClock.ticksSinceLastSpawn
             console.log(`Time since last spawn: ${sinceLast}`);
-            this.spawnCreepWithRole(nextSpawnRole, energyToUse);
+            this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable. Storing");
         }
     }, 
     
     // Handles spawning after need and energy are determined.
-    spawnCreepWithRole: function(role, energyAvailable) {
+    spawnCreepWithRole: function(role, energyAvailable, phase) {
         //console.log(`[spawnCreepWithRole] Attempting to spawn: ${role} with ${energyAvailable} energy`);
         
-        const body = this.getBodyPartsForRole(role, energyAvailable);
+        const body = this.getBodyPartsForRole(role, energyAvailable, phase);
     
         if (!body) {
             // Log or handle the situation when not enough energy is available
@@ -157,9 +158,57 @@ var spawner = {
         }
     },
     
-    getBodyPartsForRole: function(role, energyAvailable) {
+    getBodyPartsForRole: function(role, energyAvailable, phase) {
         const partsCost = BODYPART_COST;
-        const roleBlueprints = {
+        let roleBlueprints;
+    
+        // Adjust blueprint based on the phase
+        switch (phase) {
+            case 1:
+                roleBlueprints = {
+                    harvester: ["work", "carry", "move"], // Basic setup for early game
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
+                    //Defensive Units
+                    attacker: ["tough", "move", "move", "ranged_attack"],
+                    healer: ["move","heal"],
+                    //
+                    scout: ["move"],
+                    claimer: ["claim", "move"],
+                };
+                break;
+            case 2:
+                roleBlueprints = {
+                    harvester: ["work", "work", "carry", "move", "move"], // More efficient harvesting
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
+                    //Defensive Units
+                    attacker: ["tough", "move", "move", "ranged_attack"],
+                    healer: ["move","heal"],
+                    //
+                    scout: ["move"],
+                    claimer: ["claim", "move"],
+                };
+                break;
+            case 3:
+                roleBlueprints = {
+                    harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
+                    //Defensive Units
+                    attacker: ["tough", "move", "move", "ranged_attack"],
+                    healer: ["move","heal"],
+                    //
+                    scout: ["move"],
+                    claimer: ["claim", "move"],
+                };
+                break;
+            // Add more cases as needed for higher phases
+        }
+        /*const roleBlueprints = {
             
             harvester: ["work", "work","work", "work", "work", "carry", "move"], // MAX HARVEST
             upgrader: ["work", "move", "carry"],
@@ -171,7 +220,7 @@ var spawner = {
             //
             scout: ["move"],
             claimer: ["claim", "move"],
-        };
+        };*/
     
         let body = [];
         let energyUsed = 0;
