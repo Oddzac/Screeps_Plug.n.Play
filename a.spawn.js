@@ -80,49 +80,6 @@ var spawner = {
     
 
 
-    /*
-    calculateDesiredCounts: function() {
-        // Assuming we're operating based on the first room in Game.rooms
-        const roomName = Object.keys(Game.rooms)[0];
-        const room = Game.rooms[roomName];
-    
-        // Initialize totalHostiles
-        let totalHostiles = 0;
-    
-        if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
-            // Count hostiles in the specific room under attack
-            totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-    
-            const healersNeeded = totalHostiles; // 1 healer for every hostile
-            const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
-    
-            return {
-                healer: healersNeeded,
-                attacker: attackersNeeded,
-                // It might be more dynamic to adjust worker roles based on remaining capacity rather than a fixed ratio
-                harvester: 2, // Minimal sustaining number during an attack
-                hauler: 2, // Minimal sustaining number
-            };
-        } else {
-            
-            const constructionSites = _.filter(Game.constructionSites, site => site.my);
-            const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester').length;
-            const totalCreeps = Object.keys(Game.creeps).length;
-            return {
-                harvester: 2, //1 per source 
-                builder: 2, //4 per 100 sites + 1 tech
-                hauler: Math.ceil(harvesters * 3), // 1 per harvester 
-                upgrader: 1, // 20% of population
-                //attacker: 0,
-                //healer: 0,
-                //claimer: 0,
-                //scout: 0,
-            };
-        }
-    },
-    */
-
-
     manageCreepSpawning: function() {
         const energyAvailable = Game.spawns['Spawn1'].room.energyAvailable;
         // Determine spawn mode and adjust energyToUse based on this mode
@@ -203,7 +160,7 @@ var spawner = {
     getBodyPartsForRole: function(role, energyAvailable) {
         const partsCost = BODYPART_COST;
         const roleBlueprints = {
-            //Workers - Consider role flexibility to consolidate logic
+            
             harvester: ["work", "work","work", "work", "work", "carry", "move"], // MAX HARVEST
             upgrader: ["work", "move", "carry"],
             builder: ["work", "move", "carry"],

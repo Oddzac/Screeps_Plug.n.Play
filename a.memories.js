@@ -1,3 +1,60 @@
+        /*
+        PHASE STRUCTURE:
+
+        Phase 1 (RCL 1)
+        SPAWN
+        - Base Worker Blueprint: [W,C,M]
+        X Population Based Spawns: Hrv(20%) Hal(20%) Bld(30%) Upg(30%)
+        MEMORY
+        - Energy To Use: 100%
+        ROLE
+        - Harvesters Drop Energy Until Containers
+        - Haulers Manage Drop Claims Until Containers
+        - B/Us Harvest Themselves
+        CONSTRUCTION
+        X Initial Road Placement
+        X Container Placement
+
+
+        Phase 2 (RCL 2)
+        SPAWN
+        - Spawning Shift: Hrv(4) Hal(6) Bld((Const. Energy Required / 100) * 0.002)) Upg(30%)
+        - Focus Harvester Shift: [W,W,W,W,C,M]
+        MEMORY
+        - Energy To Use Splits Roles: Harvester (500) Other (80%)
+        ROLE
+        - Harvesters Assigned Sources
+        - Bld/Upg Prioritize Containers, Harvest When Needed
+        - Haulers Withdraw Energy - Assign Containers
+        CONSTRUCTION
+        X Extension Circles Begin Adjacent To Spawn (5, 550 CAP) x
+
+
+        Phase 3 (RCL 3)
+        SPAWN
+        - Full Harvester Shift: [W,W,W,W,W,C,M]
+        - Spawning Shift: Hrv(2) Hal(6) Bld((Const. Energy Required / 100) * 0.002)) Upg(2)
+        MEMORY
+        - Energy To Use: Harvester (600) Other (75%)
+        ROLE
+        - Bld/Upg Withdraw Exclusively From Containers
+        - Haulers Fill Spawn Then Extensions (then tower) 
+        CONSTRUCTION
+        X Tower Placed
+        X Additional Extensions Placed (+5, 800 CAP)
+        
+
+        Phase 4 (RCL 4)
+        SPAWN
+        MEMORY
+        ROLE
+        - Haulers Deposit Energy With Priority (Spawn > Extension > Tower > Storage)
+        - Bld/Upg Withdraw Exclusively From Storage (containers until built)
+        CONSTRUCTION
+        X Storage Placed
+        */
+
+
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -124,7 +181,7 @@ var memories = {
             // Default fallback
             //console.log('Spawn Mode: No Min');
             Memory.spawnMode.mode = 'NoMin';
-            Memory.spawnMode.energyToUse = energyCapacity * .7; // Let spawn manager handle
+            Memory.spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
         }
         
         

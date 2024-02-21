@@ -29,7 +29,7 @@ module.exports.loop = function() {
         if (_.filter(Game.creeps, (creep) => creep.memory.role === 'harvester').length < 1 && !Game.spawns['Spawn1'].spawning && Memory.spawnClock.ticksSinceLastSpawn > 200) {
             Game.spawns['Spawn1'].spawnCreep([MOVE, CARRY, WORK], Game.time, {memory: {role: 'harvester'}}); 
         } else {
-            spawner.manageCreepSpawning(room);
+            spawner.manageCreepSpawning();
         }
         
         // Construction 
