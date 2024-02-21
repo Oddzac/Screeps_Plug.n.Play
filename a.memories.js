@@ -129,10 +129,13 @@
                 for (const roomName in Game.rooms) {
                     const room = Game.rooms[roomName];
                 
+                    if (!Memory.rooms[room.name]) {
+                        Memory.rooms[room.name] = {}
+                    }
 
                     //Clocking
                     Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
-                    
+
                     if (!Memory.rooms[room.name].phase) {
                         this.updateRoomPhase(room);
                     }
