@@ -72,8 +72,7 @@
                 
                 this.memInit();
                 this.spawnMode();
-                //Clocking
-                Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
+
                 
                 
                 //Dearly departed, we are gathered here today... (clear creep names)
@@ -130,6 +129,10 @@
                 for (const roomName in Game.rooms) {
                     const room = Game.rooms[roomName];
                 
+
+                    //Clocking
+                    Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
+                    
                     if (!Memory.rooms[room.name].phase) {
                         this.updateRoomPhase(room);
                     }
