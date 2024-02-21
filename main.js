@@ -80,7 +80,7 @@ global.STATS = function() {
         const avgInterval = Memory.spawnClock.averageInterval;
         const collectionRate = energy2Use / avgInterval;
         
-        console.log(`- Spawn mode: ${Memory.spawnMode.mode}`);
+        console.log(`- Spawn mode: ${Memory.rooms[room.name].spawnMode.mode}`);
         console.log(`- Energy to use: ${energy2Use}`);
         console.log(`- Energy available: ${currentEnergy}`);
         console.log(`- Maximum energy: ${maxEnergy}`);

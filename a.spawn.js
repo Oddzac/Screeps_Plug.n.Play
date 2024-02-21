@@ -93,7 +93,7 @@ var spawner = {
         const energyAvailable = room.energyAvailable;
         const phase = Memory.rooms[room.name].phase.Phase;
         // Determine spawn mode and adjust energyToUse based on this mode
-        let energyToUse = Memory.spawnMode.energyToUse;
+        let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
         //console.log('MCS Called');
         
     
