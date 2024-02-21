@@ -320,7 +320,7 @@ var spawner = {
         
                 // Update the spawnClock memory object
                 Memory.rooms[room.name].spawnClock = {
-                    lastSpawnInterval: Memory.rooms[room.name].spawnClock.averageInterval, // Update lastSpawnInterval to the previous average
+                    lastSpawnInterval: Memory.rooms[room.name].spawnClock.averageInterval || 0, // Update lastSpawnInterval to the previous average
                     averageInterval: averageInterval, // Update with the new average
                     intervalDifference: intervalDifference // Store the difference
                 };
