@@ -325,7 +325,6 @@
                     this.cacheRoomCostMatrix(roomName); // Assuming this function updates the cost matrix
                 }
                 
-                Memory.rooms[room.name].spawnTicks = [];
             },
           
         

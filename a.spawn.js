@@ -111,18 +111,19 @@ var spawner = {
                 break; // Found a role to spawn, exit the loop
             }
         }
+        // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
     
         // Check if the available energy meets the requirement for the current spawn mode
         if (energyAvailable < energyToUse) {
             //console.log("[manageCreepSpawning] Waiting for more energy.");
-            return; // Exit the function early to wait for more energy
+            return;
         }
         
         if (nextSpawnRole) {
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
-            //console.log("[manageCreepSpawning] Population Acceptable. Storing");
+            //console.log("[manageCreepSpawning] Population Acceptable.");
         }
     }, 
     
@@ -154,7 +155,6 @@ var spawner = {
             const totalCreeps = Object.keys(Game.creeps).length;
             console.log(`[spawnCreepWithRole] Spawned ${role} with ${JSON.stringify(body)}`)
             console.log(`[spawnCreepWithRole] Current Worker Counts - Total: ${totalCreeps}, Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
-            Memory.rooms[room.name].spawnTicks.push(Game.time);
             
             
         } else {
