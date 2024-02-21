@@ -122,14 +122,14 @@ var spawner = {
         if (nextSpawnRole) {
             const sinceLast = Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn
             console.log(`Time since last spawn: ${sinceLast}`);
-            this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase);
+            this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable. Storing");
         }
     }, 
     
     // Handles spawning after need and energy are determined.
-    spawnCreepWithRole: function(role, energyAvailable, phase) {
+    spawnCreepWithRole: function(role, energyAvailable, phase, room) {
         //console.log(`[spawnCreepWithRole] Attempting to spawn: ${role} with ${energyAvailable} energy`);
         
         const body = this.getBodyPartsForRole(role, energyAvailable, phase);
