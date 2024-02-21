@@ -133,11 +133,7 @@
                         Memory.rooms[room.name] = {}
                     }
 
-                    if (!Memory.rooms[room.name].spawnClock) {
-                        Memory.rooms[room.name].spawnClock = {}
-                    }
-                    //Clocking
-                    Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
+
 
                     if (!Memory.rooms[room.name].phase) {
                         this.updateRoomPhase(room);
@@ -151,6 +147,9 @@
                             ticksSinceLastSpawn: 0
                         };
                     }
+
+                    //Clocking
+                    Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
         
 
                     
