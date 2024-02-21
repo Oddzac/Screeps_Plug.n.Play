@@ -66,7 +66,7 @@ var spawner = {
                     desiredCounts = {
                         harvester: 2, // Adjusted for the full harvester blueprint
                         hauler: 6,
-                        builder: 2,
+                        builder: Math.ceil((totalEnergyRequired / 100) * 0.002) + 1,
                         upgrader: 1
                     };
                     break;
@@ -75,12 +75,14 @@ var spawner = {
                     desiredCounts = {
                         harvester: 2,
                         hauler: 6,
-                        builder: 2,
+                        builder: Math.ceil((totalEnergyRequired / 100) * 0.002) + 1,
                         upgrader: 1
                     };
+                    break;
                 }
             }
-        
+            //console.log(`${totalEnergyRequired}`);
+            //console.log(`${JSON.stringify(desiredCounts)}`);
             return desiredCounts;
         }
     },
@@ -227,6 +229,7 @@ var spawner = {
                     scout: ["move"],
                     claimer: ["claim", "move"],
                 };
+                break;
         }
         /*const roleBlueprints = {
             

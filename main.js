@@ -1,11 +1,8 @@
-// Import role modules
 
 var construction = require('a.construction');
 var spawner = require('a.spawn');
 var memories = require('a.memories');
 var towers = require('a.towers');
-
-// This line monkey patches the global prototypes.
 
 module.exports.loop = function() {
 
@@ -29,7 +26,7 @@ module.exports.loop = function() {
         if (_.filter(Game.creeps, (creep) => creep.memory.role === 'harvester').length < 1 && !Game.spawns['Spawn1'].spawning && Memory.spawnClock.ticksSinceLastSpawn > 200) {
             Game.spawns['Spawn1'].spawnCreep([MOVE, CARRY, WORK], Game.time, {memory: {role: 'harvester'}}); 
         } else {
-            spawner.manageCreepSpawning();
+            spawner.manageCreepSpawning(room);
         }
         
         // Construction 
