@@ -138,20 +138,6 @@
                     if (!Memory.rooms[room.name].phase) {
                         this.updateRoomPhase(room);
                     }
-        
-                    if (!Memory.rooms[room.name].spawnClock) {
-                        Memory.rooms[room.name].spawnClock = {
-                            lastSpawnInterval: 0,
-                            averageInterval: 0,
-                            intervalDifference: 0,
-                            ticksSinceLastSpawn: 0
-                        };
-                    }
-
-                    //Clocking
-                    Memory.rooms[room.name].spawnClock.ticksSinceLastSpawn++;
-        
-
                     
 
                     
@@ -339,8 +325,6 @@
                     this.cacheRoomCostMatrix(roomName); // Assuming this function updates the cost matrix
                 }
                 
-                //Reset spawnClock average
-                console.log('AVG Interval Reset');
                 Memory.rooms[room.name].spawnTicks = [];
             },
           
