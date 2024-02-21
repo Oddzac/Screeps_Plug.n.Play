@@ -190,13 +190,13 @@
                             //Energy Cap: 300
                             if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
-                                Memory.spawnMode.mode = 'Defense';
-                                Memory.spawnMode.energyToUse = energyAvailable;
+                                Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
                             } else {
                                 // No minimum threshold. Spawn as quickly as possible
-                                Memory.spawnMode.mode = 'NoMin';
-                                Memory.spawnMode.energyToUse = energyAvailable; 
+                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable; 
                             }
                             break;
                         
@@ -204,16 +204,16 @@
                             //Energy Cap: 550
                             if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
-                                Memory.spawnMode.mode = 'Defense';
-                                Memory.spawnMode.energyToUse = energyAvailable;
+                                Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
                             } else if (nextRole === 'harvester' && energyCapacity >= 500) {
-                                Memory.spawnMode.mode = 'Harvester';
-                                Memory.spawnMode.energyToUse = 500;
+                                Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 500;
                                 return;
                             } else if (nextRole === 'harvester' && energyCapacity < 500) {
-                                Memory.spawnMode.mode = 'HarvesterLite';
-                                Memory.spawnMode.energyToUse = energyAvailable;
+                                Memory.rooms[room.name].spawnMode.mode = 'HarvesterLite';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
                             }
                             break;
@@ -221,49 +221,70 @@
                         case 3:
                             if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
-                                Memory.spawnMode.mode = 'Defense';
-                                Memory.spawnMode.energyToUse = energyAvailable;
+                                Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
                             } else if (nextRole === 'harvester') {
-                                Memory.spawnMode.mode = 'Harvester';
-                                Memory.spawnMode.energyToUse = 600;
+                                Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 600;
                                 return;
                             } else if (nextRole === 'claimer') {
                                 //console.log('Spawn Mode: Claimer');
-                                Memory.spawnMode.mode = 'Claimer';
-                                Memory.spawnMode.energyToUse = 700;
+                                Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 700;
                                 return;
                             } else {
                                 // Default fallback
                                 //console.log('Spawn Mode: No Min');
-                                Memory.spawnMode.mode = 'NoMin';
-                                Memory.spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
                             }
                             break;
 
                         case 4:
                             if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
-                                Memory.spawnMode.mode = 'Defense';
-                                Memory.spawnMode.energyToUse = energyAvailable;
+                                Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
                             } else if (nextRole === 'harvester') {
-                                Memory.spawnMode.mode = 'Harvester';
-                                Memory.spawnMode.energyToUse = 600;
+                                Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 600;
                                 return;
                             } else if (nextRole === 'claimer') {
                                 //console.log('Spawn Mode: Claimer');
-                                Memory.spawnMode.mode = 'Claimer';
-                                Memory.spawnMode.energyToUse = 700;
+                                Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 700;
                                 return;
                             } else {
                                 // Default fallback
                                 //console.log('Spawn Mode: No Min');
-                                Memory.spawnMode.mode = 'NoMin';
-                                Memory.spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
                             }
                             break;
+
                         default:
+                            if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
+                                //Respond to hostile presence
+                                Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
+                                return;
+                            } else if (nextRole === 'harvester') {
+                                Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                                return;
+                            } else if (nextRole === 'claimer') {
+                                //console.log('Spawn Mode: Claimer');
+                                Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                                return;
+                            } else {
+                                // Default fallback
+                                //console.log('Spawn Mode: No Min');
+                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                            }                        
                             break;            
 
                     }
@@ -273,19 +294,19 @@
         
            /*
                 } else if (nextRole === 'harvester') {
-                    Memory.spawnMode.mode = 'Harvester';
-                    Memory.spawnMode.energyToUse = 600;
+                    Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                    Memory.rooms[room.name].spawnMode.energyToUse = 600;
                     return;
                 } else if (nextRole === 'claimer') {
                     //console.log('Spawn Mode: Claimer');
-                    Memory.spawnMode.mode = 'Claimer';
-                    Memory.spawnMode.energyToUse = 700;
+                    Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                    Memory.rooms[room.name].spawnMode.energyToUse = 700;
                     return;
                 } else {
                     // Default fallback
                     //console.log('Spawn Mode: No Min');
-                    Memory.spawnMode.mode = 'NoMin';
-                    Memory.spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                    Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                    Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
                 }
            */
         
