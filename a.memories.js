@@ -65,6 +65,7 @@
         //var roleScout = require('role.scout');
         var spawner = require('a.spawn');
         var movement = require('a.movement');
+        var construction = require('a.construction');
         
         var memories = {
             
@@ -134,8 +135,8 @@
                         this.updateRoomPhase(room);
                     }
         
-                    if (!Memory.spawnClock) {
-                        Memory.spawnClock = {
+                    if (!Memory.rooms[room.name].spawnClock) {
+                        Memory.rooms[room.name].spawnClock = {
                             lastSpawnInterval: 0,
                             averageInterval: 0,
                             intervalDifference: 0,
@@ -143,9 +144,7 @@
                         };
                     }
         
-                    if (!Memory.claimedDrops) {
-                        Memory.claimedDrops = {};
-                    }
+
                     
 
                     
@@ -153,6 +152,11 @@
                         if (!Memory.rooms) Memory.rooms = {};
                         if (!Memory.rooms[room.name]) Memory.rooms[room.name] = {};
                 
+
+                        if (!Memory.rooms[room.name].claimedDrops) {
+                            Memory.rooms[room.name].claimedDrops = {};
+                        }
+
                         if (!Memory.rooms[room.name].pathCache) {
                             Memory.rooms[room.name].pathCache = {};
                         }
@@ -169,7 +173,6 @@
                         }
                     });
                 
-
                 }
         
                 
@@ -188,7 +191,7 @@
                     switch (phase) {
                         case 1:
                             //Energy Cap: 300
-                            if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
+                            if (Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
                                 Memory.rooms[room.name].spawnMode.mode = 'Defense';
                                 Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -202,7 +205,7 @@
                         
                         case 2:
                             //Energy Cap: 550
-                            if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
+                            if (Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
                                 Memory.rooms[room.name].spawnMode.mode = 'Defense';
                                 Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -215,18 +218,27 @@
                                 Memory.rooms[room.name].spawnMode.mode = 'HarvesterLite';
                                 Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
+                            } else {
+                                // No minimum threshold. Spawn as quickly as possible
+                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable; 
                             }
                             break;
 
                         case 3:
-                            if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
+                            //Energy Cap: 800
+                            if (Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
                                 Memory.rooms[room.name].spawnMode.mode = 'Defense';
                                 Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                                 return;
-                            } else if (nextRole === 'harvester') {
+                            } else if (nextRole === 'harvester' && energyAvailable >= 600) {
                                 Memory.rooms[room.name].spawnMode.mode = 'Harvester';
                                 Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                                return;
+                            } else if (nextRole === 'harvester' && energyAvailable < 600) {
+                                Memory.rooms[room.name].spawnMode.mode = 'HarvesterLite';
+                                Memory.rooms[room.name].spawnMode.energyToUse = 500;
                                 return;
                             } else if (nextRole === 'claimer') {
                                 //console.log('Spawn Mode: Claimer');
@@ -234,15 +246,15 @@
                                 Memory.rooms[room.name].spawnMode.energyToUse = 700;
                                 return;
                             } else {
-                                // Default fallback
-                                //console.log('Spawn Mode: No Min');
-                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
-                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                                //Begin Efficiency Cap
+                                Memory.rooms[room.name].spawnMode.mode = 'Cap(90%)';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .9; 
                             }
                             break;
 
                         case 4:
-                            if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
+                            //Energy Cap: 1300
+                            if (Memory.rooms[roomName].underAttack) {
                                 //Respond to hostile presence
                                 Memory.rooms[room.name].spawnMode.mode = 'Defense';
                                 Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -257,10 +269,9 @@
                                 Memory.rooms[room.name].spawnMode.energyToUse = 700;
                                 return;
                             } else {
-                                // Default fallback
-                                //console.log('Spawn Mode: No Min');
-                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
-                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                                // Lower Cap to 75%
+                                Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
+                                Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75;
                             }
                             break;
 
@@ -280,9 +291,8 @@
                                 Memory.rooms[room.name].spawnMode.energyToUse = 700;
                                 return;
                             } else {
-                                // Default fallback
-                                //console.log('Spawn Mode: No Min');
-                                Memory.rooms[room.name].spawnMode.mode = 'NoMin';
+                                // Default Cap: 75%
+                                Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
                                 Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
                             }                        
                             break;            
@@ -290,25 +300,7 @@
                     }
                 }
                 
-            },
-        
-           /*
-                } else if (nextRole === 'harvester') {
-                    Memory.rooms[room.name].spawnMode.mode = 'Harvester';
-                    Memory.rooms[room.name].spawnMode.energyToUse = 600;
-                    return;
-                } else if (nextRole === 'claimer') {
-                    //console.log('Spawn Mode: Claimer');
-                    Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                    Memory.rooms[room.name].spawnMode.energyToUse = 700;
-                    return;
-                } else {
-                    // Default fallback
-                    //console.log('Spawn Mode: No Min');
-                    Memory.rooms[room.name].spawnMode.mode = 'NoMin';
-                    Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
-                }
-           */
+            },   
         
             
             shortTerm: function() {
@@ -356,6 +348,10 @@
                 // Update the current RCL in memory (useful for tracking progress and phase changes)
                 Memory.rooms[room.name].phase.RCL = room.controller.level;
             
+                const containersBuilt = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_CONTAINER }}).length;
+                const towersBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER }}).length;
+                const storageBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
+
                 const currentPhase = Memory.rooms[room.name].phase.Phase;
                 const rcl = room.controller.level;
                 let transitioned = false;
@@ -371,7 +367,7 @@
                         break;
                     case 2:
                         // Phase 2 to Phase 3 transition: RCL reaches 3, and containers are built
-                        if (rcl >= 3 && this.containersBuilt(room) > 1) {
+                        if (rcl >= 3 && containersBuilt > 1) {
                             Memory.rooms[room.name].phase.Phase = 3;
                             console.log(`Room ${room.name} has advanced to Phase 3.`);
                             transitioned = true;
@@ -379,7 +375,7 @@
                         break;
                     case 3:
                         // Phase 3 to Phase 4 transition: RCL reaches 4, and a tower is built
-                        if (rcl >= 4 && this.towersBuilt(room) > 0) {
+                        if (rcl >= 4 && towersBuilt > 0) {
                             Memory.rooms[room.name].phase.Phase = 4;
                             console.log(`Room ${room.name} has advanced to Phase 4.`);
                             transitioned = true;
@@ -388,7 +384,7 @@
                     case 4:
                         // Phase 4 onwards: Define specific conditions for each phase
                         // RCL 4 to higher phases, consider additional buildings or capacity requirements
-                        if (rcl >= 5 && this.storageBuilt(room) > 0) {
+                        if (rcl >= 5 && storageBuilt > 0) {
                             Memory.rooms[room.name].phase.Phase = 5;
                             console.log(`Room ${room.name} has advanced to Phase 5.`);
                             transitioned = true;
@@ -407,21 +403,6 @@
                 }
             },
             
-            // Example method stubs for condition checks
-            containersBuilt: function(room) {
-                // Check if containers near sources are built
-                return room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_CONTAINER }}).length;
-            },
-            
-            towersBuilt: function(room) {
-                // Check if at least one tower is built
-                return room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER }}).length;
-            },
-            
-            storageBuilt: function(room) {
-                // Check if storage is built
-                return room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
-            },
             
             handlePhaseTransitionActions: function(room) {
                 // Placeholder for actions to perform upon entering a new phase

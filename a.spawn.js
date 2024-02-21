@@ -15,7 +15,7 @@ var spawner = {
 
 
 
-            if (Memory.rooms && Memory.rooms[room.name] && Memory.rooms[room.name].underAttack) {
+            if (Memory.rooms[room.name].underAttack) {
                 // Count hostiles in the specific room under attack
                 totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
         
@@ -35,7 +35,7 @@ var spawner = {
 
                 switch (phase) {
                 case 1:
-                    // Phase 1 logic
+                    // Phase 1 Population-based
                     desiredCounts = {
                         harvester: Math.ceil(totalCreeps * .2),
                         hauler: Math.ceil(totalCreeps * .2),
@@ -44,38 +44,38 @@ var spawner = {
                     };
                     break;
                 case 2:
-                    // Phase 2 logic
+                    // Phase 2 Population-based
                     desiredCounts = {
-                        harvester: 4,
-                        hauler: 6,
-                        builder: 4,
-                        upgrader: 2
+                        harvester: Math.ceil(totalCreeps * .2),
+                        hauler: Math.ceil(totalCreeps * .3),
+                        builder: Math.ceil(totalCreeps * .3),
+                        upgrader: Math.ceil(totalCreeps * .3)
                     };
                     break;
                 case 3:
-                    // Phase 3 logic
+                    // Phase 3 Rigid counts (experimental builders calc)
                     desiredCounts = {
-                        harvester: 2, // Adjusted for the full harvester blueprint
+                        harvester: 2, // Adjusted for Max Harvesters
                         hauler: 6,
-                        builder: Math.ceil((totalEnergyRequired / 100) * 0.002) + 1,
+                        builder: Math.ceil(totalEnergyRequired * 0.0002) + 1,
                         upgrader: 2
                     };
                     break;
                 case 4:
-                    // Phase 4 logic
+                    // Phase 4 Rigid counts (experimental builders calc)
                     desiredCounts = {
                         harvester: 2,
                         hauler: 6,
-                        builder: Math.ceil((totalEnergyRequired / 100) * 0.001) + 1,
+                        builder: 2,
                         upgrader: 1
                     };
                     break;
-                // Additional phases as needed
+                // More as needed
                 default:
                     desiredCounts = {
                         harvester: 2,
                         hauler: 6,
-                        builder: Math.ceil((totalEnergyRequired / 100) * 0.001) + 1,
+                        builder: 2,
                         upgrader: 1
                     };
                     break;
@@ -182,26 +182,26 @@ var spawner = {
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
-                    //
+                    //Recon
                     scout: ["move"],
                     claimer: ["claim", "move"],
                 };
                 break;
-            case 2:
+            case 2 && energyAvailable >= 500:
                 roleBlueprints = {
-                    harvester: ["work", "work", "carry", "move", "move"], // More efficient harvesting
+                    harvester: ["work", "work", "work", "work", "carry", "move"], // More efficient harvesting
                     upgrader: ["work", "move", "carry"],
                     builder: ["work", "move", "carry"],
                     hauler: ["carry", "move", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
-                    //
+                    //Recon
                     scout: ["move"],
                     claimer: ["claim", "move"],
                 };
                 break;
-            case 3:
+            case 3 && energyAvailable >= 600:
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
                     upgrader: ["work", "move", "carry"],
@@ -210,7 +210,7 @@ var spawner = {
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
-                    //
+                    //Recon
                     scout: ["move"],
                     claimer: ["claim", "move"],
                 };
@@ -225,7 +225,7 @@ var spawner = {
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
-                    //
+                    //Recon
                     scout: ["move"],
                     claimer: ["claim", "move"],
                 };
