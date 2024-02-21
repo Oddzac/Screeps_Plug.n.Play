@@ -71,6 +71,13 @@ var spawner = {
                     };
                     break;
                 // Additional phases as needed
+                default:
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 6,
+                        builder: 2,
+                        upgrader: 1
+                    };
                 }
             }
         
@@ -81,7 +88,7 @@ var spawner = {
 
 
     manageCreepSpawning: function(room) {
-        const energyAvailable = Game.spawns['Spawn1'].room.energyAvailable;
+        const energyAvailable = room.energyAvailable;
         const phase = Memory.rooms[room.name].phase.Phase;
         // Determine spawn mode and adjust energyToUse based on this mode
         let energyToUse = Memory.spawnMode.energyToUse;
@@ -207,6 +214,19 @@ var spawner = {
                 };
                 break;
             // Add more cases as needed for higher phases
+            default:
+                roleBlueprints = {
+                    harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
+                    //Defensive Units
+                    attacker: ["tough", "move", "move", "ranged_attack"],
+                    healer: ["move","heal"],
+                    //
+                    scout: ["move"],
+                    claimer: ["claim", "move"],
+                };
         }
         /*const roleBlueprints = {
             
