@@ -65,7 +65,6 @@
         //var roleScout = require('role.scout');
         var spawner = require('a.spawn');
         var movement = require('a.movement');
-        var construction = require('a.construction');
         
         var memories = {
             
@@ -382,8 +381,7 @@
                         }
                         break;
                     case 4:
-                        // Phase 4 onwards: Define specific conditions for each phase
-                        // RCL 4 to higher phases, consider additional buildings or capacity requirements
+                        // Phase 4 to Phase 5 transition: RCL reaches 5, and storage is built
                         if (rcl >= 5 && storageBuilt > 0) {
                             Memory.rooms[room.name].phase.Phase = 5;
                             console.log(`Room ${room.name} has advanced to Phase 5.`);
