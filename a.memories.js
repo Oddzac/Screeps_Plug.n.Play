@@ -6,7 +6,7 @@
         X Base Worker Blueprint: [W,C,M]
         X Population Based Spawns: Hrv(20%) Hal(20%) Bld(30%) Upg(30%)
         MEMORY
-        - Energy To Use: 100%
+        X Energy To Use: 100%
         ROLE
         - Harvesters Drop Energy Until Containers
         - Haulers Manage Drop Claims Until Containers
@@ -21,7 +21,7 @@
         X Spawning Shift: Hrv(4) Hal(6) Bld((Const. Energy Required / 100) * 0.002)) Upg(30%)
         X Focus Harvester Shift: [W,W,W,W,C,M]
         MEMORY
-        - Energy To Use Splits Roles: Harvester (500) Other (80%)
+        X Energy To Use Splits Roles: Harvester (500) Other (80%)
         ROLE
         - Harvesters Assigned Sources
         - Bld/Upg Prioritize Containers, Harvest When Needed
@@ -35,7 +35,7 @@
         X Full Harvester Shift: [W,W,W,W,W,C,M]
         X Spawning Shift: Hrv(2) Hal(6) Bld((Const. Energy Required / 100) * 0.002)) Upg(2)
         MEMORY
-        - Energy To Use: Harvester (600) Other (75%)
+        X Energy To Use: Harvester (600) Other (75%)
         ROLE
         - Bld/Upg Withdraw Exclusively From Containers
         - Haulers Fill Spawn Then Extensions (then tower) 
@@ -133,14 +133,10 @@
                         Memory.rooms[room.name] = {}
                     }
 
-
-
                     if (!Memory.rooms[room.name].phase) {
                         this.updateRoomPhase(room);
                     }
-                    
-
-                    
+                     
                     Object.values(Game.rooms).forEach(room => {
                         if (!Memory.rooms) Memory.rooms = {};
                         if (!Memory.rooms[room.name]) Memory.rooms[room.name] = {};
@@ -171,7 +167,7 @@
                 
             },
             
-            // Manage memory object that governs spawn behavior
+            // Manage memory governing spawn behavior
             spawnMode: function() {
                 
                 for (const roomName in Game.rooms) {
