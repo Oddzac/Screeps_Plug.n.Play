@@ -64,9 +64,9 @@ var spawner = {
                 case 4:
                     // Phase 4 logic
                     desiredCounts = {
-                        harvester: 2, // Adjusted for the full harvester blueprint
+                        harvester: 2,
                         hauler: 6,
-                        builder: Math.ceil((totalEnergyRequired / 100) * 0.002) + 1,
+                        builder: Math.ceil((totalEnergyRequired / 100) * 0.001) + 1,
                         upgrader: 1
                     };
                     break;
@@ -75,7 +75,7 @@ var spawner = {
                     desiredCounts = {
                         harvester: 2,
                         hauler: 6,
-                        builder: Math.ceil((totalEnergyRequired / 100) * 0.002) + 1,
+                        builder: Math.ceil((totalEnergyRequired / 100) * 0.001) + 1,
                         upgrader: 1
                     };
                     break;
@@ -111,7 +111,7 @@ var spawner = {
                 break; // Found a role to spawn, exit the loop
             }
         }
-        Memory.nextSpawnRole = nextSpawnRole;
+        Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
     
         // Check if the available energy meets the requirement for the current spawn mode
         if (energyAvailable < energyToUse) {

@@ -1,3 +1,5 @@
+var memories = require('a.memories');
+
 var construction = {
     
     //Memory.rooms[room.name].phase.Phase
@@ -13,7 +15,6 @@ var construction = {
         }
 
         if (this.checkExtensionsAvailable(room) > 0) {
-            console.log('Placing extensions')
             this.placeExtensionsAroundSpawn(room);
         }
 
@@ -24,10 +25,10 @@ var construction = {
         } else if (Memory.rooms[room.name].phase.Phase < 3) {
             // No Major Construction
             return;
-        } else if (Memory.rooms[room.name].phase.Phase < 4) {
+        } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1) {
             this.placeTower(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase < 5) {
+        } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1) {
             this.placeStorage(room);
             return;
         }
