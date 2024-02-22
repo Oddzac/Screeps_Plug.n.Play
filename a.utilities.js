@@ -20,21 +20,62 @@ var utilities = {
             creep.memory.avoidingHostiles = false;
         }
     
+            
+
+        //Structure counts (> 0 determines behavior)
+        const containerCount = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => (s.structureType === STRUCTURE_CONTAINER)
+        }).length;
+        const storageCount = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => (s.structureType === STRUCTURE_STORAGE)
+        }).length;
+        
         // Attempt to find a container with energy
         const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
-            filter: (s) => (s.structureType === STRUCTURE_STORAGE) &&
-                            s.store[RESOURCE_ENERGY] > 100
+            filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
+                            s.store[RESOURCE_ENERGY] > 100 // Only withdraw if sufficient reserve
         });
-    
-        if (containersWithEnergy.length > 0) {
-            // If containers with energy are found, prioritize the closest one
-            const closestContainer = creep.pos.findClosestByPath(containersWithEnergy);
-            if (closestContainer) {
-                creep.memory.sourceId = closestContainer.id;
-                creep.memory.sourceType = 'container';
-                // No need to re-select a source if one is found
-                return this.attemptEnergyWithdrawal(creep, closestContainer);
+
+        // Attempt to find storage with energy
+        const storageWithEnergy = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => (s.structureType === STRUCTURE_STORAGE) &&
+                            s.store[RESOURCE_ENERGY] > 100 // Only withdraw if sufficient reserve
+        });
+
+        if (storageCount > 0) {
+            if (storageWithEnergy.length > 0) {
+                // If storage with energy is found, prioritize the closest one
+                const closestStorage = creep.pos.findClosestByPath(storageWithEnergy);
+                if (closestStorage) {
+                    creep.memory.sourceId = closestStorage.id;
+                    creep.memory.sourceType = 'storage';
+                    // No need to re-select a source if one is found
+                    return this.attemptEnergyWithdrawal(creep, closestStorage);
+                }
+            } else {
+                this.waitStrategically(creep);
             }
+
+        } else if (containerCount > 0) {
+            if (containersWithEnergy.length > 0) {
+                // If containers with energy are found, prioritize the closest one
+                const closestContainer = creep.pos.findClosestByPath(containersWithEnergy);
+                if (closestContainer) {
+                    creep.memory.sourceId = closestContainer.id;
+                    creep.memory.sourceType = 'container';
+                    // No need to re-select a source if one is found
+                    return this.attemptEnergyWithdrawal(creep, closestContainer);
+                }
+            } else {
+                this.waitStrategically(creep);
+            }
+        } else {
+            const source = this.chooseSource(creep);
+
+            creep.memory.sourceId = source.id;
+            creep.memory.sourceType = 'source';
+
+            return- this.attemptEnergyWithdrawal(creep, source);
         }
     
         this.waitStrategically(creep);
