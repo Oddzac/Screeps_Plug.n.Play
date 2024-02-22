@@ -406,7 +406,7 @@ var memories = {
                     }
                 }
                 console.log(`Terrain data cached for room: ${roomName}`);
-                cacheRoomCostMatrix(roomName);
+                this.cacheRoomCostMatrix(roomName);
             }
         }
     },
