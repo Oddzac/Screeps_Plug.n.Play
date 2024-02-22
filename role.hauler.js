@@ -1,5 +1,8 @@
-
-
+//TODO
+//Claimed Drops Memory Restructure
+//Ensure deposit priority: Spawn> Extensions> ifTower> ifStorage
+//Phase 1 - Claim Drops
+//Phase 2 - Assign containers
 
 var movement = require('a.movement');
 

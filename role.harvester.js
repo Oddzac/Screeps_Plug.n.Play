@@ -1,3 +1,7 @@
+//TODO
+// Phase 1 - Self-Transfer / Drop Energy If Haulers / Deposit Energy If Containers 
+// Phase 2 - Assign Sources
+
 var utility = require('a.utilities');
 var movement = require('a.movement');
 
