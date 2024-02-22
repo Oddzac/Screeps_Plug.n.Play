@@ -18,9 +18,10 @@ var construction = {
             this.placeExtensionsAroundSpawn(room);
         }
 
-        if (Memory.rooms[room.name].phase.Phase < 2 && Memory.constructionRuns < 1) {
-            this.connectAndTrackProgress(room);
+        if (Memory.rooms[room.name].phase.Phase < 2 && Memory.rooms[room.name].constructionRuns < 1) {
             this.placeContainersNearSources(room);
+            this.connectAndTrackProgress(room);
+            
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 3) {
             // No Major Construction
@@ -40,7 +41,7 @@ var construction = {
             let site = Game.constructionSites[id];
             site.remove();
         }
-        Memory.constructionRuns = 0;
+        Memory.rooms[room.name].constructionRuns = 0;
         console.log("All construction sites have been removed.");
     },
     
@@ -64,7 +65,7 @@ var construction = {
         // Check if both tasks are marked as completed
         if (Memory.constructionProgress.spawnToPOIsCompleted && Memory.constructionProgress.allPOIsConnected) {
             console.log("All targets connected and all POIs connected. Incrementing construction runs.");
-            Memory.constructionRuns = (Memory.constructionRuns || 0) + 1;
+            Memory.rooms[room.name].constructionRuns = (Memory.rooms[room.name].constructionRuns || 0) + 1;
             Memory.constructionProgress = null; // Reset progress for future operations
         }
     },
@@ -73,41 +74,54 @@ var construction = {
 //
 //
 //    
-    connectSpawnToPOIs: function(room) {
-        // Ensure memory initialization for construction progress tracking
-        if (!Memory.constructionProgress) {
-            Memory.constructionProgress = { spawnToPOIsCompleted: false, allPOIsConnected: false };
-        }
+connectSpawnToPOIs: function(room) {
+    // Ensure memory initialization for construction progress tracking
+    if (!Memory.rooms[room.name].constructionProgress) {
+        Memory.rooms[room.name].constructionProgress = { spawnToPOIsCompleted: false, allPOIsConnected: false, currentTargetIndex: 0, currentPathIndex: 0 };
+    }
+    if (Memory.rooms[room.name].constructionProgress.spawnToPOIsCompleted) return; // Skip if already completed
 
-        // Skip if already completed
-        if (Memory.constructionProgress.spawnToPOIsCompleted) return;
-
-        // Define Points of Interest (POIs): Room Controller, Sources, etc.
         const sources = room.find(FIND_SOURCES);
         const targets = [room.controller, ...sources];
+        const startIndex = Memory.rooms[room.name].constructionProgress.currentTargetIndex || 0;
 
-        // Connect each target to the spawn
-        targets.forEach(target => {
+        for (let i = startIndex; i < targets.length; i++) {
+            const target = targets[i];
             const path = PathFinder.search(Game.spawns['Spawn1'].pos, { pos: target.pos, range: 1 }, {
                 roomCallback: (roomName) => this.pathCostMatrix(roomName)
             }).path;
 
-            // Place roads along the path
-            path.forEach(pos => room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD));
-        });
+            let pathIndex = Memory.rooms[room.name].constructionProgress.currentPathIndex || 0;
+            for (; pathIndex < path.length; pathIndex++) {
+                const pos = path[pathIndex];
+                const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
+                if (result === ERR_FULL) {
+                    // Save progress and exit
+                    Memory.rooms[room.name].constructionProgress.currentTargetIndex = i;
+                    Memory.rooms[room.name].constructionProgress.currentPathIndex = pathIndex;
+                    return; // Early return due to site limit
+                } else if (result !== OK) {
+                    console.log(`Failed to create road at (${pos.x},${pos.y}) in room ${room.name}, result: ${result}`);
+                }
+            }
+            // Reset path index for the next target
+            Memory.rooms[room.name].constructionProgress.currentPathIndex = 0;
+        }
 
-        // Mark the task as completed
-        Memory.constructionProgress.spawnToPOIsCompleted = true;
+        // Mark the task as completed if all targets have been processed
+        Memory.rooms[room.name].constructionProgress.spawnToPOIsCompleted = true;
+        Memory.rooms[room.name].constructionProgress.currentTargetIndex = 0; // Reset for future operations
+        Memory.rooms[room.name].constructionProgress.currentPathIndex = 0; // Reset for future operations
     },
 
     connectAllPOIs: function(room) {
-        // Use the same memory structure for tracking
-        if (!Memory.constructionProgress) {
-            Memory.constructionProgress = { spawnToPOIsCompleted: false, allPOIsConnected: false };
+        // Use the same memory structure for tracking, ensuring it's specific to the room
+        if (!Memory.rooms[room.name].constructionProgress) {
+            Memory.rooms[room.name].constructionProgress = { spawnToPOIsCompleted: false, allPOIsConnected: false, currentPairIndex: 0, currentPathIndex: 0 };
         }
     
         // Skip if already completed
-        if (Memory.constructionProgress.allPOIsConnected) return;
+        if (Memory.rooms[room.name].constructionProgress.allPOIsConnected) return;
     
         const sources = room.find(FIND_SOURCES);
         const structures = room.find(FIND_MY_STRUCTURES, {
@@ -115,26 +129,52 @@ var construction = {
         });
         const targets = [...sources, ...structures];
     
-        // Generate all pairs of targets to connect
-        let targetPairs = [];
-        for (let i = 0; i < targets.length; i++) {
-            for (let j = i + 1; j < targets.length; j++) {
-                targetPairs.push({ start: targets[i], end: targets[j] });
+        // Generate all pairs of targets to connect, if not already generated
+        if (!Memory.rooms[room.name].constructionProgress.targetPairs || Memory.rooms[room.name].constructionProgress.targetPairs.length === 0) {
+            Memory.rooms[room.name].constructionProgress.targetPairs = [];
+            for (let i = 0; i < targets.length; i++) {
+                for (let j = i + 1; j < targets.length; j++) {
+                    Memory.rooms[room.name].constructionProgress.targetPairs.push({ start: targets[i].id, end: targets[j].id });
+                }
             }
         }
     
-        // Connect each pair with roads
-        targetPairs.forEach(pair => {
-            const path = PathFinder.search(pair.start.pos, { pos: pair.end.pos, range: 1 }, {
+        let pairIndex = Memory.rooms[room.name].constructionProgress.currentPairIndex || 0;
+        let targetPairs = Memory.rooms[room.name].constructionProgress.targetPairs;
+    
+        // Resume or start connecting each pair with roads
+        for (; pairIndex < targetPairs.length; pairIndex++) {
+            const pair = targetPairs[pairIndex];
+            const startTarget = Game.getObjectById(pair.start);
+            const endTarget = Game.getObjectById(pair.end);
+    
+            const path = PathFinder.search(startTarget.pos, { pos: endTarget.pos, range: 1 }, {
                 roomCallback: (roomName) => this.pathCostMatrix(roomName)
             }).path;
     
-            path.forEach(pos => room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD));
-        });
+            let pathIndex = Memory.rooms[room.name].constructionProgress.currentPathIndex || 0;
+            for (; pathIndex < path.length; pathIndex++) {
+                const pos = path[pathIndex];
+                const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
+                if (result === ERR_FULL) {
+                    // Save progress and exit
+                    Memory.rooms[room.name].constructionProgress.currentPairIndex = pairIndex;
+                    Memory.rooms[room.name].constructionProgress.currentPathIndex = pathIndex;
+                    return; // Early return due to site limit
+                } else if (result !== OK) {
+                    console.log(`Failed to create road at (${pos.x},${pos.y}) in room ${room.name}, result: ${result}`);
+                }
+            }
+            // Reset path index for the next target pair
+            Memory.rooms[room.name].constructionProgress.currentPathIndex = 0;
+        }
     
-        // Mark the task as completed
-        Memory.constructionProgress.allPOIsConnected = true;
+        // Mark the task as completed if all pairs have been processed
+        Memory.rooms[room.name].constructionProgress.allPOIsConnected = true;
+        Memory.rooms[room.name].constructionProgress.currentPairIndex = 0; // Reset for future operations
+        Memory.rooms[room.name].constructionProgress.currentPathIndex = 0; // Reset for future operations
     },
+    
 
     placeContainersNearSources: function(room) {
         const spawn = room.find(FIND_MY_SPAWNS)[0];
