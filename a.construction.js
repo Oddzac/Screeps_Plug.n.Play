@@ -18,7 +18,7 @@ var construction = {
             this.placeExtensionsAroundSpawn(room);
         }
 
-        if (Memory.rooms[room.name].phase.Phase < 2) {
+        if (Memory.rooms[room.name].phase.Phase < 2 && Memory.constructionRuns < 1) {
             this.connectAndTrackProgress(room);
             this.placeContainersNearSources(room);
             return;
