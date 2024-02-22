@@ -9,16 +9,16 @@ var spawner = {
             const phase = Memory.rooms[room.name].phase.Phase;
             const totalCreeps = Object.keys(Game.creeps).length;
             let desiredCounts = {};
-            let totalHostiles = 0
+            let totalHostiles;
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
 
-        
-
-
-
+            // Filter out Source Keepers from the hostile count
+            const nonKeeperHostiles = room.find(FIND_HOSTILE_CREEPS, {
+                filter: (creep) => creep.owner.username !== "Source Keeper"
+            });
+            const totalHostiles = nonKeeperHostiles.length;
+            
             if (Memory.rooms[room.name].underAttack) {
-                // Count hostiles in the specific room under attack
-                totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
         
                 const healersNeeded = totalHostiles; // 1 healer for every hostile
                 const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
