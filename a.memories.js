@@ -144,12 +144,12 @@ var memories = {
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
                     phase: { Phase: 1, RCL: room.controller.level },
-                    constructionRuns: 0,
                     claimedDrops: {},
                     pathCache: {},
                     nextSpawnRole: null,
                     underAttack: room.find(FIND_HOSTILE_CREEPS).length > 0,
                     spawnMode: { mode: null, energyToUse: 0 },
+                    constructionRuns: 0,
                     constructionEnergyRequired: 0, // This will be calculated later
                 };
             } else {
