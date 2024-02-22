@@ -144,6 +144,7 @@ var memories = {
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
                     phase: { Phase: 1, RCL: room.controller.level },
+                    constructionRuns: 0,
                     claimedDrops: {},
                     pathCache: {},
                     nextSpawnRole: null,

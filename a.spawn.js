@@ -9,6 +9,7 @@ var spawner = {
             const phase = Memory.rooms[room.name].phase.Phase;
             const totalCreeps = Object.keys(Game.creeps).length;
             let desiredCounts = {};
+            let totalHostiles = 0
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
 
         
