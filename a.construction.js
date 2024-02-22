@@ -48,25 +48,25 @@ var construction = {
 
     connectAndTrackProgress: function(room) {
         // Initialize or fetch memory structure for tracking construction progress
-        if (!Memory.constructionProgress) {
-            Memory.constructionProgress = { spawnToPOIsCompleted: false, allPOIsConnected: false };
+        if (!Memory.rooms[room.name].constructionProgress) {
+            Memory.rooms[room.name].constructionProgress = { spawnToPOIsCompleted: false, allPOIsConnected: false };
         }
     
         // Run the logic to connect spawn to Points of Interest (POIs)
-        if (!Memory.constructionProgress.spawnToPOIsCompleted) {
+        if (!Memory.rooms[room.name].constructionProgress.spawnToPOIsCompleted) {
             this.connectSpawnToPOIs(room);
         }
     
         // Run the logic to connect all POIs with each other
-        if (!Memory.constructionProgress.allPOIsConnected) {
+        if (!Memory.rooms[room.name].constructionProgress.allPOIsConnected) {
             this.connectAllPOIs(room);
         }
     
         // Check if both tasks are marked as completed
-        if (Memory.constructionProgress.spawnToPOIsCompleted && Memory.constructionProgress.allPOIsConnected) {
+        if (Memory.rooms[room.name].constructionProgress.spawnToPOIsCompleted && Memory.rooms[room.name].constructionProgress.allPOIsConnected) {
             console.log("All targets connected and all POIs connected. Incrementing construction runs.");
             Memory.rooms[room.name].constructionRuns = (Memory.rooms[room.name].constructionRuns || 0) + 1;
-            Memory.constructionProgress = null; // Reset progress for future operations
+            Memory.rooms[room.name].constructionProgress = null; // Reset progress for future operations
         }
     },
     
