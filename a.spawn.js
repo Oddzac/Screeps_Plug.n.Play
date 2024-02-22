@@ -2,7 +2,7 @@ var spawner = {
 
     
 
-    // Adjusted phase-based spawning method
+    // Phase-based spawning counts
     calculateDesiredCounts: function() {
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
@@ -11,12 +11,6 @@ var spawner = {
             let desiredCounts = {};
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
 
-            // Filter out Source Keepers from the hostile count
-            const nonKeeperHostiles = room.find(FIND_HOSTILE_CREEPS, {
-                filter: (creep) => creep.owner.username !== "Source Keeper"
-            });
-            const totalHostiles = nonKeeperHostiles.length;
-            
             if (Memory.rooms[room.name].underAttack) {
         
                 const healersNeeded = totalHostiles; // 1 healer for every hostile
@@ -25,7 +19,6 @@ var spawner = {
                 return {
                     healer: healersNeeded,
                     attacker: attackersNeeded,
-                    // It might be more dynamic to adjust worker roles based on remaining capacity rather than a fixed ratio
                     harvester: 2, // Minimal sustaining number during an attack
                     hauler: 2, // Minimal sustaining number
                 };

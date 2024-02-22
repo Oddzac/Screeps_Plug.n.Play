@@ -40,16 +40,19 @@ var roleHarvester = {
     assignSource: function(creep) {
         const sources = creep.room.find(FIND_SOURCES);
         const sourceCount = sources.map(source => {
+            // Check for hostiles within 10 tiles of the source
+            const hostilesNearSource = source.pos.findInRange(FIND_HOSTILE_CREEPS, 10);
             return {
                 id: source.id,
-                count: _.filter(Game.creeps, (c) => c.memory.sourceId === source.id).length
+                count: _.filter(Game.creeps, (c) => c.memory.sourceId === source.id).length,
+                isSafe: hostilesNearSource.length === 0 // Only consider the source safe if no hostiles are near
             };
-        });
-
-        // Sort sources by the number of creeps targeting them, and pick the one with the fewest creeps
+        }).filter(source => source.isSafe); // Filter out sources that are not safe
+    
+        // Sort the safe sources by the number of creeps targeting them, and pick the one with the fewest creeps
         const sortedSources = _.sortBy(sourceCount, 'count');
         if (sortedSources.length > 0) {
-            creep.memory.sourceId = sortedSources[0].id; // Assign the ID of the least targeted source
+            creep.memory.sourceId = sortedSources[0].id; // Assign the ID of the least targeted safe source
         }
     },
 

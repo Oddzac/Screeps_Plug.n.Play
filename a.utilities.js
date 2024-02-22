@@ -1,3 +1,9 @@
+//TODO
+//Phase 1 - Self harvest
+//Phase 2 - Prioritize Containers
+//Phase 3 - Container Withdraw Exclusively (assign?)
+//Phase 4 - If Storage, Withdraw Exclusively
+
 var movement = require('a.movement');
 
 var utilities = {

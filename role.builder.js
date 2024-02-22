@@ -12,14 +12,14 @@ var roleBuilder = {
         if(creep.memory.harvesting && creep.store.getFreeCapacity() === 0) {
             creep.memory.harvesting = false;
             delete creep.memory.sourceId;
-            this.assignTask(creep); // Correctly place the task assignment
+            this.assignTask(creep);
         } else if(!creep.memory.harvesting && creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.harvesting = true;
-            delete creep.memory.task; // Clear task when starting to harvest
+            delete creep.memory.task; // Clear task when harvesting
         }
     
         if(creep.memory.harvesting) {
-            this.harvestEnergy(creep);
+            utility.harvestEnergy(creep);
         } else {
             this.performTask(creep); // Ensure task execution is correctly called
         }
@@ -60,18 +60,19 @@ var roleBuilder = {
         return priority;
     },
 
+
+    //Manage task assignment
     assignTask: function(creep) {
-        // Perform task assignment here
         var structuresNeedingRepair = creep.room.find(FIND_STRUCTURES, {
             filter: (structure) => structure.hits < structure.hitsMax
         });
         var constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
         
         // Count the number of builders currently repairing
+
         const repairingBuildersCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'repairing');
     
-        // Adjust this condition to limit repairing builders to 2
-        if(repairingBuildersCount < 1) { // Limit builders focused on maintenance 
+        if(repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
             creep.say("🛠️");
             creep.memory.task = "repairing";
         } else if(constructionSites.length > 0) {
@@ -89,35 +90,18 @@ var roleBuilder = {
         if (!creep.memory.task) {
             this.assignTask(creep);
         }
-        // Correctly execute task based on assigned task
+        // Execute based on assigned task
         switch(creep.memory.task) {
-            case "repairing":
-                this.moveAwayFromSources(creep);
+            case "repairing":                
                 this.performRepair(creep);
                 break;
-            case "building":
-                this.moveAwayFromSources(creep);
+            case "building":                
                 this.performBuild(creep);
                 break;
             case "upgrading":
                 this.performUpgrade(creep);
                 break;
         }
-    },
-    
-    // Utility function to keep 'em out of the way
-    moveAwayFromSources: function(creep) {
-        const sources = creep.room.find(FIND_SOURCES);
-        for (let source of sources) {
-            if (creep.pos.getRangeTo(source) < 2) {
-                const fleePath = PathFinder.search(creep.pos, {pos: source.pos, range: 3}, {flee: true}).path;
-                if (fleePath.length > 0) {
-                    creep.moveByPath(fleePath);
-                    return true; // Indicate that the creep is moving away
-                }
-            }
-        }
-        return false; // Indicate no need to move away
     },
 
 
@@ -206,12 +190,6 @@ var roleBuilder = {
         }
     },
 
-    harvestEnergy: function(creep) {
-        utility.harvestEnergy(creep);
-    },
-    chooseSource: function(creep) {
-        utility.chooseSource(creep);
-    },
 };
 
 module.exports = roleBuilder;
