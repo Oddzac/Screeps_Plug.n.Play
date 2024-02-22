@@ -17,7 +17,7 @@ var spawner = {
             });
             const totalHostiles = nonKeeperHostiles.length;
             
-            if (Memory.rooms[room.name].underAttack && nonKeeperHostiles > 0) {
+            if (Memory.rooms[room.name].underAttack) {
         
                 const healersNeeded = totalHostiles; // 1 healer for every hostile
                 const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile

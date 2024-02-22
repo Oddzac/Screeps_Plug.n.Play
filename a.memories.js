@@ -154,7 +154,9 @@ var memories = {
                 };
             } else {
                 // Update existing room memory objects
-                Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS).length > 0;
+                Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
+                    filter: (creep) => creep.owner.username !== "Source Keeper"
+                }).length > 0;
                 // Additional updates can be made here as needed
             }
         });
