@@ -130,46 +130,35 @@
                 
             //Initialize Memory
             memInit: function() {
-        
-                for (const roomName in Game.rooms) {
+                // Initialize global memory objects if they don't exist
+                if (!Memory.claimedDrops) Memory.claimedDrops = {};
+                if (!Memory.terrainData) Memory.terrainData = {};
+                if (!Memory.costMatrices) Memory.costMatrices = {};
+                if (!Memory.rooms) Memory.rooms = {};
+            
+                // Loop through each room to initialize or update room-specific memory
+                Object.keys(Game.rooms).forEach(roomName => {
                     const room = Game.rooms[roomName];
-                
-                    if (!Memory.rooms[room.name]) {
-                        Memory.rooms[room.name] = {}
+            
+                    // Initialize room memory object if it doesn't exist
+                    if (!Memory.rooms[roomName]) {
+                        Memory.rooms[roomName] = {
+                            phase: { Phase: 1, RCL: room.controller.level },
+                            claimedDrops: {},
+                            pathCache: {},
+                            nextSpawnRole: null,
+                            underAttack: room.find(FIND_HOSTILE_CREEPS).length > 0,
+                            spawnMode: { mode: null, energyToUse: 0 },
+                            constructionEnergyRequired: 0, // This will be calculated later
+                        };
+                    } else {
+                        // Update existing room memory objects
+                        Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS).length > 0;
+                        // Additional updates can be made here as needed
                     }
-
-                    if (!Memory.rooms[room.name].phase) {
-                        this.updateRoomPhase(room);
-                    }
-                     
-                    Object.values(Game.rooms).forEach(room => {
-                        if (!Memory.rooms) Memory.rooms = {};
-                        if (!Memory.rooms[room.name]) Memory.rooms[room.name] = {};
-                
-
-                        if (!Memory.rooms[room.name].claimedDrops) {
-                            Memory.rooms[room.name].claimedDrops = {};
-                        }
-
-                        if (!Memory.rooms[room.name].pathCache) {
-                            Memory.rooms[room.name].pathCache = {};
-                        }
-
-                        if (!Memory.rooms[room.name].nextSpawnRole) {
-                            Memory.rooms[room.name].nextSpawnRole = null;
-                        }
-        
-                        const hostiles = room.find(FIND_HOSTILE_CREEPS).length;
-                        Memory.rooms[room.name].underAttack = hostiles > 0;
-
-                        if (typeof Memory.rooms[room.name].spawnMode !== 'object' || Memory.rooms[room.name].spawnMode === null) {
-                            Memory.rooms[room.name].spawnMode = { mode: null, energyToUse: 0 };
-                        }
-                    });
-                
-                }
-        
-                
+                });
+            
+                // Other memory initialization or cleanup tasks can be added here
             },
             
             // Manage memory governing spawn behavior
@@ -331,11 +320,7 @@
         
         
             updateRoomPhase: function(room) {
-                // Ensure the phase object exists for the room
-                if (!Memory.rooms[room.name].phase) {
-                    Memory.rooms[room.name].phase = { Phase: 1, RCL: room.controller.level };
-                }
-            
+
                 // Update the current RCL in memory (useful for tracking progress and phase changes)
                 Memory.rooms[room.name].phase.RCL = room.controller.level;
             
