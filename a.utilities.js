@@ -114,6 +114,13 @@ var utilities = {
         let bestSource = null;
     
         sources.forEach(source => {
+            // Check for hostiles within 10 tiles of the source
+            const hostilesNearSource = source.pos.findInRange(FIND_HOSTILE_CREEPS, 10);
+            // Skip this source if any hostiles are found
+            if (hostilesNearSource.length > 0) {
+                return;
+            }
+    
             // Look at the terrain and structures in the area around the source
             const terrainAndStructures = creep.room.lookForAtArea(LOOK_TERRAIN,
                 source.pos.y - 1, source.pos.x - 1,
@@ -145,17 +152,16 @@ var utilities = {
                 bestScore = score;
                 bestSource = source;
             }
-            //console.log(`Source: ${bestSource} - Access: ${accessibleTiles} Crowd: -${targetingCreeps} Energy: ${sourceEnergyScore}`);
         });
     
         if (bestSource) {
-            
             return bestSource;
         }
     
         // Fallback to any source if no best source found
         return sources[0];
     },
+    
 };
 
 module.exports = utilities;
