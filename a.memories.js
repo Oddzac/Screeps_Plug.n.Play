@@ -266,7 +266,7 @@ var memories = {
                     break;
 
                 case 5:
-                    console.log(`Phase ${phase} // Next Role: ${nextRole}`)
+                    //console.log(`Phase ${phase} // Next Role: ${nextRole}`)
                     //Energy Cap: 1800
                     if (Memory.rooms[roomName].underAttack) {
                         //Respond to hostile presence
