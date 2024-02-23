@@ -71,10 +71,10 @@ var utilities = {
             }
         } else {
             
-            let source = creep.memory.sourceId || null;
+            let source;
             
 
-            if (creep.memory.sourceId === null) {
+            if (!creep.memory.sourceId) {
                 const source = this.chooseSource(creep);
                 creep.memory.sourceId = source;
                 
@@ -83,7 +83,6 @@ var utilities = {
                 creep.memory.sourceType = 'source';
                 
             }
-            
 
             return- this.attemptEnergyWithdrawal(creep, source);
         }
