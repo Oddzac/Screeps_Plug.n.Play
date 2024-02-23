@@ -15,7 +15,7 @@ var roleHauler = {
             if (!creep.memory.linkId && Memory.rooms[creep.room.name].linksBuilt > 0 /*&& link assigned < 1*/) {
                 this.assignLink(creep);
 
-            } else if (!creep.memory.containerId && Memory.rooms[room.name].containersBuilt > 0) {
+            } else if (!creep.memory.containerId && Memory.rooms[creep.room.name].containersBuilt > 0) {
                 this.assignContainer(creep);
             }
         } else if (creep.store.getFreeCapacity() === 0) {
