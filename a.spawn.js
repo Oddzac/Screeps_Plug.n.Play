@@ -203,11 +203,12 @@ var spawner = {
                 };
                 break;
             case 3 && energyAvailable >= 600:
+                console.log('Desired Counts - Case 3');
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
+                    upgrader: ["work", "move", "move", "carry"],
+                    builder: ["work", "move", "move", "carry"],
+                    hauler: ["carry", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
@@ -218,6 +219,7 @@ var spawner = {
                 break;
             // Add more cases as needed for higher phases
             default:
+                console.log('Desired Counts - Case default');
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
                     upgrader: ["work", "move", "carry"],
