@@ -70,22 +70,24 @@ var utilities = {
                 this.waitStrategically(creep);
             }
         } else {
-            
             let source;
-            
-
             if (!creep.memory.sourceId) {
-                const source = this.chooseSource(creep);
-                creep.memory.sourceId = source;
+                // If no sourceId is in memory, choose a new source
+                source = this.chooseSource(creep);
+                creep.memory.sourceId = source.id;
                 creep.memory.sourceType = 'source';
-
             } else {
-                const source = creep.memory.sourceId;
+                // If a sourceId is already in memory, use it to get the source object
+                source = Game.getObjectById(creep.memory.sourceId);
+                if (!source) {
+                    // If the source cannot be found (e.g., it might be depleted), choose a new one
+                    source = this.chooseSource(creep);
+                    creep.memory.sourceId = source.id;
+                }
                 creep.memory.sourceType = 'source';
-                
             }
-
-            return- this.attemptEnergyWithdrawal(creep, source);
+    
+            return this.attemptEnergyWithdrawal(creep, source);
         }
     
         this.waitStrategically(creep);
