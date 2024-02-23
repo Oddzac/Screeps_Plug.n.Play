@@ -58,7 +58,7 @@ var spawner = {
                     // Phase 4 Rigid counts (experimental builders calc)
                     desiredCounts = {
                         harvester: 2,
-                        hauler: 4,
+                        hauler: 6,
                         builder: 2,
                         upgrader: 1
                     };
@@ -67,7 +67,7 @@ var spawner = {
                 default:
                     desiredCounts = {
                         harvester: 2,
-                        hauler: 4,
+                        hauler: 6,
                         builder: 2,
                         upgrader: 1
                     };
