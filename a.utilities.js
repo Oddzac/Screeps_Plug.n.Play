@@ -71,14 +71,16 @@ var utilities = {
             }
         } else {
             
-            creep.memory.sourceType = 'source';
+            let source = creep.memory.sourceId || null;
             
+
             if (!creep.memory.sourceId) {
                 const source = this.chooseSource(creep);
                 creep.memory.sourceId = source.id;
                 
             } else {
                 const source = creep.memory.sourceId;
+                creep.memory.sourceType = 'source';
                 
             }
             
