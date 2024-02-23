@@ -74,7 +74,7 @@ var utilities = {
             let source = creep.memory.sourceId || null;
             
 
-            if (!creep.memory.sourceId) {
+            if (creep.memory.sourceId === null) {
                 const source = this.chooseSource(creep);
                 creep.memory.sourceId = source.id;
                 
