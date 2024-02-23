@@ -1,15 +1,21 @@
 //TODO
 //Ensure deposit priority: Spawn> Extensions> ifTower> ifStorage
-//Energy collection: ifContainer > ifDropped
+//Energy collection priority: ifDropped > (ifLink && <1 hauler assigned to it) > ifContainer
+//If links > 0, assign 1 hauler to the link closest to storage. If 1 hauler already assigned to link task, assign container.
 //If containers > 0, assign container with fewest haulers targeting. Haulers only deviates if dropped energy/tombstone 
 
 var movement = require('a.movement');
 
 var roleHauler = {
     run: function(creep) {
+        
+        
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
-            if (!creep.memory.containerId) {
+            if (!creep.memory.linkId && Memory.rooms[room.name].linksBuilt > 0 /*&& link assigned < 1*/) {
+                this.assignLink(creep);
+
+            } else if (!creep.memory.containerId && Memory.rooms[room.name].containersBuilt > 0) {
                 this.assignContainer(creep);
             }
         } else if (creep.store.getFreeCapacity() === 0) {
@@ -22,6 +28,10 @@ var roleHauler = {
         } else {
             this.deliverEnergy(creep);
         }
+    },
+
+    assignLink: function (creep) {
+        //Placeholder method for link assignment
     },
 
     assignContainer: function(creep) {
@@ -43,10 +53,10 @@ var roleHauler = {
 
     collectEnergy: function(creep) {
         let target;
-        if (creep.memory.containerId) {
+        if (this.findEnergyCollectionTarget(creep)) {
+            target = target = this.findEnergyCollectionTarget(creep);
+        } else if (creep.memory.containerId) {
             target = Game.getObjectById(creep.memory.containerId);
-        } else {
-            target = this.findEnergyCollectionTarget(creep);
         }
 
         if (target) {

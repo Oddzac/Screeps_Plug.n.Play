@@ -151,6 +151,10 @@ var memories = {
                     spawnMode: { mode: null, energyToUse: 0 },
                     constructionRuns: 0,
                     constructionEnergyRequired: 0, // This will be calculated later
+                    containersBuilt: 0,
+                    storageBuilt: 0,
+                    linksBuilt: 0,
+                    towersBuilt: 0,
                 };
             } else {
                 // Update existing room memory objects
@@ -354,6 +358,11 @@ var memories = {
         const towersBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER }}).length;
         const storageBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
         const linksBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK }}).length;
+
+        Memory.rooms[room.name].containersBuilt = containersBuilt;
+        Memory.rooms[room.name].towersBuilt = towersBuilt;
+        Memory.rooms[room.name].storageBuilt = storageBuilt;
+        Memory.rooms[room.name].linksBuilt = linksBuilt;
 
         const currentPhase = Memory.rooms[room.name].phase.Phase;
         const rcl = room.controller.level;

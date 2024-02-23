@@ -61,7 +61,8 @@ var roleHarvester = {
             filter: (structure) => {
                 return (structure.structureType === STRUCTURE_SPAWN || 
                         structure.structureType === STRUCTURE_EXTENSION ||
-                        structure.structureType === STRUCTURE_CONTAINER) && 
+                        structure.structureType === STRUCTURE_CONTAINER || 
+                        structure.structureType === STRUCTURE_LINK) && 
                         structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
             }
         });
@@ -73,21 +74,35 @@ var roleHarvester = {
 
     passEnergy: function(creep) {
         // First, check if there are containers within 20 tiles of the creep.
-        var containers = creep.pos.findInRange(FIND_STRUCTURES, 20, {
+        var containers = creep.pos.findInRange(FIND_STRUCTURES, 10, {
             filter: { structureType: STRUCTURE_CONTAINER }
         });
-    
+
+        var links = creep.pos.findInRange(FIND_STRUCTURES, 10, {
+            filter: { structureType: STRUCTURE_LINK }
+        });
+
         // If there are containers available, try to deposit energy in the nearest one.
-        if (containers.length > 0) {
+        if (links.length > 0) {
+            // Find the closest container.
+            var closestLink = creep.pos.findClosestByPath(links);
+    
+            if (closestLink && creep.transfer(closestLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && closestLink.store.getFreeCapacity() > 0) {
+                    movement.moveToWithCache(creep, closestLink);
+                    creep.say('📦');
+                }
+
+        } else if (containers.length > 0) {
             // Find the closest container.
             var closestContainer = creep.pos.findClosestByPath(containers);
     
-        if (closestContainer && creep.transfer(closestContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && closestContainer.store.getFreeCapacity() > 0) {
-                movement.moveToWithCache(creep, closestContainer);
-                creep.say('📦');
-            }
+            if (closestContainer && creep.transfer(closestContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && closestContainer.store.getFreeCapacity() > 0) {
+                    movement.moveToWithCache(creep, closestContainer);
+                    creep.say('📦');
+                }
+
         } else {
-            // If no containers are found within range or cannot deposit for some reason, fallback to dropping energy.
+            // If no links or containers are found within range or cannot deposit for some reason, fallback to dropping energy.
             // This section might be reached if, for example, all containers are full or too far away.
             if (!creep.memory.moveTicks) {
                 creep.memory.moveTicks = 0;

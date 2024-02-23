@@ -36,7 +36,7 @@ var roleBuilder = {
         priority += isAdjacentToSource ? -500 : 0;
     
         // Prioritize containers or extensions
-        if (site.structureType === STRUCTURE_CONTAINER || site.structureType === STRUCTURE_EXTENSION  || site.structureType === STRUCTURE_TOWER) {
+        if (site.structureType === STRUCTURE_CONTAINER || site.structureType === STRUCTURE_EXTENSION  || site.structureType === STRUCTURE_LINK || site.structureType === STRUCTURE_TOWER) {
             priority -= 800;
         }
     
