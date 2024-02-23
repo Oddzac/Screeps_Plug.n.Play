@@ -58,11 +58,11 @@ var roleHauler = {
 
     findEnergyCollectionTarget: function(creep) {
         // Combine finding dropped resources and containers with energy
-        let targets = creep.room.find(FIND_DROPPED_RESOURCES, {
-            filter: r => r.resourceType === RESOURCE_ENERGY && r.amount >= 50
-        }).concat(creep.room.find(FIND_STRUCTURES, {
-            filter: s => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
-        }));
+        let targets = creep.room.find(FIND_DROPPED_RESOURCES).concat(
+            creep.room.find(FIND_STRUCTURES, {
+                filter: s => s.structureType === STRUCTURE_CONTAINER && _.sum(s.store) > 0
+            })
+        );
 
         // Prioritize targets by proximity and amount
         let target = creep.pos.findClosestByPath(targets);
@@ -81,7 +81,8 @@ var roleHauler = {
         if (target instanceof Resource) {
             actionResult = creep.pickup(target);
         } else {
-            actionResult = creep.withdraw(target, RESOURCE_ENERGY);
+            const resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b);
+            actionResult = creep.withdraw(target, resourceType);
         }
 
         if (actionResult === ERR_NOT_IN_RANGE) {
@@ -93,9 +94,13 @@ var roleHauler = {
     deliverEnergy: function(creep) {
         let target = this.selectDeliveryTarget(creep);
         if (target) {
-            if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                movement.moveToWithCache(creep, target);
-                creep.say('🚚');
+            // Transfer all carried resources
+            for (const resourceType in creep.store) {
+                if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, target);
+                    creep.say('🚚');
+                    break; // Only attempt to transfer one resource type per tick
+                }
             }
         } else {
             this.waitStrategically(creep);
@@ -131,7 +136,7 @@ var roleHauler = {
         } else {
             let waitNear = Game.getObjectById(creep.memory.containerId);
         }
-        
+
         if (waitNear) {
             movement.moveToWithCache(creep, waitNear);
             creep.say('⌛');

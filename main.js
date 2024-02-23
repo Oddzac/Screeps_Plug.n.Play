@@ -50,6 +50,13 @@ global.RACS = function() {
     construction.removeAllConstructionSites();   
 }
 
+/*global.SPAWN = function(role) {
+    const energyToUse =
+    const phase =
+    room = 
+    spawner.spawnCreepWithRole(role, energyToUse, phase, room);
+}*/
+
 global.STATS = function() {
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
