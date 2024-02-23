@@ -218,11 +218,11 @@ var memories = {
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                         return;
-                    } else if (nextRole === 'harvester' && energyAvailable >= 600) {
+                    } else if (nextRole === 'harvester' && energyCapacity >= 600) {
                         Memory.rooms[room.name].spawnMode.mode = 'Harvester';
                         Memory.rooms[room.name].spawnMode.energyToUse = 600;
                         return;
-                    } else if (nextRole === 'harvester' && energyAvailable < 600) {
+                    } else if (nextRole === 'harvester' && energyCapacity < 600) {
                         Memory.rooms[room.name].spawnMode.mode = 'HarvesterLite';
                         Memory.rooms[room.name].spawnMode.energyToUse = 500;
                         return;
@@ -284,7 +284,7 @@ var memories = {
                         }
                         break;
                 default:
-                    if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[roomName].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;

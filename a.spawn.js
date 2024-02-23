@@ -64,6 +64,16 @@ var spawner = {
                         upgrader: 1
                     };
                     break;
+
+                case 5:
+                    // Phase 5
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 6,
+                        builder: 2,
+                        upgrader: 1
+                    };
+                    break;
                 // More as needed
                 default:
                     desiredCounts = {
@@ -87,7 +97,7 @@ var spawner = {
         const energyAvailable = room.energyAvailable;
         const phase = Memory.rooms[room.name].phase.Phase;
         // Determine spawn mode and adjust energyToUse based on this mode
-        let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
+
         //console.log('MCS Called');
         
     
@@ -107,6 +117,7 @@ var spawner = {
         }
         // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
+        let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
     
         // Check if the available energy meets the requirement for the current spawn mode
         if (energyAvailable < energyToUse) {
