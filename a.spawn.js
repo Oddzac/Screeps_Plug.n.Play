@@ -221,8 +221,8 @@ var spawner = {
             default:
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "move", "carry"],
-                    builder: ["work", "move", "carry"],
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "move", "carry"],
                     hauler: ["carry", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
@@ -244,6 +244,8 @@ var spawner = {
             //console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyAvailable}`);
             return null; // Not enough energy for even a base blueprint
         }
+
+        if (role === 'harvester') {}
     
         // Build the base blueprint
         roleBlueprints[role].forEach(part => {
