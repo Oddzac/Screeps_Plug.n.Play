@@ -203,7 +203,7 @@ var spawner = {
                 };
                 break;
             case 3 && energyAvailable >= 600:
-                console.log('Desired Counts - Case 3');
+                console.log('Parts for role - Case 3');
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
                     upgrader: ["work", "move", "move", "carry"],
@@ -219,7 +219,7 @@ var spawner = {
                 break;
             // Add more cases as needed for higher phases
             default:
-                console.log('Desired Counts - Case default');
+                console.log('Parts for role - Case default');
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
                     upgrader: ["work", "move", "carry"],
