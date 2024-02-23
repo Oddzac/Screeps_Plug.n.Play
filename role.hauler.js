@@ -84,7 +84,7 @@ var roleHauler = {
 
         const priorityTowers = creep.room.find(FIND_MY_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_TOWER && 
-                           (s.store.getUsedCapacity(RESOURCE_ENERGY) / s.store.getCapacity(RESOURCE_ENERGY) < 0.6)
+                           (s.store.getUsedCapacity(RESOURCE_ENERGY) / s.store.getCapacity(RESOURCE_ENERGY) < 0.9)
         });
     
         let target;
@@ -140,29 +140,7 @@ var roleHauler = {
             creep.say('⌛');
         }
     },
-
-    findEnergyDepositTarget: function(creep) {
-        // First, try to find Towers with less than energy capacity filled
-        const priorityTowers = creep.room.find(FIND_MY_STRUCTURES, {
-            filter: (s) => s.structureType === STRUCTURE_TOWER && 
-                           (s.store.getUsedCapacity(RESOURCE_ENERGY) < s.store.getCapacity(RESOURCE_ENERGY))
-        });
     
-        console.log(`Priority Towers: ${priorityTowers.length} TowerId: ${priorityTowers}`);
-        if (priorityTowers.length > 0) {
-            // If there are such towers, find the closest one
-            return creep.pos.findClosestByPath(priorityTowers);
-        }
-    
-        // If no priority towers are found, fallback to finding the closest structure that needs energy (Spawn, Extension, or any Tower)
-        return creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-            filter: (s) => (s.structureType === STRUCTURE_SPAWN || 
-                            s.structureType === STRUCTURE_EXTENSION ||
-                            s.structureType === STRUCTURE_STORAGE) &&
-                           s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-        });
-    },
-
     manageDroppedEnergyClaims: function(creep) {
         // Optimized claim management
         if (creep.memory.claimedDrop) {
