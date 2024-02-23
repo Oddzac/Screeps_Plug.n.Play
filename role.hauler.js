@@ -81,8 +81,7 @@ var roleHauler = {
         if (target instanceof Resource) {
             actionResult = creep.pickup(target);
         } else {
-            const resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b);
-            actionResult = creep.withdraw(target, resourceType);
+            actionResult = creep.withdraw(target, RESOURCE_ENERGY);
         }
 
         if (actionResult === ERR_NOT_IN_RANGE) {
@@ -94,13 +93,9 @@ var roleHauler = {
     deliverEnergy: function(creep) {
         let target = this.selectDeliveryTarget(creep);
         if (target) {
-            // Transfer all carried resources
-            for (const resourceType in creep.store) {
-                if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, target);
-                    creep.say('🚚');
-                    break; // Only attempt to transfer one resource type per tick
-                }
+            if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                movement.moveToWithCache(creep, target);
+                creep.say('🚚');
             }
         } else {
             this.waitStrategically(creep);
