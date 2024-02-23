@@ -14,7 +14,7 @@ var roleHauler = {
             }
         } else if (creep.store.getFreeCapacity() === 0) {
             creep.memory.isCollecting = false;
-            
+            delete creep.memory.containerId; // Reset container assignment when going to deliver
         }
 
         if (creep.memory.isCollecting) {

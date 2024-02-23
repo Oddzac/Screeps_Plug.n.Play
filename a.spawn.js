@@ -96,8 +96,7 @@ var spawner = {
     manageCreepSpawning: function(room) {
         const energyAvailable = room.energyAvailable;
         const phase = Memory.rooms[room.name].phase.Phase;
-        // Determine spawn mode and adjust energyToUse based on this mode
-
+        
         //console.log('MCS Called');
         
     
@@ -117,6 +116,7 @@ var spawner = {
         }
         // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
+        // Determine spawn mode and adjust energyToUse based on this mode
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
     
         // Check if the available energy meets the requirement for the current spawn mode
