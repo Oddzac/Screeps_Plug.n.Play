@@ -203,12 +203,12 @@ var spawner = {
                 };
                 break;
             case 3 && energyAvailable >= 600:
-                console.log('Parts for role - Case 3');
+                
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "move", "carry"],
-                    builder: ["work", "move", "move", "carry"],
-                    hauler: ["carry", "move"],
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
@@ -217,14 +217,13 @@ var spawner = {
                     claimer: ["claim", "move"],
                 };
                 break;
-            // Add more cases as needed for higher phases
+            // Additional phases handled by default
             default:
-                console.log('Parts for role - Case default');
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "carry"],
+                    upgrader: ["work", "move", "move", "carry"],
                     builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
+                    hauler: ["carry", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
