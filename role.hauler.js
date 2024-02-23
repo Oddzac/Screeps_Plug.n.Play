@@ -142,12 +142,13 @@ var roleHauler = {
     },
 
     findEnergyDepositTarget: function(creep) {
-        // First, try to find Towers with less than 60% energy capacity filled
+        // First, try to find Towers with less than energy capacity filled
         const priorityTowers = creep.room.find(FIND_MY_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_TOWER && 
                            (s.store.getUsedCapacity(RESOURCE_ENERGY) < s.store.getCapacity(RESOURCE_ENERGY))
         });
     
+        console.log(`Priority Towers: ${priorityTowers.length} TowerId: ${priorityTowers}`);
         if (priorityTowers.length > 0) {
             // If there are such towers, find the closest one
             return creep.pos.findClosestByPath(priorityTowers);

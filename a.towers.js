@@ -38,7 +38,7 @@ var towers = {
     },
 
     repairStructures: function(tower) {
-        // Proceed with repairs if the tower has more than 50% of its energy capacity
+        // Proceed with repairs if the tower has more than 90% of its energy capacity
         if (tower.energy > (tower.energyCapacity * 0.9)) { 
             const criticalStructures = tower.room.find(FIND_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax * 0.1 && // Target at-risk structures
