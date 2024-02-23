@@ -70,6 +70,7 @@ var utilities = {
                 this.waitStrategically(creep);
             }
         } else {
+            let source;
             
             if (!creep.memory.sourceId) {
                 const source = this.chooseSource(creep);
