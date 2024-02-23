@@ -10,6 +10,7 @@ var spawner = {
             const totalCreeps = Object.keys(Game.creeps).length;
             let desiredCounts = {};
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
+            const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
 
             if (Memory.rooms[room.name].underAttack) {
         
