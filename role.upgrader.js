@@ -31,7 +31,7 @@ var roleUpgrader = {
         }
 
         if (creep.memory.harvesting) {
-            this.harvestEnergy(creep);
+            utility.harvestEnergy(creep);
             // Increment the harvestingTicks counter if still harvesting
             creep.memory.harvestingTicks++;
         } else {
@@ -48,13 +48,6 @@ var roleUpgrader = {
         }
     },
     
-    harvestEnergy: function(creep) {
-        utility.harvestEnergy(creep);
-    },
-    
-    chooseSource: function(creep) {
-        utility.chooseSource(creep);
-    },
 };
 
 module.exports = roleUpgrader;

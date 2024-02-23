@@ -70,10 +70,15 @@ var utilities = {
                 this.waitStrategically(creep);
             }
         } else {
-            const source = this.chooseSource(creep);
-
-            creep.memory.sourceId = source.id;
-            creep.memory.sourceType = 'source';
+            
+            if (!creep.memory.sourceId) {
+                const source = this.chooseSource(creep);
+                creep.memory.sourceId = source.id;
+                creep.memory.sourceType = 'source';
+            } else {
+                const source = creep.memory.sourceId;
+            }
+            
 
             return- this.attemptEnergyWithdrawal(creep, source);
         }
