@@ -245,7 +245,6 @@ var spawner = {
             return null; // Not enough energy for even a base blueprint
         }
 
-    
         // Build the base blueprint
         roleBlueprints[role].forEach(part => {
             if (energyUsed + partsCost[part] <= energyAvailable) {
