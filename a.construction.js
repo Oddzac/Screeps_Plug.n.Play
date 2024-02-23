@@ -2,7 +2,8 @@ var memories = require('a.memories');
 
 var construction = {
     
-    //Memory.rooms[room.name].phase.Phase
+    //TODO
+    //placeLinks method
     
     manageConstruction: function(room) {
         
@@ -35,6 +36,7 @@ var construction = {
         } else if (Memory.rooms[room.name].phase.Phase < 6 && memories.linksBuilt < 1) {
             this.placeLinks(room);
             return;
+        }
 
     },
     
@@ -358,6 +360,9 @@ connectSpawnToPOIs: function(room) {
         console.log("No valid placement found for storage");
     },
 
+    placeLinks: function(room) {
+        //placeHolder
+    },
     
     pathCostMatrix: function(roomName) {
         let room = Game.rooms[roomName];
