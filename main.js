@@ -51,7 +51,7 @@ global.RACS = function() {
 }
 
 global.SPAWN = function(role) {
-    const room = Game.rooms['E24S18'];
+    const room = Object.keys(Game.rooms)[0];
     const energyToUse = room.energyAvailable;
     const phase = Memory.rooms[room.name].phase.Phase;
     
