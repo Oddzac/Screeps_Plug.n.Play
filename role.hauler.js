@@ -12,7 +12,7 @@ var roleHauler = {
         
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
-            if (!creep.memory.linkId && Memory.rooms[room.name].linksBuilt > 0 /*&& link assigned < 1*/) {
+            if (!creep.memory.linkId && Memory.rooms[creep.room.name].linksBuilt > 0 /*&& link assigned < 1*/) {
                 this.assignLink(creep);
 
             } else if (!creep.memory.containerId && Memory.rooms[room.name].containersBuilt > 0) {
