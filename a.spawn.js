@@ -220,19 +220,6 @@ var spawner = {
                 };
                 break;
         }
-        /*const roleBlueprints = {
-            
-            harvester: ["work", "work","work", "work", "work", "carry", "move"], // MAX HARVEST
-            upgrader: ["work", "move", "carry"],
-            builder: ["work", "move", "carry"],
-            hauler: ["carry", "move", "move"],
-            //Defensive Units
-            attacker: ["tough", "move", "move", "ranged_attack"],
-            healer: ["move","heal"],
-            //
-            scout: ["move"],
-            claimer: ["claim", "move"],
-        };*/
     
         let body = [];
         let energyUsed = 0;

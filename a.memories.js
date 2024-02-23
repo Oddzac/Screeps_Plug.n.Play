@@ -256,11 +256,33 @@ var memories = {
                         return;
                     } else {
                         // Lower Cap to 75%
-                        Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
-                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .5;
+                        Memory.rooms[room.name].spawnMode.mode = 'Cap(60%)';
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .6;
                     }
                     break;
 
+                    case 5:
+                        //Energy Cap: 1800
+                        if (Memory.rooms[roomName].underAttack) {
+                            //Respond to hostile presence
+                            Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                            Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
+                            return;
+                        } else if (nextRole === 'harvester') {
+                            Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                            Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                            return;
+                        } else if (nextRole === 'claimer') {
+                            //console.log('Spawn Mode: Claimer');
+                            Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                            Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                            return;
+                        } else {
+                            // Lower Cap to 75%
+                            Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
+                            Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .5;
+                        }
+                        break;
                 default:
                     if (Memory.rooms && Memory.rooms[roomName] && Memory.rooms[roomName].underAttack) {
                         //Respond to hostile presence
@@ -330,6 +352,7 @@ var memories = {
         const containersBuilt = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_CONTAINER }}).length;
         const towersBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER }}).length;
         const storageBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
+        const linksBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK }}).length;
 
         const currentPhase = Memory.rooms[room.name].phase.Phase;
         const rcl = room.controller.level;
@@ -368,6 +391,15 @@ var memories = {
                     transitioned = true;
                 }
                 break;
+
+            case 5:
+                if (rcl >= 6 && linksBuilt > 1) {
+                    Memory.rooms[room.name].phase.Phase = 6;
+                    console.log(`Room ${room.name} has advanced to Phase 5.`);
+                    transitioned = true;
+                }
+                break;
+
             // Further phases as necessary...
             default:
                 break;

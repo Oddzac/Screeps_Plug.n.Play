@@ -7,14 +7,16 @@ var movement = require('a.movement');
 
 var roleHauler = {
     run: function(creep) {
-        // Toggle collecting state based on cargo
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
+            if (!creep.memory.containerId) {
+                this.assignContainer(creep);
+            }
         } else if (creep.store.getFreeCapacity() === 0) {
             creep.memory.isCollecting = false;
+            delete creep.memory.containerId; // Reset container assignment when going to deliver
         }
 
-        // Execute actions based on state
         if (creep.memory.isCollecting) {
             this.collectEnergy(creep);
         } else {
@@ -22,8 +24,31 @@ var roleHauler = {
         }
     },
 
+    assignContainer: function(creep) {
+        const containers = creep.room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_CONTAINER && 
+                         s.store[RESOURCE_ENERGY] > 0
+        });
+
+        const containerAssignments = containers.map(container => ({
+            id: container.id,
+            count: _.sum(Game.creeps, c => c.memory.containerId === container.id && c.memory.role === 'hauler')
+        }));
+
+        const leastAssigned = _.min(containerAssignments, 'count');
+        if (leastAssigned && leastAssigned.id) {
+            creep.memory.containerId = leastAssigned.id;
+        }
+    },
+
     collectEnergy: function(creep) {
-        let target = this.findEnergyCollectionTarget(creep);
+        let target;
+        if (creep.memory.containerId) {
+            target = Game.getObjectById(creep.memory.containerId);
+        } else {
+            target = this.findEnergyCollectionTarget(creep);
+        }
+
         if (target) {
             this.moveToAndCollectEnergy(creep, target);
         } else {
@@ -100,7 +125,13 @@ var roleHauler = {
     },
 
     waitStrategically: function(creep) {
-        let waitNear = creep.room.storage || creep.room.find(FIND_MY_SPAWNS)[0];
+        this.assignContainer(creep);
+        if (!creep.memory.containerId) {
+            let waitNear = creep.room.storage || creep.room.find(FIND_MY_SPAWNS)[0];
+        } else {
+            let waitNear = Game.getObjectById(creep.memory.containerId);
+        }
+        
         if (waitNear) {
             movement.moveToWithCache(creep, waitNear);
             creep.say('⌛');
