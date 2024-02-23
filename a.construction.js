@@ -32,7 +32,9 @@ var construction = {
         } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1) {
             this.placeStorage(room);
             return;
-        }
+        } else if (Memory.rooms[room.name].phase.Phase < 6 && memories.linksBuilt < 1) {
+            this.placeLinks(room);
+            return;
 
     },
     

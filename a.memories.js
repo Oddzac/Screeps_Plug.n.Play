@@ -237,7 +237,7 @@ var memories = {
                         return;
                     } else {
                         //Begin Efficiency Cap
-                        Memory.rooms[room.name].spawnMode.mode = 'Cap(90%)';
+                        Memory.rooms[room.name].spawnMode.mode = 'Cap(70%)';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .7; 
                     }
                     break;
@@ -266,6 +266,7 @@ var memories = {
                     break;
 
                 case 5:
+                    console.log(`Phase ${phase} // Next Role: ${nextRole}`)
                     //Energy Cap: 1800
                     if (Memory.rooms[roomName].underAttack) {
                         //Respond to hostile presence
@@ -277,13 +278,12 @@ var memories = {
                         Memory.rooms[room.name].spawnMode.energyToUse = 600;
                         return;
                     } else if (nextRole === 'claimer') {
-                        //console.log('Spawn Mode: Claimer');
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
                         Memory.rooms[room.name].spawnMode.energyToUse = 700;
                         return;
                     } else {
-                        // Lower Cap to 75%
-                        Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
+                        // Lower Cap to 50%
+                        Memory.rooms[room.name].spawnMode.mode = 'Cap(50%)';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .5;
                     }
                     break;
@@ -405,7 +405,7 @@ var memories = {
             case 5:
                 if (rcl >= 6 && linksBuilt > 1) {
                     Memory.rooms[room.name].phase.Phase = 6;
-                    console.log(`Room ${room.name} has advanced to Phase 5.`);
+                    console.log(`Room ${room.name} has advanced to Phase 6.`);
                     transitioned = true;
                 }
                 break;

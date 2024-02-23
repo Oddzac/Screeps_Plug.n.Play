@@ -1,3 +1,5 @@
+
+
 var spawner = {
 
     
@@ -116,6 +118,7 @@ var spawner = {
         }
         // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
+
         // Determine spawn mode and adjust energyToUse based on this mode
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
     
