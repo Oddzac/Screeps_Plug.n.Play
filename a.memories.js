@@ -234,7 +234,7 @@ var memories = {
                     } else {
                         //Begin Efficiency Cap
                         Memory.rooms[room.name].spawnMode.mode = 'Cap(90%)';
-                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .9; 
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .8; 
                     }
                     break;
 
@@ -257,7 +257,7 @@ var memories = {
                     } else {
                         // Lower Cap to 75%
                         Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
-                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75;
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .7;
                     }
                     break;
 
@@ -279,7 +279,7 @@ var memories = {
                     } else {
                         // Default Cap: 75%
                         Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
-                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .75; // Let spawn manager handle
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .7; // Let spawn manager handle
                     }                        
                     break;            
 
