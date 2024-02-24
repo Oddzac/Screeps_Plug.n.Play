@@ -78,94 +78,98 @@ var roleHauler = {
 
     //IMPLEMENT SWITCH CASE VIA ROLE
     assignCollectionTarget: function(creep) {
-        let targets = [];
-        let target;
+
         const phase = Memory.rooms[creep.room.name].phase.Phase;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt > 0;
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt > 0;
         //const task = Game.getObjectById(creep.memory.task);
+        let targets = [];
+        let target;
     
-        switch (creep.memory.task) {
 
-            case 'linkHauler':
 
-                 // Check if we already have a link assigned in memory
-                if (!creep.memory.linkId) {
-                    // Find the storage structure
-                    const storage = creep.room.storage;
-                    if (!storage) {
-                        console.log('Storage not found for', creep.name);
-                        return; // Exit if there's no storage
-                    }
-            
-                    // Find links within a range of 3 tiles from storage
-                    const links = storage.pos.findInRange(FIND_STRUCTURES, 3, {
-                        filter: {structureType: STRUCTURE_LINK}
-                    });
-            
-                    // Assign the closest link (if any) to the creep's memory
-                    if (links.length > 0) {
-                        creep.memory.linkId = links[0].id;
-                    } else {
-                        console.log('No link found within range for', creep.name);
-                        return; // Exit if no link is found within range
-                    }
+        if (creep.memory.task === 'linkHauler') {
+
+            // Check if we already have a link assigned in memory
+            if (!creep.memory.linkId) {
+                // Find the storage structure
+                const storage = creep.room.storage;
+                if (!storage) {
+                    console.log('Storage not found for', creep.name);
+                    return; // Exit if there's no storage
                 }
+        
+                // Find links within a range of 3 tiles from storage
+                const links = storage.pos.findInRange(FIND_STRUCTURES, 3, {
+                    filter: {structureType: STRUCTURE_LINK}
+                });
+        
+                // Assign the closest link (if any) to the creep's memory
+                if (links.length > 0) {
+                    creep.memory.linkId = links[0].id;
+                } else {
+                    console.log('No link found within range for', creep.name);
+                    return; // Exit if no link is found within range
+                }
+            }
 
-                let target = Game.getObjectById(creep.memory.linkId);
+            let target = Game.getObjectById(creep.memory.linkId);
 
-                break;
+        } else if (creep.memory.task === 'spawnHauler') {
+            //Collect from room storage exclusively
+            let target = creep.room.storage;
 
-            case 'spawnHauler':
-                //Collect from room storage
-                let target = creep.room.storage;
-
-                break;
-
-            default:
-                // Adjust target selection based on room phase and storage construction
-                
-                if (containersBuilt && !creep.memory.containerId) {
-                    const containers = creep.room.find(FIND_STRUCTURES, {
-                        filter: s => s.structureType === STRUCTURE_CONTAINER && 
-                                     s.store[RESOURCE_ENERGY] > 0
-                    });
-                
-                    if (containers.length > 0) {
+        } else {
+            // General collector logic including tombstones, dropped resources, and assigned container.
+            // First, gather tombstones and dropped resources.
+            if (storageBuilt) {
+                targets = targets.concat(
+                    creep.room.find(FIND_DROPPED_RESOURCES).concat(
+                        creep.room.find(FIND_TOMBSTONES, {
+                            filter: (t) => _.sum(t.store) > 0
+                        })
+                    )
+                );
+            } else {
+                //If no storage, focus on energy
+                targets = targets.concat(
+                    creep.room.find(FIND_DROPPED_RESOURCES, {
+                        filter: (r) => r.resourceType === RESOURCE_ENERGY && r.amount > 10
+                    })
+                );
+            }
+    
+            // Assign or reaffirm container target if no tombstones or dropped resources are available.
+            if (!creep.memory.containerId || targets.length === 0) {
+                const containers = creep.room.find(FIND_STRUCTURES, {
+                    filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
+                });
+    
+                if (containers.length > 0) {
+                    // Ideally, you'd prioritize the creep's assigned container, but if it's not set or empty, find a new one.
+                    let assignedContainer = creep.memory.containerId ? Game.getObjectById(creep.memory.containerId) : null;
+                    if (!assignedContainer || assignedContainer.store[RESOURCE_ENERGY] === 0) {
                         const containerAssignments = containers.map(container => ({
                             id: container.id,
                             count: _.sum(Game.creeps, c => c.memory.containerId === container.id && c.memory.role === 'hauler')
                         }));
-                
+    
                         const leastAssigned = _.min(containerAssignments, 'count');
                         if (leastAssigned && leastAssigned.id) {
                             creep.memory.containerId = leastAssigned.id;
+                            assignedContainer = Game.getObjectById(leastAssigned.id);
                         }
                     }
+    
+                    // If an assigned container exists and is not already in targets, add it.
+                    if (assignedContainer && !targets.includes(assignedContainer)) {
+                        targets.push(assignedContainer);
+                    }
                 }
-                if (storageBuilt) {
-                    // Post-Storage: Consider all resource types
-                    targets = creep.room.find(FIND_DROPPED_RESOURCES).concat(
-                        creep.room.find(FIND_TOMBSTONES, {
-                            filter: (t) => _.sum(t.store) > 0
-                        }),
-                        creep.room.find(FIND_STRUCTURES, {
-                            filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
-                                        _.sum(s.store) > 0
-                        })
-                    );
-                } else {
-                    // Pre-Storage: Focus on energy
-                    targets = creep.room.find(FIND_DROPPED_RESOURCES, {
-                        filter: (r) => r.resourceType === RESOURCE_ENERGY && r.amount > 50
-                    }).concat(
-                        creep.room.find(FIND_STRUCTURES, {
-                            filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
-                        })
-                    );
-                } 
-                // Find the closest valid target
-                let target = creep.pos.findClosestByPath(targets);
+            }
+    
+            // With all potential targets considered, find the closest.
+            target = creep.pos.findClosestByPath(targets);
         }
 
     
