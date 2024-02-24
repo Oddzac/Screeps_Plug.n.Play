@@ -11,8 +11,33 @@ var construction = {
         const activeSites = Object.keys(Game.constructionSites).length;
         const containersBuilt = Memory.rooms[room.name].containersBuilt;
         const towersBuilt = Memory.rooms[room.name].towersBuilt;
+        //const towersPlanned = ???;
+        let towerMax;
+        
         const storageBuilt = Memory.rooms[room.name].storageBuilt;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
+        
+
+        switch(Memory.rooms[room.name].phase.Phase) {
+            case 1:
+                towerMax = 0;
+                break;
+            case 2:
+                towerMax = 0;
+                break;
+            case 3:
+                towerMax = 1;
+                break;
+            case 4:
+                towerMax = 1;
+                break;
+            case 5:
+                towerMax = 2;
+                break;
+            default:
+                towerMax = 2;
+                break;
+        }
         
         if (buildersCount < 1) {
             //console.log("Insufficient builders to initiate construction.");
