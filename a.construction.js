@@ -42,7 +42,7 @@ var construction = {
                 this.placeLinks(room);
             }
             if (towersBuilt < 2) {
-                this.placeTower(room);
+                //this.placeTower(room);
             }
             return;
         }
