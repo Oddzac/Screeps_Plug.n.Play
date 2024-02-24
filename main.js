@@ -42,13 +42,12 @@ module.exports.loop = function() {
             towers.run(tower);
         });
         //Manage Links
-        const myLinks = room.find(FIND_MY_STRUCTURES, {
+        const myLinksCount = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_LINK }
         });
-
-        myLinks.forEach(link => {
-            linker.run(link);
-        });
+        if (myLinksCount => 2) {
+            linker.run();
+        }
         
     }
 
