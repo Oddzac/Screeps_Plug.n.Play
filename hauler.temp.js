@@ -1,3 +1,6 @@
+//TODO
+//IMPLEMENT transferResources
+
 var utility = require('a.utilities'); // Utility functions like phase checks
 var movement = require('a.movement'); // Movement functions
 
