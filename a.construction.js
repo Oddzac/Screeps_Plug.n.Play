@@ -278,11 +278,11 @@ connectSpawnToPOIs: function(room) {
      
     placeTower: function(room) {
         //Check tower + tower site counts to see if we're at the limit
-        const activeSites = Object.keys(Game.constructionSites);
         const myTowers = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }
         }).length;
-        const towersPlanned = activeSites.filter(site => site.structureType === STRUCTURE_TOWER).length;
+        const towersPlanned = Object.values(Game.constructionSites)
+        .filter(site => site.structureType === STRUCTURE_TOWER).length;
 
         let towerMax;
         switch(Memory.rooms[room.name].phase.Phase) {
