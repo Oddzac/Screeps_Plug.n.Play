@@ -174,7 +174,7 @@ var roleHauler = {
         }
 
     
-        
+        console.log(`About to moveToAndCollect. Target set: ${!!target}, Task: ${creep.memory.task}`);
         if (target) {
             //Got our target, go get it.
             console.log(`Target: ${target} found for ${creep.memory.task}`);
