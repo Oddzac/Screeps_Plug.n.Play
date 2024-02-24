@@ -227,7 +227,8 @@ var roleHauler = {
                 return; // Exit if no link is found within range
             }
         }
-
+        
+        const link = Game.getObjectById(creep.memory.linkId);
         // Check for available capacity and the link has energy.
         if (creep.store.getFreeCapacity() > 0 && link.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
             // Withdraw energy from the link.
