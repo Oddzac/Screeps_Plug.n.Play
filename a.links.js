@@ -58,4 +58,4 @@ const linker = {
     }
 };
 
-module.exports = LinkManager;
+module.exports = linker;
