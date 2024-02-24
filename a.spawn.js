@@ -68,26 +68,24 @@ var spawner = {
                     };
                     break;
 
-                case 5 && linksBuilt > 1:
-                    // Phase 5 post-links
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 4,
-                        builder: 2,
-                        upgrader: 2
-                    };
-                    break;
-
                 case 5:
-                    // Phase 5
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 6,
-                        builder: 2,
-                        upgrader: 1
-                    };
+                    if (linksBuilt > 1) {
+                        // Phase 5 post-links
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 4,
+                            builder: 2,
+                            upgrader: 2
+                        };
+                    } else {
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 6,
+                            builder: 2,
+                            upgrader: 1
+                        };
+                    }
                     break;
-
                 // More as needed
                 default:
                     desiredCounts = {
