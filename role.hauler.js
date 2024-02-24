@@ -41,7 +41,7 @@ var roleHauler = {
         let target;
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
-        if (linkHaulers < 1 && linksBuilt > 1) {
+        if (linkHaulers < 1 && linksBuilt >= 1) {
             creep.memory.task = 'linkHauler';
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
@@ -202,8 +202,8 @@ var roleHauler = {
             creep.say('🔄');
         } else if (actionResult !== OK) {
             // Typically when assigned source becomes empty
-            //this.waitNear(creep); // Hold tight. Conditions may change
-            this.assignCollectionTask(creep); // Re-evaluate collection task
+            this.waitNear(creep); // Hold tight. Conditions may change
+            //this.assignCollectionTask(creep); // Re-evaluate collection task
         }
 
     },
@@ -231,7 +231,7 @@ var roleHauler = {
 
             case 'linkHauler':
                 //linkHaulers only deposit energy into storage
-                target = creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? creep.room.storage : null;
+                target = creep.room.storage
                 break;
 
 
@@ -294,7 +294,7 @@ var roleHauler = {
                 if (creep.memory.task === 'spawnHauler' || 'collector') {
                     this.deliverResources(creep);
                 }
-                this.waitNear(creep); // Or any other appropriate method to handle this case
+                this.waitNear(creep);
                 break; // Exit the loop as the target cannot accept more resources
             }
             // Note: If the transfer result is ERR_FULL, and there are multiple resource types,
