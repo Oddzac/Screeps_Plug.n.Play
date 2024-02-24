@@ -136,10 +136,11 @@ var roleHauler = {
 
     waitStrategically: function(creep) {
         this.assignContainer(creep);
+        let waitNear;
         if (!creep.memory.containerId) {
             let waitNear = creep.room.storage || creep.room.find(FIND_MY_SPAWNS)[0];
         } else {
-            let waitNear = Game.getObjectById(creep.memory.containerId) || creep.room.storage || creep.room.find(FIND_MY_SPAWNS)[0];
+            let waitNear = Game.getObjectById(creep.memory.containerId) || creep.room.storage;
         }
 
         if (waitNear) {
