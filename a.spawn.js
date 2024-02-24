@@ -68,6 +68,16 @@ var spawner = {
                     };
                     break;
 
+                case 5 && linksBuilt > 1:
+                    // Phase 5 post-links
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 4,
+                        builder: 2,
+                        upgrader: 2
+                    };
+                    break;
+
                 case 5:
                     // Phase 5
                     desiredCounts = {
@@ -78,20 +88,11 @@ var spawner = {
                     };
                     break;
 
-                case 5 && linksBuilt > 1:
-                    // Phase 5 post-links
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 4,
-                        builder: 2,
-                        upgrader: 2
-                    };
-                    break;
                 // More as needed
                 default:
                     desiredCounts = {
                         harvester: 2,
-                        hauler: 6,
+                        hauler: 4,
                         builder: 2,
                         upgrader: 1
                     };
