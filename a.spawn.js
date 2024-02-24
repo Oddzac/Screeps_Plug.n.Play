@@ -13,7 +13,7 @@ var spawner = {
             let desiredCounts = {};
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
             const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-            const linksBuilt = Memory.rooms[room.name].linksBuilt;
+            const linksBuilt = Memory.rooms[room.name].linksBuilt; //Currently returns '2'
 
             if (Memory.rooms[room.name].underAttack) {
         
