@@ -56,7 +56,7 @@ var utilities = {
                 this.waitStrategically(creep);
             }
 
-        } else if (containerCount > 0) {
+        } else if (containerCount > 1) {
             if (containersWithEnergy.length > 0) {
                 // If containers with energy are found, prioritize the closest one
                 const closestContainer = creep.pos.findClosestByPath(containersWithEnergy);
