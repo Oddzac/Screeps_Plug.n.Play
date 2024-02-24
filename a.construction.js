@@ -283,7 +283,8 @@ connectSpawnToPOIs: function(room) {
         }).length;
         const towersPlanned = Object.values(Game.constructionSites)
         .filter(site => site.structureType === STRUCTURE_TOWER).length;
-
+        
+        let searchRadius; // Define a search area around the weighted center
         let towerMax;
         switch(Memory.rooms[room.name].phase.Phase) {
             case 1:
@@ -294,13 +295,21 @@ connectSpawnToPOIs: function(room) {
                 break;
             case 3:
                 towerMax = 1;
+                searchRadius = 3;
                 break;
             case 4:
                 towerMax = 1;
                 break;
             case 5:
                 towerMax = 2;
+                searchRadius = 5;
                 break;
+            case 6:
+                towerMax = 2;
+                break;
+            case 7:
+                towerMax = 3;
+                searchRadius = 7;
             default:
                 towerMax = 2;
                 break;
@@ -324,26 +333,37 @@ connectSpawnToPOIs: function(room) {
         const weightedCenterY = Math.floor(sumY / count);
         console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
 
-        // Define a search area around the weighted center
-        let searchRadius = 5; // Adjust based on room layout and preferences
 
+        // Generate all possible positions within the search radius
+        let potentialPositions = [];
         for (let dx = -searchRadius; dx <= searchRadius; dx++) {
             for (let dy = -searchRadius; dy <= searchRadius; dy++) {
                 let x = weightedCenterX + dx;
                 let y = weightedCenterY + dy;
                 // Ensure coordinates are within room bounds
-                if (x < 1 || x > 48 || y < 1 || y > 48) continue;
-                
-                const terrain = room.getTerrain().get(x, y);
-                if (terrain !== TERRAIN_MASK_WALL) {
-                    const look = room.lookAt(x, y);
-                    if (!look.some(s => s.type === 'structure' || s.type === 'constructionSite')) {
-                        // Check for valid spot
-                        const result = room.createConstructionSite(x, y, STRUCTURE_TOWER);
-                        if (result === OK) {
-                            console.log(`Tower placed at (${x},${y}).`);
-                            return; // Exit the function after placing the tower
-                        }
+                if (x >= 1 && x <= 48 && y >= 1 && y <= 48) {
+                    potentialPositions.push({ x, y });
+                }
+            }
+        }
+    
+        // Shuffle the array of potential positions to randomize the order
+        for (let i = potentialPositions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [potentialPositions[i], potentialPositions[j]] = [potentialPositions[j], potentialPositions[i]]; // ES6 array destructuring to swap elements
+        }
+    
+        // Iterate through the randomized potential positions
+        for (let pos of potentialPositions) {
+            const terrain = room.getTerrain().get(pos.x, pos.y);
+            if (terrain !== TERRAIN_MASK_WALL) {
+                const look = room.lookAt(pos.x, pos.y);
+                if (!look.some(s => s.type === 'structure' || s.type === 'constructionSite')) {
+                    // Check for valid spot
+                    const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_TOWER);
+                    if (result === OK) {
+                        console.log(`Tower placed at (${pos.x},${pos.y}).`);
+                        return; // Exit the function after placing the tower
                     }
                 }
             }
