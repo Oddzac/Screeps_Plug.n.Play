@@ -13,6 +13,7 @@ var spawner = {
             let desiredCounts = {};
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
             const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
+            const linksBuilt = Memory.rooms[room.name].linksBuilt;
 
             if (Memory.rooms[room.name].underAttack) {
         
@@ -58,7 +59,7 @@ var spawner = {
                     };
                     break;
                 case 4:
-                    // Phase 4 Rigid counts (experimental builders calc)
+                    // Phase 4 Rigid counts
                     desiredCounts = {
                         harvester: 2,
                         hauler: 6,
@@ -74,6 +75,16 @@ var spawner = {
                         hauler: 6,
                         builder: 2,
                         upgrader: 1
+                    };
+                    break;
+
+                case 5 && linksBuilt > 1:
+                    // Phase 5 post-links
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 4,
+                        builder: 2,
+                        upgrader: 2
                     };
                     break;
                 // More as needed
