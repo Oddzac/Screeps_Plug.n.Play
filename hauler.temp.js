@@ -202,7 +202,7 @@ var roleHauler = {
             creep.say('🔄');
         } else if (actionResult !== OK) {
             // Handle any issues, like the target becoming empty
-            console.log(`Hauler ${creep.memory.task} cannot collect due to ${JSON.stringify.actionResult}`);
+            console.log(`Hauler ${creep.memory.task} cannot collect due to ${actionResult}`);
             this.waitNear(creep); //Hold tight. Conditions may change
             //this.assignCollectionTask(creep); // Re-evaluate collection task
         }
