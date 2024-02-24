@@ -46,7 +46,7 @@ module.exports.loop = function() {
             filter: { structureType: STRUCTURE_LINK }
         });
 
-        myTowers.forEach(tower => {
+        myLinks.forEach(link => {
             linker.run(link);
         });
         
