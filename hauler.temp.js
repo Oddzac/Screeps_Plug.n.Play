@@ -47,12 +47,6 @@ var roleHauler = {
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
             creep.memory.task = 'spawnHauler';
 
-        } else if (containersBuilt > 0) {
-            creep.memory.task = 'collector';
-            if (!creep.memory.containerId) {
-                this.assignContainer(creep);
-            }
-
         } else {
             creep.memory.task = 'collector';
             return; //Early Return For !target
