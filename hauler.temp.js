@@ -1,6 +1,12 @@
 //TODO
 //IMPLEMENT collect energy (task-based accepts target)
 
+//If free space, collecting
+//If collecting, assign task
+// If collecting && task, perform task until full.
+
+
+
 var utility = require('a.utilities'); // Utility functions like phase checks
 var movement = require('a.movement'); // Movement functions
 
@@ -9,7 +15,11 @@ var roleHauler = {
         this.initializeMemory(creep);
 
         if (creep.memory.isCollecting) {
-            this.assignCollectionTask(creep);
+            if (!creep.memory.task) {
+                this.assignCollectionTask(creep);
+            }
+            this.assignCollectionTarget(creep);
+            
         } else {
             this.deliverResources(creep);
         }
@@ -26,8 +36,8 @@ var roleHauler = {
     assignCollectionTask: function(creep) {
         // Determine task based on room phase and structure availability
         const phase = Memory.rooms[creep.room.name].phase.Phase;
-        const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.memory.task === 'distributeSpawnEnergy');
-        const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.memory.task === 'manageLink');
+        const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.memory.task === 'spawnHauler');
+        const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.memory.task === 'linkHauler');
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
         const linksBuilt = Memory.rooms[creep.room.name].linksBuilt;
@@ -36,45 +46,26 @@ var roleHauler = {
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
         if (linkHaulers < 1 && linksBuilt > 1) {
-            creep.memory.task = 'manageLink';
-            this.assignLink(creep);
-            target = creep.memory.''
+            creep.memory.task = 'linkHauler';
+            if (!creep.memory.linkId) {
+                this.assignLink(creep);
+            }
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
-            creep.memory.task = 'distributeSpawnEnergy';
+            creep.memory.task = 'spawnHauler';
 
         } else if (containersBuilt > 0) {
+            creep.memory.task = 'collector';
             if (!creep.memory.containerId) {
                 this.assignContainer(creep);
-            creep.memory.task = 'collectResources';
             }
-            target = Game.getObjectById(creep.memory.containerId);
 
         } else {
-            creep.memory.task = 'collectResources';
-            this.collectResources(creep);
+            creep.memory.task = 'collector';
             return; //Early Return For !target
         }
 
-        this.performTasks(creep,target);
-    },
-
-    performTasks: function(creep, traget) {
-        const task = creep.memory.task
-        switch (task) {
-            case 'manageLink':
-                this.manageLink(creep);
-                break;
-
-            case 'distributeEnergy':
-                this.distributeEnergy(creep);
-                break;
-
-            case 'collectResources':
-                this.collectResources(creep);
-                break;
-        }
-
+        this.assignCollectionTarget(creep);
     },
 
     assignContainer: function(creep) {
@@ -123,39 +114,85 @@ var roleHauler = {
         
     },
 
-    collectResources: function(creep) {
+
+    //IMPLEMENT SWITCH CASE VIA ROLE
+    assignCollectionTarget: function(creep) {
         let targets = [];
         const phase = Memory.rooms[creep.room.name].phase.Phase;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt > 0;
+        const task = Game.getObjectById(creep.memory.task);
     
-        // Adjust target selection based on room phase and storage construction
-        if (storageBuilt) {
-            // Post-Storage: Consider all resource types
-            targets = creep.room.find(FIND_DROPPED_RESOURCES).concat(
-                creep.room.find(FIND_TOMBSTONES, {
-                    filter: (t) => _.sum(t.store) > 0
-                }),
-                creep.room.find(FIND_STRUCTURES, {
-                    filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
-                                   _.sum(s.store) > 0
-                })
-            );
-        } else {
-            // Pre-Storage: Focus on energy
-            targets = creep.room.find(FIND_DROPPED_RESOURCES, {
-                filter: (r) => r.resourceType === RESOURCE_ENERGY && r.amount > 50
-            }).concat(
-                creep.room.find(FIND_STRUCTURES, {
-                    filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
-                })
-            );
+        switch (task) {
+
+            case 'linkHauler':
+
+                 // Check if we already have a link assigned in memory
+                if (!creep.memory.linkId) {
+                    // Find the storage structure
+                    const storage = creep.room.storage;
+                    if (!storage) {
+                        console.log('Storage not found for', creep.name);
+                        return; // Exit if there's no storage
+                    }
+            
+                    // Find links within a range of 3 tiles from storage
+                    const links = storage.pos.findInRange(FIND_STRUCTURES, 3, {
+                        filter: {structureType: STRUCTURE_LINK}
+                    });
+            
+                    // Assign the closest link (if any) to the creep's memory
+                    if (links.length > 0) {
+                        creep.memory.linkId = links[0].id;
+                    } else {
+                        console.log('No link found within range for', creep.name);
+                        return; // Exit if no link is found within range
+                    }
+                }
+
+                let target = Game.getObjectById(creep.memory.linkId);
+
+                break;
+
+            case 'spawnHauler':
+                //Collect from room storage
+                let target = creep.room.storage;
+
+                break;
+
+            default:
+                // Adjust target selection based on room phase and storage construction
+                if (storageBuilt) {
+                    // Post-Storage: Consider all resource types
+                    targets = creep.room.find(FIND_DROPPED_RESOURCES).concat(
+                        creep.room.find(FIND_TOMBSTONES, {
+                            filter: (t) => _.sum(t.store) > 0
+                        }),
+                        creep.room.find(FIND_STRUCTURES, {
+                            filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
+                                        _.sum(s.store) > 0
+                        })
+                    );
+                } else {
+                    // Pre-Storage: Focus on energy
+                    targets = creep.room.find(FIND_DROPPED_RESOURCES, {
+                        filter: (r) => r.resourceType === RESOURCE_ENERGY && r.amount > 50
+                    }).concat(
+                        creep.room.find(FIND_STRUCTURES, {
+                            filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
+                        })
+                    );
+                } 
+                // Find the closest valid target
+                let target = creep.pos.findClosestByPath(targets);
         }
+
     
-        // Find the closest valid target
-        let target = creep.pos.findClosestByPath(targets);
+        
         if (target) {
+            //Got our target, go get it.
             this.moveToAndCollect(creep, target);
         } else {
+            //No targets available
             this.waitStrategically(creep);
         }
     },
@@ -176,7 +213,8 @@ var roleHauler = {
             creep.say('🔄');
         } else if (actionResult !== OK) {
             // Handle any issues, like the target becoming empty
-            this.assignCollectionTask(creep); // Re-evaluate collection task
+            this.waitStrategically(creep); //Hold tight. Conditions may change
+            //this.assignCollectionTask(creep); // Re-evaluate collection task
         }
 
     },
@@ -185,10 +223,10 @@ var roleHauler = {
 
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt > 0;
         let target;
-        let targets;
+        let targets = [];
 
         switch (creep.memory.task) {
-            case 'distributeEnergy':
+            case 'spawnHauler':
                 //spawnHaulers distribute energy to any structure that requires it to function.
                 targets = creep.room.find(FIND_MY_STRUCTURES, {
                     filter: structure => (
@@ -202,7 +240,7 @@ var roleHauler = {
                 target = creep.pos.findClosestByPath(targets);
                 break;
 
-            case 'manageLink':
+            case 'linkHauler':
                 //linkHaulers only deposit energy into storage
                 target = creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? creep.room.storage : null;
                 break;
@@ -232,6 +270,8 @@ var roleHauler = {
         }
     },
 
+
+    //adjust to facilitate transfer of any resource
     transferResources: function(creep, target) {
         // Perform the transfer action
         let result = creep.transfer(target, RESOURCE_ENERGY);
@@ -250,24 +290,6 @@ var roleHauler = {
             // If the target is full, you may want to find a new target or re-evaluate the task
             this.assignCollectionTask(creep); // Or any other appropriate method to handle this case
             creep.say('🔄');
-        }
-    },
-
-
-
-    distributeEnergy: function(creep) {
-        // Check for available capacity and fill
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-            // Storage is the primary source of energy for distribution
-            const storage = creep.room.storage;
-            if (storage && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-                if (creep.withdraw(storage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, storage.pos);
-                }
-            }
-        } else {
-            // The creep has energy; proceed to deliver it.
-            this.deliverResources(creep);
         }
     },
 
