@@ -187,6 +187,7 @@ var roleHauler = {
         let actionResult;
     
         if (creep.memory.task === 'spawnHauler') {
+            console.log('move2collect called for spawnHauler');
             // Assuming target is storage for spawnHauler
             actionResult = creep.withdraw(target, RESOURCE_ENERGY);
         } else if (target instanceof Resource) {
