@@ -44,7 +44,7 @@ module.exports.loop = function() {
         //Manage Links
         const myLinksCount = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_LINK }
-        });
+        }).length;
         if (myLinksCount => 2) {
             linker.run();
         }
