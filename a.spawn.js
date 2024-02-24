@@ -201,34 +201,66 @@ var spawner = {
                     claimer: ["claim", "move"],
                 };
                 break;
-            case 2 && energyAvailable >= 500:
-                roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "carry", "move"], // More efficient harvesting
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
-                    //Defensive Units
-                    attacker: ["tough", "move", "move", "ranged_attack"],
-                    healer: ["move","heal"],
-                    //Recon
-                    scout: ["move"],
-                    claimer: ["claim", "move"],
-                };
+            case 2:
+                if (energyAvailable >= 500) {
+                    roleBlueprints = {
+                        harvester: ["work", "work", "work", "work", "carry", "move"], // More efficient harvesting
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move"],
+                    }
+                } else {
+                    roleBlueprints = {
+                        harvester: ["work", "carry", "move"], // Basic setup for early game
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move"],
+                    };
+                }
                 break;
-            case 3 && energyAvailable >= 600:
+            case 3:
                 
-                roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
-                    //Defensive Units
-                    attacker: ["tough", "move", "move", "ranged_attack"],
-                    healer: ["move","heal"],
-                    //Recon
-                    scout: ["move"],
-                    claimer: ["claim", "move"],
-                };
+            if (energyAvailable >= 600) {
+                    
+                    roleBlueprints = {
+                        harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move"],
+                    };
+                    
+                } else {
+                    roleBlueprints = {
+                        harvester: ["work", "carry", "move"], // Basic setup for early game
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move"],
+                    };
+                }
                 break;
             // Additional phases handled by default
             default:
