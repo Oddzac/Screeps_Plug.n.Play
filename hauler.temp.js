@@ -187,7 +187,6 @@ var roleHauler = {
         let actionResult;
     
         if (creep.memory.task === 'spawnHauler') {
-            console.log('move2collect called for spawnHauler');
             // Assuming target is storage for spawnHauler
             actionResult = creep.withdraw(target, RESOURCE_ENERGY);
         } else if (target instanceof Resource) {
@@ -203,7 +202,7 @@ var roleHauler = {
             creep.say('🔄');
         } else if (actionResult !== OK) {
             // Handle any issues, like the target becoming empty
-            console.log(`Hauler ${creep.memory.task} cannot collect due to ${actionResult}`);
+            console.log(`Hauler ${creep.memory.task} cannot collect due to ${JSON.stringify.actionResult}`);
             this.waitNear(creep); //Hold tight. Conditions may change
             //this.assignCollectionTask(creep); // Re-evaluate collection task
         }
