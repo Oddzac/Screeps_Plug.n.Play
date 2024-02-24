@@ -3,12 +3,16 @@ var memories = require('a.memories');
 var construction = {
     
     //TODO
-    //placeLinks method
+    //placeLinks method - needs to check if there is already a link near given source and ignore if so (continue placing as able)
     
     manageConstruction: function(room) {
         
         const buildersCount = _.filter(Game.creeps, { memory: { role: 'builder' } }).length;
         const activeSites = Object.keys(Game.constructionSites).length;
+        const containersBuilt = Memory.rooms[room.name].containersBuilt;
+        const towersBuilt = Memory.rooms[room.name].towersBuilt;
+        const storageBuilt = Memory.rooms[room.name].storageBuilt;
+        const linksBuilt = Memory.rooms[room.name].linksBuilt;
         
         if (buildersCount < 1) {
             //console.log("Insufficient builders to initiate construction.");
@@ -33,9 +37,13 @@ var construction = {
         } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1) {
             this.placeStorage(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase < 6 && memories.linksBuilt < 1) {
-            //this.placeLinks(room);
-            //this.placeTower(room);
+        } else if (Memory.rooms[room.name].phase.Phase < 6) {
+            if (linksBuilt < 2) {
+                this.placeLinks(room);
+            }
+            if (towersBuilt < 2) {
+                this.placeTower(room);
+            }
             return;
         }
 
