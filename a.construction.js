@@ -8,36 +8,15 @@ var construction = {
     manageConstruction: function(room) {
         
         const buildersCount = _.filter(Game.creeps, { memory: { role: 'builder' } }).length;
-        const activeSites = Object.keys(Game.constructionSites).length;
+        const activeSitesCount = Object.keys(Game.constructionSites).length;
+        const activeSites = Object.keys(Game.constructionSites);
         const containersBuilt = Memory.rooms[room.name].containersBuilt;
-        const towersBuilt = Memory.rooms[room.name].towersBuilt;
-        //const towersPlanned = ???;
-        let towerMax;
+
         
         const storageBuilt = Memory.rooms[room.name].storageBuilt;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
         
 
-        switch(Memory.rooms[room.name].phase.Phase) {
-            case 1:
-                towerMax = 0;
-                break;
-            case 2:
-                towerMax = 0;
-                break;
-            case 3:
-                towerMax = 1;
-                break;
-            case 4:
-                towerMax = 1;
-                break;
-            case 5:
-                towerMax = 2;
-                break;
-            default:
-                towerMax = 2;
-                break;
-        }
         
         if (buildersCount < 1) {
             //console.log("Insufficient builders to initiate construction.");
@@ -66,9 +45,7 @@ var construction = {
             if (linksBuilt < 2) {
                 this.placeLinks(room);
             }
-            if (towersBuilt < 2) {
-                //this.placeTower(room);
-            }
+            this.placeTower(room);
             return;
         }
 
@@ -300,10 +277,39 @@ connectSpawnToPOIs: function(room) {
     },
      
     placeTower: function(room) {
-        // Gather key structures
+        //Check tower + tower site counts to see if we're at the limit
         const myTowers = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }
         }).length;
+        const towersPlanned = activeSites.filter(site => site.structureType === STRUCTURE_TOWER).length;
+
+        let towerMax;
+        switch(Memory.rooms[room.name].phase.Phase) {
+            case 1:
+                towerMax = 0;
+                break;
+            case 2:
+                towerMax = 0;
+                break;
+            case 3:
+                towerMax = 1;
+                break;
+            case 4:
+                towerMax = 1;
+                break;
+            case 5:
+                towerMax = 2;
+                break;
+            default:
+                towerMax = 2;
+                break;
+        }
+
+        if (myTowers + towersPlanned === towerMax) {
+            return;
+        }
+
+        // Find structures to set weighted center
         const spawns = room.find(FIND_MY_SPAWNS);
         const controller = room.controller;
         const sources = room.find(FIND_SOURCES);
@@ -316,8 +322,10 @@ connectSpawnToPOIs: function(room) {
         const weightedCenterX = Math.floor(sumX / count);
         const weightedCenterY = Math.floor(sumY / count);
         console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
+
         // Define a search area around the weighted center
-        let searchRadius = 10; // Adjust based on room layout and preferences
+        let searchRadius = 5; // Adjust based on room layout and preferences
+
         for (let dx = -searchRadius; dx <= searchRadius; dx++) {
             for (let dy = -searchRadius; dy <= searchRadius; dy++) {
                 let x = weightedCenterX + dx;
