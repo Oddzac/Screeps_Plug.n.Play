@@ -332,5 +332,6 @@ var roleHauler = {
         creep.say('⌛');
     },
     
+};
 
 module.exports = roleHauler;
