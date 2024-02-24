@@ -38,6 +38,9 @@ var roleHauler = {
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
         const linksBuilt = Memory.rooms[creep.room.name].linksBuilt;
 
+
+
+
         let target;
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
