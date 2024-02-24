@@ -1,5 +1,5 @@
 //TODO
-//Transfer method - all resources
+
 
 
 
@@ -79,6 +79,7 @@ var roleHauler = {
     //IMPLEMENT SWITCH CASE VIA ROLE
     assignCollectionTarget: function(creep) {
         let targets = [];
+        let target;
         const phase = Memory.rooms[creep.room.name].phase.Phase;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt > 0;
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt > 0;
@@ -123,7 +124,8 @@ var roleHauler = {
 
             default:
                 // Adjust target selection based on room phase and storage construction
-                if (containersBuilt) {
+                
+                if (containersBuilt && !creep.memory.containerId) {
                     const containers = creep.room.find(FIND_STRUCTURES, {
                         filter: s => s.structureType === STRUCTURE_CONTAINER && 
                                      s.store[RESOURCE_ENERGY] > 0
