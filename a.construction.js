@@ -282,11 +282,6 @@ connectSpawnToPOIs: function(room) {
         const spawns = room.find(FIND_MY_SPAWNS);
         const controller = room.controller;
         const sources = room.find(FIND_SOURCES);
-        
-        if (myTowers > 0) {
-            //console.log(`${myTowers} tower already built`);
-            return;
-        }
 
         // Calculate weighted center
         let sumX = 0, sumY = 0, count = 0;
