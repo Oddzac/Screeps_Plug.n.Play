@@ -45,7 +45,7 @@ module.exports.loop = function() {
         const myLinksCount = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_LINK }
         }).length;
-        if (myLinksCount => 2) {
+        if (myLinksCount >= 2) {
             linker.run();
         }
         
