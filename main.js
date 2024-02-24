@@ -3,6 +3,7 @@ var construction = require('a.construction');
 var spawner = require('a.spawn');
 var memories = require('a.memories');
 var towers = require('a.towers');
+var linker = require('a.links');
 
 module.exports.loop = function() {
 
@@ -40,6 +41,8 @@ module.exports.loop = function() {
         myTowers.forEach(tower => {
             towers.run(tower);
         });
+        //Manage Links
+        linker.run();
     }
 
 }

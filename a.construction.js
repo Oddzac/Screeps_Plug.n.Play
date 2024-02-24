@@ -35,6 +35,7 @@ var construction = {
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 6 && memories.linksBuilt < 1) {
             //this.placeLinks(room);
+            //this.placeTower(room);
             return;
         }
 
@@ -217,7 +218,7 @@ connectSpawnToPOIs: function(room) {
         const spawn = room.find(FIND_MY_SPAWNS)[0];
         if (!spawn) return;
     
-        // Start with an initial radius. If not defined, start from 5 and will increase in odd increments.
+        // Start with an initial radius. Start from 1 and increase in odd increments.
         if (!room.memory.extensionRadius) room.memory.extensionRadius = 1;
     
         let radius = room.memory.extensionRadius;
@@ -241,6 +242,7 @@ connectSpawnToPOIs: function(room) {
                         const result = room.createConstructionSite(x, y, STRUCTURE_EXTENSION);
                         if (result === OK) {
                             console.log(`Extension construction site placed at (${x}, ${y}) with radius ${radius}.`);
+                            room.memory.extensionRadius = 1;
                             placed = true;
                             break; // Exit the loop once a site is successfully placed
                         } else if (result === ERR_FULL) {
@@ -287,7 +289,7 @@ connectSpawnToPOIs: function(room) {
         const weightedCenterY = Math.floor(sumY / count);
     
         // Define a search area around the weighted center
-        let searchRadius = 7; // Adjust based on room layout and preferences
+        let searchRadius = 20; // Adjust based on room layout and preferences
         for (let dx = -searchRadius; dx <= searchRadius; dx++) {
             for (let dy = -searchRadius; dy <= searchRadius; dy++) {
                 let x = weightedCenterX + dx;

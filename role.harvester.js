@@ -84,7 +84,7 @@ var roleHarvester = {
 
         // If there are containers available, try to deposit energy in the nearest one.
         if (links.length > 0) {
-            // Find the closest container.
+            // Find the closest link.
             var closestLink = creep.pos.findClosestByPath(links);
     
             if (closestLink && creep.transfer(closestLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && closestLink.store.getFreeCapacity() > 0) {
