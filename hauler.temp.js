@@ -118,7 +118,7 @@ var roleHauler = {
         } else if (creep.memory.task === 'spawnHauler') {
             //Collect from room storage exclusively
             target = creep.room.storage;
-            console.log(`spawnHauler target set to ${target}`);
+            
 
         } else {
             // General collector logic including tombstones, dropped resources, and assigned container.
@@ -174,10 +174,8 @@ var roleHauler = {
         }
 
     
-        console.log(`About to moveToAndCollect. Target set: ${!!target}, Task: ${creep.memory.task}`);
         if (target) {
             //Got our target, go get it.
-            console.log(`Target: ${target} found for ${creep.memory.task}`);
             this.moveToAndCollect(creep, target);
         } else {
             //No targets available
