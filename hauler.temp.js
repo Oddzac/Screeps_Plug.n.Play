@@ -53,6 +53,24 @@ var roleHauler = {
         }
     },
 
+    performTasks: function(creep) {
+        const task = creep.memory.task
+        switch (task) {
+            case 'manageLink':
+                this.manageLink(creep);
+                break;
+
+            case 'distributeEnergy':
+                this.distributeEnergy(creep);
+                break;
+
+            case 'collectResources':
+                this.collectResources(creep);
+                break;
+        }
+
+    },
+
     assignContainer: function(creep) {
         const containers = creep.room.find(FIND_STRUCTURES, {
             filter: s => s.structureType === STRUCTURE_CONTAINER && 
@@ -137,22 +155,28 @@ var roleHauler = {
         let targets;
 
         switch (creep.memory.task) {
-            case 'distributeSpawnEnergy':
+            case 'distributeEnergy':
+                //spawnHaulers distribute energy to any structure that requires it to function.
                 targets = creep.room.find(FIND_MY_STRUCTURES, {
                     filter: structure => (
-                        (structure.structureType === STRUCTURE_SPAWN || structure.structureType === STRUCTURE_EXTENSION || structure.structureType === STRUCTURE_TOWER || structure.structureType === STRUCTURE_STORAGE) &&
+                        (structure.structureType === STRUCTURE_SPAWN || 
+                        structure.structureType === STRUCTURE_EXTENSION || 
+                        structure.structureType === STRUCTURE_TOWER) &&
                         structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                     )
-                }).sort((a, b) => this.getDeliveryPriority(a) - this.getDeliveryPriority(b));
+                });
 
-                target = targets.length ? targets[0] : null;
+                target = creep.pos.findClosestByPath(targets);
                 break;
 
             case 'manageLink':
+                //linkHaulers only deposit energy into storage
                 target = creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? creep.room.storage : null;
                 break;
 
+
             default:
+                //All other haulers follow this logic to deposit
                 if (storageBuilt) {
                     target = creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? creep.room.storage : null; 
                 } else {
@@ -174,25 +198,65 @@ var roleHauler = {
             this.waitStrategically(creep);
         }
     },
+
+
+
+
+
+    manageLink: function(creep) {
+        // Check if we already have a link assigned in memory
+        if (!creep.memory.linkId) {
+            // Find the storage structure
+            const storage = creep.room.storage;
+            if (!storage) {
+                console.log('Storage not found for', creep.name);
+                return; // Exit if there's no storage
+            }
     
-    getDeliveryPriority: function(structure) {
-        const priorities = {
-            [STRUCTURE_SPAWN]: 1,
-            [STRUCTURE_EXTENSION]: 2,
-            [STRUCTURE_TOWER]: 3,
-            [STRUCTURE_STORAGE]: 4
-        };
-        return priorities[structure.structureType] || 5;
+            // Find links within a range of 3 tiles from storage
+            const links = storage.pos.findInRange(FIND_STRUCTURES, 3, {
+                filter: {structureType: STRUCTURE_LINK}
+            });
+    
+            // Assign the closest link (if any) to the creep's memory
+            if (links.length > 0) {
+                // Assuming the first link in the array is the closest or the only one
+                creep.memory.linkId = links[0].id;
+            } else {
+                console.log('No link found within range for', creep.name);
+                return; // Exit if no link is found within range
+            }
+        }
+
+        // Check for available capacity and the link has energy.
+        if (creep.store.getFreeCapacity() > 0 && link.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+            // Withdraw energy from the link.
+            if (creep.withdraw(link, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                movement.moveToWithCache(creep, link.pos);
+            }
+        } else {
+            // Move to storage and transfer energy.
+            const storage = creep.room.storage;
+            if (storage && creep.transfer(storage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                movement.moveToWithCache(creep, storage.pos);
+            }
+        }
     },
 
-    assignSpawnDistributionTask: function(creep) {
-        // Assign one hauler to distribute energy from storage to spawn/extensions
-        // Check if already assigned, if not, assign it
-    },
-
-    assignLinkManagementTask: function(creep) {
-        // Assign one hauler to manage energy transfer from link to storage
-        // Check if already assigned, if not, assign it
+    distributeEnergy: function(creep) {
+        // Check for available capacity and fill
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            // Storage is the primary source of energy for distribution
+            const storage = creep.room.storage;
+            if (storage && storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+                if (creep.withdraw(storage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, storage.pos);
+                }
+            }
+        } else {
+            // The creep has energy; proceed to deliver it.
+            this.deliverResources(creep);
+        }
     },
 
 

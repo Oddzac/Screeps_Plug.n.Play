@@ -34,7 +34,7 @@ var construction = {
             this.placeStorage(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 6 && memories.linksBuilt < 1) {
-            this.placeLinks(room);
+            //this.placeLinks(room);
             return;
         }
 
@@ -360,10 +360,61 @@ connectSpawnToPOIs: function(room) {
         console.log("No valid placement found for storage");
     },
 
+
+
+    //  I'M WORKIN' HERE!!!
+
     placeLinks: function(room) {
-        //placeHolder
+        // Ensure there's a storage structure from which to base link placement
+        const storage = room.storage;
+        if (!storage) return; // Exit if no storage exists in the room
+
+        // Try to place the first link 2 tiles away from the storage
+        this.tryLink(room, storage.pos, 2);
+
+        // Proceed to place links near sources, also at a range of 2
+        const sources = room.find(FIND_SOURCES);
+        sources.forEach(source => {
+            this.tryLink(room, source.pos, 2);
+        });
+    },
+
+    tryLink: function(room, pos, range) {
+        // Define an area around the position to search for a valid link placement spot
+        for (let dx = -range; dx <= range; dx++) {
+            for (let dy = -range; dy <= range; dy++) {
+                // Skip the center tile and directly adjacent tiles
+                if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
+    
+                let targetPos = new RoomPosition(pos.x + dx, pos.y + dy, room.name);
+    
+                // Check if the target position is suitable for construction
+                if (this.isSuitableForConstruction(room, targetPos)) {
+                    // Attempt to create a construction site for a link
+                    const result = room.createConstructionSite(targetPos, STRUCTURE_LINK);
+                    if (result === OK) {
+                        console.log('Link construction site created at', targetPos);
+                        return; // Exit after placing one link to avoid multiple placements in one call
+                    }
+                }
+            }
+        }
     },
     
+    isSuitableForConstruction: function(room, pos) {
+        // Check for obstructions like structures or construction sites
+        const obstructions = room.lookForAt(LOOK_STRUCTURES, pos).concat(room.lookForAt(LOOK_CONSTRUCTION_SITES, pos));
+        if (obstructions.length > 0) return false;
+    
+        // Check if the terrain is walkable (i.e., not a wall)
+        const terrain = room.getTerrain().get(pos.x, pos.y);
+        return terrain !== TERRAIN_MASK_WALL;
+    },
+
+    
+
+
+
     pathCostMatrix: function(roomName) {
         let room = Game.rooms[roomName];
         if (!room) return;
