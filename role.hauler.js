@@ -202,8 +202,8 @@ var roleHauler = {
             creep.say('🔄');
         } else if (actionResult !== OK) {
             // Typically when assigned source becomes empty
-            this.waitNear(creep); // Hold tight. Conditions may change
-            //this.assignCollectionTask(creep); // Re-evaluate collection task
+            //this.waitNear(creep); // Hold tight. Conditions may change
+            this.assignCollectionTask(creep); // Re-evaluate collection task
         }
 
     },
