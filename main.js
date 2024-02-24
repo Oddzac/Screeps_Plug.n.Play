@@ -42,7 +42,14 @@ module.exports.loop = function() {
             towers.run(tower);
         });
         //Manage Links
-        linker.run();
+        const myLinks = room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_LINK }
+        });
+
+        myTowers.forEach(tower => {
+            linker.run(link);
+        });
+        
     }
 
 }
