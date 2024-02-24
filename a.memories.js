@@ -63,7 +63,7 @@ X Storage Placed
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
-var roleHauler = require('role.hauler');
+var roleHauler = require('hauler.temp');
 var roleAttacker = require('role.attacker');
 var roleHealer = require('role.healer');
 //var roleClaimer = require('role.claimer');
