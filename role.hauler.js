@@ -139,7 +139,7 @@ var roleHauler = {
         if (!creep.memory.containerId) {
             let waitNear = creep.room.storage || creep.room.find(FIND_MY_SPAWNS)[0];
         } else {
-            let waitNear = Game.getObjectById(creep.memory.containerId) || creep.room.storage;
+            let waitNear = Game.getObjectById(creep.memory.containerId) || creep.room.storage || creep.room.find(FIND_MY_SPAWNS)[0];
         }
 
         if (waitNear) {
