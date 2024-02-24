@@ -186,7 +186,10 @@ var roleHauler = {
     moveToAndCollect: function(creep, target) {
         let actionResult;
     
-        if (target instanceof Resource) {
+        if (creep.memory.task === 'spawnHauler') {
+            // Assuming target is storage for spawnHauler
+            actionResult = creep.withdraw(target, RESOURCE_ENERGY);
+        } else if (target instanceof Resource) {
             actionResult = creep.pickup(target);
         } else if (target.store) {
             // Withdraw the most abundant resource for post-storage, or energy for pre-storage
