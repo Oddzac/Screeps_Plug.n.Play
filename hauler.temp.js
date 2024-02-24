@@ -1,9 +1,5 @@
 //TODO
-//IMPLEMENT collect energy (task-based accepts target)
-
-//If free space, collecting
-//If collecting, assign task
-// If collecting && task, perform task until full.
+//Transfer method - all resources
 
 
 
