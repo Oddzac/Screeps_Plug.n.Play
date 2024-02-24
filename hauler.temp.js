@@ -32,6 +32,7 @@ var roleHauler = {
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
         if (linkHaulers < 1 && linksBuilt > 1) {
             creep.memory.task = 'manageLink';
+            this.assignLink(creep);
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
             creep.memory.task = 'distributeSpawnEnergy';
@@ -51,6 +52,8 @@ var roleHauler = {
         } else {
             creep.memory.task = 'collectResources';
         }
+
+        this.performTasks(creep);
     },
 
     performTasks: function(creep) {
@@ -201,9 +204,7 @@ var roleHauler = {
 
 
 
-
-
-    manageLink: function(creep) {
+    assignLink: function(creep) {
         // Check if we already have a link assigned in memory
         if (!creep.memory.linkId) {
             // Find the storage structure
@@ -227,6 +228,11 @@ var roleHauler = {
                 return; // Exit if no link is found within range
             }
         }
+        
+    },
+
+    manageLink: function(creep) {
+    
         
         const link = Game.getObjectById(creep.memory.linkId);
         // Check for available capacity and the link has energy.
