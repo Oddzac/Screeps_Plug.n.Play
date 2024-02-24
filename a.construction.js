@@ -42,7 +42,7 @@ var construction = {
                 this.placeLinks(room);
             }
             if (towersBuilt < 2) {
-                //this.placeTower(room);
+                this.placeTower(room);
             }
             return;
         }
@@ -290,9 +290,9 @@ connectSpawnToPOIs: function(room) {
         sources.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
         const weightedCenterX = Math.floor(sumX / count);
         const weightedCenterY = Math.floor(sumY / count);
-    
+        console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
         // Define a search area around the weighted center
-        let searchRadius = 20; // Adjust based on room layout and preferences
+        let searchRadius = 10; // Adjust based on room layout and preferences
         for (let dx = -searchRadius; dx <= searchRadius; dx++) {
             for (let dy = -searchRadius; dy <= searchRadius; dy++) {
                 let x = weightedCenterX + dx;
