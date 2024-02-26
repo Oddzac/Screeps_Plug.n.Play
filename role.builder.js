@@ -62,14 +62,30 @@ var roleBuilder = {
             filter: (structure) => structure.hits < structure.hitsMax
         });
         var constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-        
-        // Count the number of builders currently repairing
+        let spawnSites; //find spawn construction sites
+        for (const roomName in Game.rooms) {
+            let room = Game.rooms[roomName];
+            
+            // Find all construction sites for spawns in the current room
+            let spawnSite = room.find(FIND_CONSTRUCTION_SITES, {
+                filter: {structureType: STRUCTURE_SPAWN}
+            });
+            
+            // Add the count of spawn sites in the current room to the total
+            spawnSites += spawnSite.length;
+        }
 
+
+        // Count the number of builders currently repairing / building spawns
+        const awayTeamCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'awayTeam');
         const repairingBuildersCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'repairing');
     
         if(repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
             creep.say("🛠️");
             creep.memory.task = "repairing";
+        } else if (awayTeamCount < 1 && spawnSites > 0) {
+            creep.say("🗺️");
+            creep.memory.task = "awayteam";
         } else if(constructionSites.length > 0) {
             creep.say("🚧");
             creep.memory.task = "building";
@@ -96,10 +112,46 @@ var roleBuilder = {
             case "upgrading":
                 this.performUpgrade(creep);
                 break;
+            case "awayTeam":
+                this.performAway(creep);
+                break;
+
         }
     },
 
+    performAway: function(creep) {
+        // Define the target room for the away team
+        const targetRoom = Memory.claimRooms[0];
+        //delete Memory.claimRooms[0]
 
+        // Check if the creep is in the target room
+        if (creep.room.name !== targetRoom) {
+            // Not in target room, find and move towards the exit to target room
+            const exitDir = creep.room.findExitTo(targetRoom);
+            const exit = creep.pos.findClosestByRange(exitDir);
+            creep.moveTo(exit, {visualizePathStyle: {stroke: '#ff69b4'}});
+            creep.say('🚀');
+        } else {
+            // In target room, find spawn construction sites
+            const spawnSites = creep.room.find(FIND_CONSTRUCTION_SITES, {
+                filter: {structureType: STRUCTURE_SPAWN}
+            });
+    
+            if(spawnSites.length) {
+                // If there are spawn sites, move to and build the closest one
+                if(creep.build(spawnSites[0]) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(spawnSites[0], {visualizePathStyle: {stroke: '#ffffff'}});
+                    creep.say('🚧');
+                }
+            } else {
+                // No spawn construction sites, could assign other tasks or return to home room
+                creep.say('🏠');
+                creep.suicide();
+                // Additional logic here for when no spawn sites are available in the target room
+            }
+        }
+    },
+    
     performRepair: function(creep) {
         let priorities = [STRUCTURE_TOWER, STRUCTURE_CONTAINER, STRUCTURE_EXTENSION];
         let priorityRepairTarget = creep.room.find(FIND_STRUCTURES, {
