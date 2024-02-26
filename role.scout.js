@@ -13,6 +13,7 @@ var roleScout = {
             // If the scout is not in the initial room, set the target room as the initial room
             if (creep.room.name !== creep.memory.initialRoom) {
                 console.log('Setting Initial Room for:', creep.name);
+                this.recordRoomInfo(creep);
                 creep.memory.targetRoom = creep.memory.initialRoom;
             } else {
                 // If the scout is in the initial room, choose the next room to scout
@@ -75,11 +76,12 @@ var roleScout = {
         if (nextRoom) {
             // Add the room to the list of explored rooms to avoid revisiting
             creep.memory.exploredRooms.push(nextRoom);
-            this.recordRoomInfo(creep);
+            
             return nextRoom;
         } else {
             // Mark scouting as complete if all directions have been attempted
             Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
+
             return null;
         }
     },
