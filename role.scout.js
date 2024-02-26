@@ -1,29 +1,34 @@
 
 var roleScout = {
     run: function(creep) {
+        // Directly set initialRoom if it's not already set
+        if (!creep.memory.initialRoom) {
+            console.log('Directly setting initial room for:', creep.name);
+            creep.memory.initialRoom = creep.room.name;
+        }
+
         // Check if the scouting of the current target room is complete or if there's no target room set
         if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
-            console.log('Scout MemInit');
+            console.log('Scout MemInit for:', creep.name);
             // If the scout is not in the initial room, set the target room as the initial room
             if (creep.room.name !== creep.memory.initialRoom) {
-                console.log('Setting Initial Room');
+                console.log('Setting Initial Room for:', creep.name);
                 creep.memory.targetRoom = creep.memory.initialRoom;
             } else {
                 // If the scout is in the initial room, choose the next room to scout
-                console.log('Scout Calling chooseRoom');
-            
+                console.log('Scout Calling chooseNextRoom for:', creep.name);
                 creep.memory.targetRoom = this.chooseNextRoom(creep);
             }
         }
     
         // Move to the target room if it's not the current room
         if (creep.room.name !== creep.memory.targetRoom) {
-            console.log('Moving to exit');
+            console.log('Moving to exit for:', creep.name);
             const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
             const exit = creep.pos.findClosestByRange(exitDir);
             creep.moveTo(exit);
         } else if (creep.memory.targetRoom && creep.room.name === creep.memory.targetRoom) {
-            console.log('Scout in target room');
+            console.log('Scout in target room:', creep.name);
             // Once in the target room, record room info. This also covers returning to the initial room.
             this.recordRoomInfo(creep);
         }
