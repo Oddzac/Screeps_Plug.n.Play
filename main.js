@@ -54,7 +54,7 @@ module.exports.loop = function() {
         });
         //Manage Links
         const myLinksCount = Memory.rooms[room.name].linksBuilt;
-        if (myLinksCount.length >= 2) {
+        if (myLinksCount.length > 1) {
             linker.run();
         }
         
