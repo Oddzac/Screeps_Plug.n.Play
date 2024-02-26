@@ -75,6 +75,7 @@ var roleScout = {
         if (nextRoom) {
             // Add the room to the list of explored rooms to avoid revisiting
             creep.memory.exploredRooms.push(nextRoom);
+            this.recordRoomInfo(creep);
             return nextRoom;
         } else {
             // Mark scouting as complete if all directions have been attempted
