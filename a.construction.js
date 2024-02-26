@@ -275,10 +275,6 @@ connectSpawnToPOIs: function(room) {
      
     placeSpawn: function(room) {
         const searchRadius = 5; // Define a search area around the weighted center
-        
-        // Find structures to set weighted center
-        const controller = room.controller;
-        const sources = room.find(FIND_SOURCES);
 
         // Calculate weighted center
         let sumX = 0, sumY = 0, count = 0;
