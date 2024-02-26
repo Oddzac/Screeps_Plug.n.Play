@@ -26,11 +26,11 @@ var construction = {
         if (this.checkExtensionsAvailable(room) > 0) {
             this.placeExtensionsAroundSpawn(room);
         }
-
-        if (Memory.rooms[room.name].phase.Phase < 3 && Memory.rooms[room.name].constructionRuns < 1) {
+        if (Memory.rooms[room.name].phase.Phase < 2) {
             this.placeContainersNearSources(room);
+            return;
+        } else if (Memory.rooms[room.name].phase.Phase > 1 && Memory.rooms[room.name].constructionRuns < 1) {
             this.connectAndTrackProgress(room);
-            
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1) {
             this.placeTower(room);
