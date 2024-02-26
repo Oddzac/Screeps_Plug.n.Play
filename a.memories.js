@@ -323,7 +323,8 @@ var memories = {
     
     shortTerm: function() {
 
-
+        const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
+        const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
         // Update claims available
         console.log('Updating available claims...');
         Memory.roomClaimsAvailable = roomsAvailableToClaim;
@@ -346,8 +347,7 @@ var memories = {
     
     
     longTerm: function() {
-        const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
-        const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
+        
         // Update cost matrices for all rooms
         console.log('Updating cost matrices for all rooms...');
         this.updateRoomTerrainData();
