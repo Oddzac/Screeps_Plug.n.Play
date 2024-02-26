@@ -23,7 +23,7 @@ var roleScout = {
     
         // Move to the target room if it's not the current room
         if (creep.room.name !== creep.memory.targetRoom) {
-            console.log('Moving to exit for:', creep.name);
+            //console.log('Moving to exit for:', creep.name);
             const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
             const exit = creep.pos.findClosestByRange(exitDir);
             creep.moveTo(exit);
