@@ -30,7 +30,6 @@ var roleClaimer = {
                         creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
                     } else if (reserveResult == ERR_INVALID_TARGET) {
                         creep.suicide();
-                    }
                     } else if (reserveResult != OK) {
                         console.log(`[${creep.name}] RESERVING ERROR: ${reserveResult}`);
                     }
