@@ -114,6 +114,7 @@ var roleBuilder = {
                 this.performUpgrade(creep);
                 break;
             case "awayTeam":
+                console.log('Away Team calling performAway');
                 this.performAway(creep);
                 break;
 
