@@ -1,29 +1,7 @@
-// TODO
-// Record claimable room names encountered to Memory.claimRooms[room.name]
-// Claimable rooms should only include rooms that have a controller and are not already owned
-// Only record information on rooms not already recorded
-
-// Choose next room based on proximity to room Scout was spawned in (clockwise, starting to right)
-// If scout is not able to move into a room from the spawn room, it moves to the next in rotation.
-// eg. Scout spawns in room 'E24S18', checks adjacent rooms starting to the right ('E25S18') and records.
-//     Once recorded, scout moves back to spawn room, then down ('E24S19') and records.
-//     Scout will then return to spawn room and move left ('E23S18') and record.
-//     Lastly, scout returns to spawn room and moves up ('E24S17') and records.
-// Scout should record a boolean scoutingComplete object to Memory.rooms[room.name] (where room.name is the initial spawn room)
-// that becomes true once the scout has attempted to record all rooms adjacent to the initial spawn room
-
-// Scout records other than 'claimableRooms' should be stored in Memory.scoutedRooms[room.name]
-// Scout records of each room should include: current owner (if any), # of sources and types (energy, oxygen, etc.), 
-// % of total terrain by type (plain, swamp, wall), boolean hasController that records 'true' if controller is present
-
-
 
 var roleScout = {
-
-  
     run: function(creep) {
 
-        if (!Memory.rooms[creep.room.name].scoutingComplete) Memory.rooms[creep.room.name].scoutingComplete = false;
         // Check if the scouting of the current target room is complete or if there's no target room set
         if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
             // If the scout is not in the initial room, set the target room as the initial room
