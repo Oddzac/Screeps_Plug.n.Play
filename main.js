@@ -29,10 +29,21 @@ module.exports.loop = function() {
         } else {
             spawner.manageCreepSpawning(room);
         }
-        
-        // Construction 
-        construction.manageConstruction(room);
-        
+    
+        // Construction management, including checking for spawn construction
+        if (room.controller && room.controller.my) {
+            const spawns = room.find(FIND_MY_SPAWNS);
+            const spawnSites = room.find(FIND_CONSTRUCTION_SITES, {
+                filter: { structureType: STRUCTURE_SPAWN }
+            });
+
+            if (spawns.length === 0 && spawnSites.length === 0) {
+                construction.placeSpawn(room); // If no spawn in controlled room, place one
+            } else {
+                construction.manageConstruction(room); // Handle other construction tasks
+            }
+        }
+
         // Towers
         const myTowers = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }

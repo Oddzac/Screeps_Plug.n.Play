@@ -273,6 +273,63 @@ connectSpawnToPOIs: function(room) {
         room.memory.roadConstructionProgress = { currentIndex: 0, completed: false };
     },
      
+    placeSpawn: function(room) {
+        const searchRadius = 5; // Define a search area around the weighted center
+        
+        // Find structures to set weighted center
+        const controller = room.controller;
+        const sources = room.find(FIND_SOURCES);
+
+        // Calculate weighted center
+        let sumX = 0, sumY = 0, count = 0;
+        const controller = room.controller;
+        const sources = room.find(FIND_SOURCES);
+        sumX += controller.pos.x; sumY += controller.pos.y; count++;
+        sources.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
+        const weightedCenterX = Math.floor(sumX / count);
+        const weightedCenterY = Math.floor(sumY / count);
+        console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
+
+
+        // Generate all possible positions within the search radius
+        let potentialPositions = [];
+        for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+            for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+                let x = weightedCenterX + dx;
+                let y = weightedCenterY + dy;
+                // Ensure coordinates are within room bounds
+                if (x >= 1 && x <= 48 && y >= 1 && y <= 48) {
+                    potentialPositions.push({ x, y });
+                }
+            }
+        }
+    
+        // Shuffle the array of potential positions to randomize the order
+        for (let i = potentialPositions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [potentialPositions[i], potentialPositions[j]] = [potentialPositions[j], potentialPositions[i]]; // ES6 array destructuring to swap elements
+        }
+    
+        // Iterate through the randomized potential positions
+        for (let pos of potentialPositions) {
+            const terrain = room.getTerrain().get(pos.x, pos.y);
+            if (terrain !== TERRAIN_MASK_WALL) {
+                const look = room.lookAt(pos.x, pos.y);
+                if (!look.some(s => s.type === 'structure' || s.type === 'constructionSite')) {
+                    // Check for valid spot
+                    const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_SPAWN);
+                    if (result === OK) {
+                        console.log(`Spawn placed at (${pos.x},${pos.y}).`);
+                        return; // Exit the function after placing the tower
+                    }
+                }
+            }
+        }
+        console.log("No valid placement found for spawn");
+    },
+
+
+
     placeTower: function(room) {
         //Check tower + tower site counts to see if we're at the limit
         const myTowers = room.find(FIND_MY_STRUCTURES, {
