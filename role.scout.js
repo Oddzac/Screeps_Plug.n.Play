@@ -6,6 +6,7 @@ var roleScout = {
             console.log('Scout MemInit');
             // If the scout is not in the initial room, set the target room as the initial room
             if (creep.room.name !== creep.memory.initialRoom) {
+                console.log('Setting Initial Room');
                 creep.memory.targetRoom = creep.memory.initialRoom;
             } else {
                 // If the scout is in the initial room, choose the next room to scout
@@ -17,6 +18,7 @@ var roleScout = {
     
         // Move to the target room if it's not the current room
         if (creep.room.name !== creep.memory.targetRoom) {
+            console.log('Moving to exit');
             const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
             const exit = creep.pos.findClosestByRange(exitDir);
             creep.moveTo(exit);
