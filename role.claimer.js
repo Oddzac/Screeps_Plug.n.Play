@@ -1,6 +1,6 @@
 var roleClaimer = {
     run: function(creep) {
-        const targetRoom = 'E24S19';
+        const targetRoom = Memory.claimRooms[0];
         // Ensure the target room is persisted in memory
         if (!creep.memory.targetRoom) {
             creep.memory.targetRoom = targetRoom;
