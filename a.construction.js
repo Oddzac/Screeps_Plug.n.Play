@@ -11,7 +11,7 @@ var construction = {
         const activeSitesCount = Object.keys(Game.constructionSites).length;
         const activeSites = Object.keys(Game.constructionSites);
         const containersBuilt = Memory.rooms[room.name].containersBuilt;
-
+        const spawns = room.find(FIND_MY_SPAWNS);
         
         const storageBuilt = Memory.rooms[room.name].storageBuilt;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
@@ -29,7 +29,7 @@ var construction = {
         if (Memory.rooms[room.name].phase.Phase < 2) {
             this.placeContainersNearSources(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase > 1 && Memory.rooms[room.name].constructionRuns < 1) {
+        } else if (Memory.rooms[room.name].phase.Phase <3 && spawns > 0) {
             this.connectAndTrackProgress(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1) {
