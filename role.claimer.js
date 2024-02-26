@@ -28,6 +28,9 @@ var roleClaimer = {
                     const reserveResult = creep.reserveController(controller);
                     if (reserveResult == ERR_NOT_IN_RANGE) {
                         creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
+                    } else if (reserveResult == ERR_INVALID_TARGET) {
+                        creep.suicide();
+                    }
                     } else if (reserveResult != OK) {
                         console.log(`[${creep.name}] RESERVING ERROR: ${reserveResult}`);
                     }
