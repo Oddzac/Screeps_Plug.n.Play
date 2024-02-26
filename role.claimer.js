@@ -1,27 +1,39 @@
 var roleClaimer = {
     run: function(creep) {
         const targetRoom = 'E24S19';
-
         // Ensure the target room is persisted in memory
         if (!creep.memory.targetRoom) {
             creep.memory.targetRoom = targetRoom;
         }
 
-        // Check if the creep has reached its target room
+        // Move towards the target room if not already there
         if (creep.room.name !== creep.memory.targetRoom) {
-            // Move towards the target room's exit
             const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
             const exit = creep.pos.findClosestByRange(exitDir);
-            creep.moveTo(exit);
+            creep.moveTo(exit, {visualizePathStyle: {stroke: '#ffffff'}});
             console.log(`[${creep.name}] Heading to target room: ${creep.memory.targetRoom}`);
         } else {
-            // Once in the target room, mark that the room has been reached
+            // Log once the room is reached
             console.log(`[${creep.name}] ROOM REACHED`);
             const controller = creep.room.controller;
 
-            if (controller && creep.claimController(controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(controller);
-                console.log(`[${creep.name}] MOVING TO CONTROLLER FOR ROOM (${creep.room.name}), ${controller}`);
+            if (controller) {
+                // Attempt to claim the controller
+                const claimResult = creep.claimController(controller);
+                if (claimResult == ERR_NOT_IN_RANGE) {
+                    // Move to the controller if not in range
+                    creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
+                } else if (claimResult == ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
+                    // If unable to claim due to GCL or room limit, try to reserve instead
+                    const reserveResult = creep.reserveController(controller);
+                    if (reserveResult == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
+                    } else if (reserveResult != OK) {
+                        console.log(`[${creep.name}] RESERVING ERROR: ${reserveResult}`);
+                    }
+                } else if (claimResult != OK) {
+                    console.log(`[${creep.name}] CLAIMING ERROR: ${claimResult}`);
+                }
             }
         }
     }
