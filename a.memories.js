@@ -145,7 +145,6 @@ var memories = {
             const room = Game.rooms[roomName];
     
             // Initialize room memory object if it doesn't exist
-            if (!Memory.rooms[room.name].scoutingComplete) Memory.rooms[room.name].scoutingComplete = false;
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
                     phase: { Phase: 1, RCL: room.controller.level },
