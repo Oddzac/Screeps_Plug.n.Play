@@ -86,6 +86,7 @@ var roleBuilder = {
         } else if (awayTeamCount < 1 && spawnSites > 0) {
             creep.say("🗺️");
             creep.memory.task = "awayteam";
+            console.log(`${creep.name} assigned to away team`);
         } else if(constructionSites.length > 0) {
             creep.say("🚧");
             creep.memory.task = "building";
