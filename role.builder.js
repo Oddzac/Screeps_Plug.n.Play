@@ -114,7 +114,6 @@ var roleBuilder = {
                 this.performUpgrade(creep);
                 break;
             case "awayTeam":
-                console.log('Away Team calling performAway');
                 this.performAway(creep);
                 break;
 
@@ -125,8 +124,6 @@ var roleBuilder = {
         // Define the target room for the away team
         const claimRooms = Object.keys(Memory.claimRooms).filter(roomName => Memory.claimRooms[roomName] === true);
         const targetRoom = claimRooms[0];
-        //delete Memory.claimRooms[0]
-        console.log(`Away Team target room: ${targetRoom}`);
         // Check if the creep is in the target room
         if (creep.room.name !== targetRoom) {
             // Not in target room, find and move towards the exit to target room
