@@ -323,7 +323,10 @@ var memories = {
     
     shortTerm: function() {
 
-    
+
+        // Update claims available
+        console.log('Updating available claims...');
+        Memory.roomClaimsAvailable = roomsAvailableToClaim;
         //Refresh pathCache Memory / Construction Energy Reqs / Room Phase
         Object.values(Game.rooms).forEach(room => {
             const constructionSites = _.filter(Game.constructionSites, site => site.my);
@@ -345,9 +348,6 @@ var memories = {
     longTerm: function() {
         const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
         const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
-        // Update claims available
-        console.log('Updating available claims...');
-        Memory.roomClaimsAvailable = roomsAvailableToClaim;
         // Update cost matrices for all rooms
         console.log('Updating cost matrices for all rooms...');
         this.updateRoomTerrainData();
