@@ -37,12 +37,23 @@ var roleScout = {
     chooseNextRoom: function(creep) {
         if (!creep.memory.initialRoom) {
             creep.memory.initialRoom = creep.room.name;
+        }
+        if (!creep.memory.availableExits) {
             // Store available exits from the initial room
             creep.memory.availableExits = Game.map.describeExits(creep.memory.initialRoom);
+        }
+
+        if (!creep.memory.exploredRooms) {
             // Initialize an array to keep track of rooms that have been attempted for scouting
             creep.memory.exploredRooms = [];
+        }
+
+        if (!creep.memory.exitOrder) {
             // Define the order in which exits will be checked based on the clockwise direction
             creep.memory.exitOrder = [FIND_EXIT_RIGHT, FIND_EXIT_BOTTOM, FIND_EXIT_LEFT, FIND_EXIT_TOP];
+        }
+
+        if (!creep.memory.currentExitIndex) {
             creep.memory.currentExitIndex = 0; // Start with the first direction in the order
         }
     
