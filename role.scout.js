@@ -1,7 +1,7 @@
 
 var roleScout = {
     run: function(creep) {
-
+        console.log('Role Correctly Assigned');
         // Check if the scouting of the current target room is complete or if there's no target room set
         if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
             // If the scout is not in the initial room, set the target room as the initial room
