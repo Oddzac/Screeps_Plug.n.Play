@@ -53,7 +53,10 @@ module.exports.loop = function() {
             towers.run(tower);
         });
         //Manage Links
-        const myLinksCount = Memory.rooms[room.name].linksBuilt;
+        const myLinksCount = room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_LINK }
+        });
+
         if (myLinksCount.length > 1) {
             linker.run();
         }
