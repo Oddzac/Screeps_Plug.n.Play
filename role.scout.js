@@ -2,9 +2,16 @@
 var roleScout = {
     run: function(creep) {
         if (!creep.memory.initialRoom) {
-            console.log('Directly setting initial room');
             creep.memory.initialRoom = creep.room.name;
+            // Store available exits from the initial room
+            creep.memory.availableExits = Game.map.describeExits(creep.memory.initialRoom);
+            // Initialize an array to keep track of rooms that have been attempted for scouting
+            creep.memory.exploredRooms = [];
+            // Define the order in which exits will be checked based on the clockwise direction
+            creep.memory.exitOrder = [FIND_EXIT_RIGHT, FIND_EXIT_BOTTOM, FIND_EXIT_LEFT, FIND_EXIT_TOP];
+            creep.memory.currentExitIndex = 0; // Start with the first direction in the order
         }
+        
         // Check if the scouting of the current target room is complete or if there's no target room set
         if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
             console.log('Scout MemInit');
@@ -33,18 +40,7 @@ var roleScout = {
         }
     },
       
-    chooseNextRoom: function(creep) {
-        if (!creep.memory.initialRoom) {
-            creep.memory.initialRoom = creep.room.name;
-            // Store available exits from the initial room
-            creep.memory.availableExits = Game.map.describeExits(creep.memory.initialRoom);
-            // Initialize an array to keep track of rooms that have been attempted for scouting
-            creep.memory.exploredRooms = [];
-            // Define the order in which exits will be checked based on the clockwise direction
-            creep.memory.exitOrder = [FIND_EXIT_RIGHT, FIND_EXIT_BOTTOM, FIND_EXIT_LEFT, FIND_EXIT_TOP];
-            creep.memory.currentExitIndex = 0; // Start with the first direction in the order
-        }
-    
+    chooseNextRoom: function(creep) {    
         // Increment and loop the index to cycle through directions
         let attemptedAllDirections = false;
         let nextRoom = null;
