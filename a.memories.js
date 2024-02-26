@@ -66,8 +66,8 @@ var roleBuilder = require('role.builder');
 var roleHauler = require('role.hauler');
 var roleAttacker = require('role.attacker');
 var roleHealer = require('role.healer');
-//var roleClaimer = require('role.claimer');
-//var roleScout = require('role.scout');
+var roleClaimer = require('role.claimer');
+var roleScout = require('role.scout');
 var spawner = require('a.spawn');
 var movement = require('a.movement');
 
@@ -135,6 +135,10 @@ var memories = {
         if (!Memory.terrainData) Memory.terrainData = {};
         if (!Memory.costMatrices) Memory.costMatrices = {};
         if (!Memory.rooms) Memory.rooms = {};
+        if (!Memory.claimRooms) Memory.claimRooms = {};
+        if (!Memory.scoutedRooms) Memory.scoutedRooms = {};
+        if (!Memory.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
+        
     
         // Loop through each room to initialize or update room-specific memory
         Object.keys(Game.rooms).forEach(roomName => {
@@ -144,6 +148,7 @@ var memories = {
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
                     phase: { Phase: 1, RCL: room.controller.level },
+                    scoutingComplete: false,
                     claimedDrops: {},
                     pathCache: {},
                     nextSpawnRole: null,
@@ -338,6 +343,11 @@ var memories = {
     
     
     longTerm: function() {
+        const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
+        const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
+        // Update claims available
+        console.log('Updating available claims...');
+        Memory.roomClaimsAvailable = roomsAvailableToClaim;
         // Update cost matrices for all rooms
         console.log('Updating cost matrices for all rooms...');
         this.updateRoomTerrainData();

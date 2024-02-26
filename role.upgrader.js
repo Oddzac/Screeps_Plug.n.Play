@@ -1,8 +1,3 @@
-//TODO
-//Phase 1 - Self harvest
-//Phase 2 - Prioritize Containers
-//Phase 3 - Container Withdraw Exclusively
-
 var movement = require('a.movement');
 var utility = require('a.utilities');
 var roleUpgrader = {

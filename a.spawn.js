@@ -14,6 +14,8 @@ var spawner = {
             const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
             const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
             const linksBuilt = Memory.rooms[room.name].linksBuilt; //Currently returns '2'
+            const scouted = Memory.rooms[room.name].scoutingComplete;
+            const roomsClaimsAvailable = Memory.roomClaimsAvailable;
 
             if (Memory.rooms[room.name].underAttack) {
         
@@ -71,12 +73,32 @@ var spawner = {
                 case 5:
                     if (linksBuilt > 1) {
                         // Phase 5 post-links
-                        desiredCounts = {
-                            harvester: 2,
-                            hauler: 4,
-                            builder: 2,
-                            upgrader: 2
-                        };
+                        if (scouted === false) {
+                            // Begin Scouting
+                            desiredCounts = {
+                                harvester: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 2,
+                                scout: 1
+                            };
+                        } else if (scouted === true && roomClaimsAvailable > 0) {                         
+                            // Scouting Complete
+                            desiredCounts = {
+                                harvester: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 2,
+                                claimer: 1
+                            };
+                        } else {
+                            desiredCounts = {
+                                harvester: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 2
+                            };
+                        }
                     } else {
                         desiredCounts = {
                             harvester: 2,
