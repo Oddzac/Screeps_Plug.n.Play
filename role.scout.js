@@ -23,6 +23,7 @@ var roleScout = {
             const exit = creep.pos.findClosestByRange(exitDir);
             creep.moveTo(exit);
         } else if (creep.memory.targetRoom && creep.room.name === creep.memory.targetRoom) {
+            console.log('Scout in target room');
             // Once in the target room, record room info. This also covers returning to the initial room.
             this.recordRoomInfo(creep);
         }
