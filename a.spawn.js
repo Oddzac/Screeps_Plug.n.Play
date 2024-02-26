@@ -15,7 +15,7 @@ var spawner = {
             const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
             const linksBuilt = Memory.rooms[room.name].linksBuilt; //Currently returns '2'
             const scouted = Memory.rooms[room.name].scoutingComplete;
-            const roomsClaimsAvailable = Memory.roomClaimsAvailable;
+            const roomClaimsAvailable = Memory.roomClaimsAvailable;
 
             if (Memory.rooms[room.name].underAttack) {
         
