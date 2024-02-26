@@ -120,7 +120,7 @@ var spawner = {
                 }
             }
             //console.log(`${totalEnergyRequired}`);
-            //console.log(`${JSON.stringify(desiredCounts)}`);
+            console.log(`${JSON.stringify(desiredCounts)}`);
             return desiredCounts;
         }
     },
