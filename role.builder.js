@@ -62,7 +62,7 @@ var roleBuilder = {
             filter: (structure) => structure.hits < structure.hitsMax
         });
         var constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-        let spawnSites; //find spawn construction sites
+        let spawnSites = 0; //find spawn construction sites
         for (const roomName in Game.rooms) {
             let room = Game.rooms[roomName];
             
