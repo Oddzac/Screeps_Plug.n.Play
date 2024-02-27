@@ -261,10 +261,10 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            this.waitNear(creep);
+            //this.waitNear(creep);
 
-            //this.passEnergy(creep);
-            
+            this.passEnergy(creep);
+
         }
     },
 
@@ -305,44 +305,48 @@ var roleHauler = {
 
 
     passEnergy: function(creep) {
-        while (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-            // Find creeps that are not harvesters and have available capacity for energy
-            var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c) => c.memory.role !== 'harvester' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            });
+        // Ensure we're not entering an infinite loop by checking energy and available targets
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+            creep.memory.isCollecting = true;
+            return; // Exit if the creep has no energy to distribute
+        }
     
-            if (nonHarvesterCreeps.length === 0) {
-                break; // Exit the loop if no eligible targets are found
-            }
+        var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
+            filter: (c) => c.memory.role !== 'harvester' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        });
     
-            // Find the closest non-harvester creep by path that can receive energy
-            var targetCreep = creep.pos.findClosestByPath(nonHarvesterCreeps);
+        if (nonHarvesterCreeps.length === 0) {
+            creep.memory.isCollecting = true;
+            return; // Exit if there are no eligible targets
+        }
     
-            if (!targetCreep) {
-                break; // Exit the loop if no target is found
-            }
-    
+        for (let targetCreep of nonHarvesterCreeps) {
             let transferResult = creep.transfer(targetCreep, RESOURCE_ENERGY);
+            
             if (transferResult === ERR_NOT_IN_RANGE) {
                 // Move towards the target creep if it's not in range
                 creep.say("♻️");
                 movement.moveToWithCache(creep, targetCreep);
-                break; // Exit the loop to avoid finding a new target in the same tick
-            } else if (transferResult !== OK) {
-                // Break the loop if transfer is not successful for reasons other than range
-                break;
+                break; // Break after moving towards one creep, will continue next tick
+            } else if (transferResult === OK) {
+                // Successfully transferred energy, check if there's more energy to give
+                if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+                    // If the creep has no energy left, it's time to collect more
+                    creep.memory.isCollecting = true;
+                    break; // Break the loop as we're done transferring energy
+                }
+                // If the transfer was successful but the creep still has energy,
+                // continue the loop to find another target.
+            } else {
+                // Handle other cases such as ERR_FULL, in which case you might want to find another target
+                // This branch intentionally left blank for brevity, adjust based on your needs
             }
-    
-            // If the transfer was successful, the loop will continue if the creep still has energy,
-            // looking for the next target in the subsequent iteration.
         }
     
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-            // If the hauler has no energy left, switch back to collecting mode
-            creep.memory.isCollecting = true;
-        }
-    },
-    
+        // If the loop completes and the creep still has energy, it should try again next tick.
+        // This can be due to all targets being out of range or full, among other reasons.
+        // Additional logic can be added here if needed, e.g., moving to a waiting position.
+    },    
     waitNear: function(creep) {
         let waitLocation;
     
