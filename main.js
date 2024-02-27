@@ -59,7 +59,7 @@ module.exports.loop = function() {
 
         if (myLinksCount.length > 1) {
             //console.log(`calling linker for ${room}`);
-            linker.run();
+            linker.manageLinks(room);
         }
         
     }
