@@ -42,10 +42,10 @@ calculateDesiredCounts: function(room) {
             case 2:
                 // Phase 2 Population-based
                 desiredCounts = {
-                    harvester: Math.ceil(totalCreeps * .2),
-                    hauler: Math.ceil(totalCreeps * .2),
-                    builder: Math.ceil(totalCreeps * .3),
-                    upgrader: Math.ceil(totalCreeps * .3)
+                    harvester: 3,
+                    hauler: 5,
+                    builder: 4,
+                    upgrader: 2
                 };
                 break;
             case 3:
