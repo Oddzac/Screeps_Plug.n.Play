@@ -305,38 +305,46 @@ var roleHauler = {
 
     passEnergy: function(creep) {
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+            delete creep.memory.targetCreep; // Clear the targetCreep memory
             creep.memory.isCollecting = true;
             return; // Exit if the creep has no energy to distribute
         }
     
-        var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
-            filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-        });
+        let targetCreep = Game.getObjectById(creep.memory.targetCreep);
     
-        // Check if there are eligible targets
-        if (nonHarvesterCreeps.length === 0) {
-            creep.memory.isCollecting = true;
-            return; // Exit if there are no eligible targets
+        if (!targetCreep || targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+            var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
+                filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            });
+    
+            if (nonHarvesterCreeps.length === 0) {
+                delete creep.memory.targetCreep; // Clear the targetCreep memory if no targets are available
+                creep.memory.isCollecting = true;
+                return; // Exit if there are no eligible targets
+            }
+    
+            // Find the creep with the greatest free capacity
+            targetCreep = nonHarvesterCreeps.reduce((a, b) => a.store.getFreeCapacity(RESOURCE_ENERGY) > b.store.getFreeCapacity(RESOURCE_ENERGY) ? a : b);
+            creep.memory.targetCreep = targetCreep.id; // Store the targetCreep's ID
         }
-    
-        // Find the creep with the greatest free capacity
-        var targetCreep = nonHarvesterCreeps.reduce((a, b) => a.store.getFreeCapacity(RESOURCE_ENERGY) > b.store.getFreeCapacity(RESOURCE_ENERGY) ? a : b);
     
         let transferResult = creep.transfer(targetCreep, RESOURCE_ENERGY);
     
         if (transferResult === ERR_NOT_IN_RANGE) {
             // Move towards the target creep if it's not in range
             creep.say("♻️");
-            movement.moveToWithCache(creep, targetCreep);
-        } else if (transferResult === OK) {
-            // Successfully transferred energy
-            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-                creep.memory.isCollecting = true; // If the creep has no energy left, it's time to collect more
-            }
+            movement.moveToWithCache(creep, targetCreep.pos);
+        } else if (transferResult === OK || transferResult === ERR_FULL) {
+            // Successfully transferred energy or target is full, find a new target next tick
+            delete creep.memory.targetCreep; // Clear the targetCreep memory for next assignment
         }
-        // No need for a loop here since we're targeting a single creep per execution
-    },
     
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+            delete creep.memory.targetCreep; // Ensure to clear the targetCreep memory
+            creep.memory.isCollecting = true; // Switch back to collecting mode
+        }
+    },
+        
 
     waitNear: function(creep) {
         let waitLocation;
