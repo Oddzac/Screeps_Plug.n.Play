@@ -12,12 +12,12 @@ var construction = {
         const activeSitesCount = Object.keys(Game.constructionSites).length;
         const activeSites = Object.keys(Game.constructionSites);
         const containersBuilt = Memory.rooms[room.name].containersBuilt;
-        const containerSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_CONTAINER && site.room.name === roomName).length;
+        const containerSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_CONTAINER && site.room.name === room).length;
         const storageBuilt = Memory.rooms[room.name].storageBuilt;
-        const storageSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_STORAGE && site.room.name === roomName).length;
+        const storageSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_STORAGE && site.room.name === room).length;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
-        const linkSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_LINK && site.room.name === roomName).length;
-        const towerSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_TOWER && site.room.name === roomName).length;
+        const linkSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_LINK && site.room.name === room).length;
+        const towerSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_TOWER && site.room.name === room).length;
 
         
         if (buildersCount < 1) {
@@ -336,7 +336,7 @@ connectSpawnToPOIs: function(room) {
             filter: { structureType: STRUCTURE_TOWER }
         }).length;
         const towersPlanned = Object.values(Game.constructionSites)
-        .filter(site => site.structureType === STRUCTURE_TOWER && site.room.name === roomName).length;
+        .filter(site => site.structureType === STRUCTURE_TOWER && site.room.name === room).length;
         
         let searchRadius; // Define a search area around the weighted center
         let towerMax;
