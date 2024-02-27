@@ -325,7 +325,7 @@ var roleHauler = {
                     movement.moveToWithCache(creep, targetCreep);
                 } else if (transferResult === OK) {
                     // If transfer was successful but the hauler still has energy, try to find another target
-                    this.passEnergy(creep);
+                    this.deliverResources(creep);
                 }
             } else {
                 // If no suitable target is found, then switch back to collecting
