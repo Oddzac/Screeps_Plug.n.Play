@@ -96,7 +96,8 @@ connectSpawnToPOIs: function(room) {
         const sources = room.find(FIND_SOURCES);
         const targets = [room.controller, ...sources];
         const startIndex = Memory.rooms[room.name].constructionProgress.currentTargetIndex || 0;
-        const spawn = room.find(FIND_MY_SPAWNS);
+        const spawns = room.find(FIND_MY_SPAWNS);
+        const spawn = spawns [0];
 
         for (let i = startIndex; i < targets.length; i++) {
             const target = targets[i];
