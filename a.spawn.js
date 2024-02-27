@@ -5,9 +5,7 @@ var spawner = {
     
 
     // Phase-based spawning counts
-    calculateDesiredCounts: function() {
-        for (const roomName in Game.rooms) {
-            const room = Game.rooms[roomName];
+    calculateDesiredCounts: function(room) {
             const phase = Memory.rooms[room.name].phase.Phase;
             const totalCreeps = Object.keys(Game.creeps).length;
             let desiredCounts = {};
@@ -123,8 +121,7 @@ var spawner = {
             //console.log(`${JSON.stringify(desiredCounts)}`);
         
             return desiredCounts;
-        }
-    },
+        },
     
 
 
@@ -135,7 +132,7 @@ var spawner = {
         //console.log('MCS Called');
         
     
-        const desiredCounts = this.calculateDesiredCounts();
+        const desiredCounts = this.calculateDesiredCounts(room);
         const currentCounts = _.countBy(Game.creeps, 'memory.role');
     
         let nextSpawnRole = null;
@@ -189,7 +186,7 @@ var spawner = {
         const spawnResult = selectedSpawn.spawnCreep(body, name, {
             memory: { role: role, working: false }
         });
-        
+
         if (spawnResult == OK) {
             // Logging the successful spawn with current counts
             const upgraders = _.filter(Game.creeps, (creep) => creep.memory.role === 'upgrader').length;
