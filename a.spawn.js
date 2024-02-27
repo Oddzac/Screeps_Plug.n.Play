@@ -214,9 +214,9 @@ calculateDesiredCounts: function(room) {
         switch (phase) {
             case 1:
                 roleBlueprints = {
-                    harvester: ["work", "carry", "move"], // Basic setup for early game
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
+                    harvester: ["work", "carry", "carry", "move"], // Basic setup for early game
+                    upgrader: ["work", "move", "move", "carry"],
+                    builder: ["work", "move", "move", "carry"],
                     hauler: ["carry", "move", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
@@ -230,8 +230,8 @@ calculateDesiredCounts: function(room) {
                 if (energyAvailable >= 500) {
                     roleBlueprints = {
                         harvester: ["work", "work", "work", "work", "carry", "move"], // More efficient harvesting
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
+                        upgrader: ["work", "move", "move", "carry"],
+                        builder: ["work", "move", "move", "carry"],
                         hauler: ["carry", "move", "move"],
                         //Defensive Units
                         attacker: ["tough", "move", "move", "ranged_attack"],
@@ -243,8 +243,8 @@ calculateDesiredCounts: function(room) {
                 } else {
                     roleBlueprints = {
                         harvester: ["work", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
+                        upgrader: ["work", "move", "move", "carry"],
+                        builder: ["work", "move", "move", "carry"],
                         hauler: ["carry", "move", "move"],
                         //Defensive Units
                         attacker: ["tough", "move", "move", "ranged_attack"],
@@ -261,8 +261,8 @@ calculateDesiredCounts: function(room) {
                     
                     roleBlueprints = {
                         harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
+                        upgrader: ["work", "move", "move", "carry"],
+                        builder: ["work", "move", "move", "carry"],
                         hauler: ["carry", "move", "move"],
                         //Defensive Units
                         attacker: ["tough", "move", "move", "ranged_attack"],
@@ -275,8 +275,8 @@ calculateDesiredCounts: function(room) {
                 } else {
                     roleBlueprints = {
                         harvester: ["work", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
+                        upgrader: ["work", "move", "move", "carry"],
+                        builder: ["work", "move", "move", "carry"],
                         hauler: ["carry", "move", "move"],
                         //Defensive Units
                         attacker: ["tough", "move", "move", "ranged_attack"],
@@ -291,7 +291,7 @@ calculateDesiredCounts: function(room) {
             default:
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "carry"],
+                    upgrader: ["work", "move", "move", "carry"],
                     builder: ["work", "move", "move", "carry"],
                     hauler: ["carry", "move"],
                     //Defensive Units
