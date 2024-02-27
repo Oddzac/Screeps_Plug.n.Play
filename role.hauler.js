@@ -312,7 +312,7 @@ var roleHauler = {
         }
     
         var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
-            filter: (c) => c.memory.role !== 'harvester' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
         });
     
         if (nonHarvesterCreeps.length === 0) {
