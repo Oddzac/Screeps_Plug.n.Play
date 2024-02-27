@@ -182,11 +182,20 @@ var spawner = {
         
         const name = `${role}_${Game.time}`;
        
-    
+        // Find spawns in the specified room
+        const spawns = Game.rooms[roomName].find(FIND_MY_SPAWNS);
+        if (spawns.length === 0) {
+            console.log(`[spawnCreepWithRole] No spawns available in room ${roomName}.`);
+            return; // 
+        }
+
         //console.log(`[spawnCreepWithRole] Spawning ${role} with body:`, JSON.stringify(body));
-        const spawnResult = Game.spawns['Spawn1'].spawnCreep(body, name, {
+        const selectedSpawn = spawns[0];
+
+        const spawnResult = selectedSpawn.spawnCreep(body, name, {
             memory: { role: role, working: false }
         });
+        
         if (spawnResult == OK) {
             // Logging the successful spawn with current counts
             const upgraders = _.filter(Game.creeps, (creep) => creep.memory.role === 'upgrader').length;
