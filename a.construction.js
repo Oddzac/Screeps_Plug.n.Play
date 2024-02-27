@@ -7,15 +7,17 @@ var construction = {
     
     manageConstruction: function(room) {
         
+        const spawns = room.find(FIND_MY_SPAWNS);
         const buildersCount = _.filter(Game.creeps, { memory: { role: 'builder' } }).length;
         const activeSitesCount = Object.keys(Game.constructionSites).length;
         const activeSites = Object.keys(Game.constructionSites);
         const containersBuilt = Memory.rooms[room.name].containersBuilt;
-        const spawns = room.find(FIND_MY_SPAWNS);
-        
+        const containerSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_CONTAINER).length;
         const storageBuilt = Memory.rooms[room.name].storageBuilt;
+        const storageSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_STORAGE).length;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
-        
+        const linkSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_LINK).length;
+        const towerSites = Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_TOWER).length;
 
         
         if (buildersCount < 1) {
@@ -32,10 +34,10 @@ var construction = {
         } else if (Memory.rooms[room.name].phase.Phase <3 && containersBuilt > 1) {
             //this.connectAndTrackProgress(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1) {
+        } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1 && towerSites < 1) {
             this.placeTower(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1) {
+        } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1 && storageSites < 1) {
             this.placeStorage(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 6) {
