@@ -312,19 +312,20 @@ var roleHauler = {
     
         let targetCreep = Game.getObjectById(creep.memory.targetCreep);
     
-        if (!targetCreep || targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
-            var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        // Adjust the filter to consider the 'harvesting' flag or similar
+        if (!targetCreep || !targetCreep.memory.harvesting) {
+            var potentialTargets = creep.room.find(FIND_MY_CREEPS, {
+                filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.memory.harvesting === true
             });
     
-            if (nonHarvesterCreeps.length === 0) {
+            if (potentialTargets.length === 0) {
                 delete creep.memory.targetCreep; // Clear the targetCreep memory if no targets are available
                 creep.memory.isCollecting = true;
                 return; // Exit if there are no eligible targets
             }
     
-            // Find the creep with the greatest free capacity
-            targetCreep = nonHarvesterCreeps.reduce((a, b) => a.store.getFreeCapacity(RESOURCE_ENERGY) > b.store.getFreeCapacity(RESOURCE_ENERGY) ? a : b);
+            // Optionally, find the closest target instead of reducing by free capacity
+            targetCreep = creep.pos.findClosestByPath(potentialTargets);
             creep.memory.targetCreep = targetCreep.id; // Store the targetCreep's ID
         }
     
@@ -344,7 +345,7 @@ var roleHauler = {
             creep.memory.isCollecting = true; // Switch back to collecting mode
         }
     },
-        
+            
 
     waitNear: function(creep) {
         let waitLocation;
