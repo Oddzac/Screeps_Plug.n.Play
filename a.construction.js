@@ -369,7 +369,7 @@ connectSpawnToPOIs: function(room) {
                 break;
         }
 
-        if (myTowers + towersPlanned === towerMax) {
+        if (myTowers + towersPlanned >= towerMax) {
             return;
         }
 
