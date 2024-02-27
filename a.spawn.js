@@ -4,124 +4,124 @@ var spawner = {
 
     
 
-    // Phase-based spawning counts
-    calculateDesiredCounts: function(room) {
-            const phase = Memory.rooms[room.name].phase.Phase;
-            const totalCreeps = Object.keys(Game.creeps).length;
-            let desiredCounts = {};
-            const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
-            const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-            const linksBuilt = Memory.rooms[room.name].linksBuilt; //Currently returns '2'
-            const scouted = Memory.rooms[room.name].scoutingComplete;
-            const roomClaimsAvailable = Memory.roomClaimsAvailable;
+// Phase-based spawning counts
+calculateDesiredCounts: function(room) {
+        const phase = Memory.rooms[room.name].phase.Phase;
+        const totalCreeps = Object.keys(Game.creeps).length;
+        let desiredCounts = {};
+        const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
+        const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
+        const linksBuilt = Memory.rooms[room.name].linksBuilt; //Currently returns '2'
+        const scouted = Memory.rooms[room.name].scoutingComplete;
+        const roomClaimsAvailable = Memory.roomClaimsAvailable;
 
-            if (Memory.rooms[room.name].underAttack) {
-        
-                const healersNeeded = totalHostiles; // 1 healer for every hostile
-                const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
-        
-                return {
-                    healer: healersNeeded,
-                    attacker: attackersNeeded,
-                    harvester: 2, // Minimal sustaining number during an attack
-                    hauler: 2, // Minimal sustaining number
+        if (Memory.rooms[room.name].underAttack) {
+    
+            const healersNeeded = totalHostiles; // 1 healer for every hostile
+            const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
+    
+            return {
+                healer: healersNeeded,
+                attacker: attackersNeeded,
+                harvester: 2, // Minimal sustaining number during an attack
+                hauler: 2, // Minimal sustaining number
+            };
+
+        } else {
+
+
+            switch (phase) {
+            case 1:
+                // Phase 1 Population-based
+                desiredCounts = {
+                    harvester: Math.ceil(totalCreeps * .2),
+                    hauler: Math.ceil(totalCreeps * .2),
+                    builder: Math.ceil(totalCreeps * .3),
+                    upgrader: Math.ceil(totalCreeps * .3)
                 };
+                break;
+            case 2:
+                // Phase 2 Population-based
+                desiredCounts = {
+                    harvester: Math.ceil(totalCreeps * .2),
+                    hauler: Math.ceil(totalCreeps * .3),
+                    builder: Math.ceil(totalCreeps * .3),
+                    upgrader: Math.ceil(totalCreeps * .3)
+                };
+                break;
+            case 3:
+                // Phase 3 Rigid counts (experimental builders calc)
+                desiredCounts = {
+                    harvester: 2, // Adjusted for Max Harvesters
+                    hauler: 6,
+                    builder: Math.ceil(totalEnergyRequired * 0.0002) + 1,
+                    upgrader: 2
+                };
+                break;
+            case 4:
+                // Phase 4 Rigid counts
+                desiredCounts = {
+                    harvester: 2,
+                    hauler: 6,
+                    builder: 2,
+                    upgrader: 1
+                };
+                break;
 
-            } else {
-
-
-                switch (phase) {
-                case 1:
-                    // Phase 1 Population-based
-                    desiredCounts = {
-                        harvester: Math.ceil(totalCreeps * .2),
-                        hauler: Math.ceil(totalCreeps * .2),
-                        builder: Math.ceil(totalCreeps * .3),
-                        upgrader: Math.ceil(totalCreeps * .3)
-                    };
-                    break;
-                case 2:
-                    // Phase 2 Population-based
-                    desiredCounts = {
-                        harvester: Math.ceil(totalCreeps * .2),
-                        hauler: Math.ceil(totalCreeps * .3),
-                        builder: Math.ceil(totalCreeps * .3),
-                        upgrader: Math.ceil(totalCreeps * .3)
-                    };
-                    break;
-                case 3:
-                    // Phase 3 Rigid counts (experimental builders calc)
-                    desiredCounts = {
-                        harvester: 2, // Adjusted for Max Harvesters
-                        hauler: 6,
-                        builder: Math.ceil(totalEnergyRequired * 0.0002) + 1,
-                        upgrader: 2
-                    };
-                    break;
-                case 4:
-                    // Phase 4 Rigid counts
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 6,
-                        builder: 2,
-                        upgrader: 1
-                    };
-                    break;
-
-                case 5:
-                    if (linksBuilt > 1) {
-                        // Phase 5 post-links
-                        if (scouted === false) {
-                            // Begin Scouting
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 2,
-                                scout: 1
-                            };
-                        } else if (scouted === true && roomClaimsAvailable > 0) {                         
-                            // Scouting Complete
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 2,
-                                claimer: 1
-                            };
-                        } else {
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 2
-                            };
-                        }
+            case 5:
+                if (linksBuilt > 1) {
+                    // Phase 5 post-links
+                    if (scouted === false) {
+                        // Begin Scouting
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 4,
+                            builder: 2,
+                            upgrader: 2,
+                            scout: 1
+                        };
+                    } else if (scouted === true && roomClaimsAvailable > 0) {                         
+                        // Scouting Complete
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 4,
+                            builder: 2,
+                            upgrader: 2,
+                            claimer: 1
+                        };
                     } else {
                         desiredCounts = {
                             harvester: 2,
-                            hauler: 6,
+                            hauler: 4,
                             builder: 2,
-                            upgrader: 1
+                            upgrader: 2
                         };
                     }
-                    break;
-                // More as needed
-                default:
+                } else {
                     desiredCounts = {
                         harvester: 2,
-                        hauler: 4,
+                        hauler: 6,
                         builder: 2,
                         upgrader: 1
                     };
-                    break;
                 }
+                break;
+            // More as needed
+            default:
+                desiredCounts = {
+                    harvester: 2,
+                    hauler: 4,
+                    builder: 2,
+                    upgrader: 1
+                };
+                break;
             }
-            //console.log(`${totalEnergyRequired}`);
-            //console.log(`${JSON.stringify(desiredCounts)}`);
-        
-            return desiredCounts;
-        },
+        }
+        //console.log(`${totalEnergyRequired}`);
+        //console.log(`${JSON.stringify(desiredCounts)}`);
+    
+        return desiredCounts;
+    },
     
 
 
@@ -133,7 +133,7 @@ var spawner = {
         
     
         const desiredCounts = this.calculateDesiredCounts(room);
-        const currentCounts = _.countBy(Game.creeps, 'memory.role');
+        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.room.name === room.name), (creep) => creep.memory.role);
     
         let nextSpawnRole = null;
     
