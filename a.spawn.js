@@ -8,12 +8,12 @@ var spawner = {
 calculateDesiredCounts: function(room) {
         const phase = Memory.rooms[room.name].phase.Phase;
         const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room).length;
-        let desiredCounts = {};
         const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
         const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-        const linksBuilt = Memory.rooms[room.name].linksBuilt; //Currently returns '2'
+        const linksBuilt = Memory.rooms[room.name].linksBuilt;
         const scouted = Memory.rooms[room.name].scoutingComplete;
         const roomClaimsAvailable = Memory.roomClaimsAvailable;
+        let desiredCounts = {};
 
         if (Memory.rooms[room.name].underAttack) {
     
@@ -29,22 +29,21 @@ calculateDesiredCounts: function(room) {
 
         } else {
 
-
             switch (phase) {
             case 1:
                 // Phase 1 Population-based
                 desiredCounts = {
-                    harvester: Math.ceil(totalCreeps * .2),
-                    hauler: Math.ceil(totalCreeps * .2),
-                    builder: Math.ceil(totalCreeps * .3),
-                    upgrader: Math.ceil(totalCreeps * .3)
+                    harvester: 4,
+                    hauler: 3,
+                    builder: 3,
+                    upgrader: 1
                 };
                 break;
             case 2:
                 // Phase 2 Population-based
                 desiredCounts = {
                     harvester: Math.ceil(totalCreeps * .2),
-                    hauler: Math.ceil(totalCreeps * .3),
+                    hauler: Math.ceil(totalCreeps * .2),
                     builder: Math.ceil(totalCreeps * .3),
                     upgrader: Math.ceil(totalCreeps * .3)
                 };
