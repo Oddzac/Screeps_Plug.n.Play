@@ -12,7 +12,7 @@ var roleHarvester = {
             this.assignSource(creep);
         }
         const source = Game.getObjectById(creep.memory.sourceId);
-        const haulers = _.filter(Game.creeps, (creep) => creep.memory.role === 'hauler' && creep.room.name === room.name).length;
+        const haulers = _.filter(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === creep.room.name).length;
 
         // Decision-making process for harvesting or energy management
         if (creep.store.getFreeCapacity() > 0) {
