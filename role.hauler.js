@@ -261,7 +261,7 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            this.waitNear(creep);
+            this.passEnergy(creep);
         }
     },
 
@@ -306,6 +306,25 @@ var roleHauler = {
     },
 
 
+    passEnergy: function(creep) {
+        // Find creeps that are not harvesters and have available capacity for energy
+        var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
+            filter: (c) => c.memory.role !== 'harvester' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        });
+    
+        // Find the closest non-harvester creep by path that can receive energy
+        var targetCreep = creep.pos.findClosestByPath(nonHarvesterCreeps);
+    
+        if(targetCreep) {
+            if(creep.transfer(targetCreep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                // Move towards the target creep if it's not in range
+                movement.moveToWithCache(creep, targetCreep);
+            }
+        } else {
+            // If no suitable target is found, then wait
+            this.waitNear(creep);
+        }
+    },
 
     waitNear: function(creep) {
         let waitLocation;
