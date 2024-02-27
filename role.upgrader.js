@@ -13,7 +13,7 @@ var roleUpgrader = {
         }
 
         // Switch to upgrading if the creep's store is more than 50% full and it has been trying to harvest for more than 10 ticks
-        if (creep.store.getUsedCapacity() > creep.store.getCapacity() * 0.5 && creep.memory.harvestingTicks > 50) {
+        if (creep.store.getUsedCapacity() > creep.store.getCapacity() * 0.5 && creep.memory.harvestingTicks > 70) {
             creep.memory.harvesting = false;
             delete creep.memory.sourceId;
         }
