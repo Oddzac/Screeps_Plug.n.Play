@@ -261,9 +261,9 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            this.waitNear(creep);
-            
-            //this.passEnergy(creep);
+            //this.waitNear(creep);
+
+            this.passEnergy(creep);
         }
     },
 
@@ -288,7 +288,7 @@ var roleHauler = {
                 creep.say('🚚');
                 return; // Exit the loop since we need to move closer
             } else if (result === OK) {
-                // If the transfer was successful and the creep has emptied its cargo
+                // If the transfer was successful
                 if (creep.store.getUsedCapacity() === 0) {
                     // Set the creep to start collecting again
                     creep.memory.isCollecting = true;
@@ -296,14 +296,9 @@ var roleHauler = {
                 }
             } else if (result === ERR_FULL) {
                 // If the target is full, find a new target or re-evaluate the task
-                if (creep.memory.task === 'spawnHauler' || 'collector') {
-                    this.deliverResources(creep);
-                }
-                this.waitNear(creep);
-                break; // Exit the loop as the target cannot accept more resources
+                this.passEnergy(creep);
+                break; // Try to distribute any remaining energy
             }
-            // Note: If the transfer result is ERR_FULL, and there are multiple resource types,
-            // this will exit after trying to transfer the first type.
         }
     },
 
@@ -327,10 +322,11 @@ var roleHauler = {
                     movement.moveToWithCache(creep, targetCreep);
                 } else if (transferResult === OK) {
                     // If transfer was successful but the hauler still has energy, try to find another target
-                    this.deliverResources(creep);
+                    this.passEnergy(creep);
                 }
             } else {
                 // If no suitable target is found, then switch back to collecting
+                creep.memory.isCollecting = true;
                 this.waitNear(creep);
             }
         } else {
