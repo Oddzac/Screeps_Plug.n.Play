@@ -183,13 +183,7 @@ var spawner = {
         const name = `${role}_${Game.time}`;
        
         // Find spawns in the specified room
-        const spawns = Game.rooms[roomName].find(FIND_MY_SPAWNS);
-        if (spawns.length === 0) {
-            console.log(`[spawnCreepWithRole] No spawns available in room ${roomName}.`);
-            return; // 
-        }
-
-        //console.log(`[spawnCreepWithRole] Spawning ${role} with body:`, JSON.stringify(body));
+        const spawns = Game.rooms[room.name].find(FIND_MY_SPAWNS);
         const selectedSpawn = spawns[0];
 
         const spawnResult = selectedSpawn.spawnCreep(body, name, {
