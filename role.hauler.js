@@ -307,24 +307,33 @@ var roleHauler = {
 
 
     passEnergy: function(creep) {
-        // Find creeps that are not harvesters and have available capacity for energy
-        var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
-            filter: (c) => c.memory.role !== 'harvester' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-        });
-    
-        // Find the closest non-harvester creep by path that can receive energy
-        var targetCreep = creep.pos.findClosestByPath(nonHarvesterCreeps);
-    
-        if(targetCreep) {
-            if(creep.transfer(targetCreep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                // Move towards the target creep if it's not in range
-                creep.say("♻️");
-                movement.moveToWithCache(creep, targetCreep);
-                console.log(`Hauler moving to ${targetCreep}`);
+        // Continuously try to pass energy until the hauler is empty
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+            // Find creeps that are not harvesters and have available capacity for energy
+            var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
+                filter: (c) => c.memory.role !== 'harvester' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            });
+        
+            // Find the closest non-harvester creep by path that can receive energy
+            var targetCreep = creep.pos.findClosestByPath(nonHarvesterCreeps);
+        
+            if(targetCreep) {
+                let transferResult = creep.transfer(targetCreep, RESOURCE_ENERGY);
+                if(transferResult === ERR_NOT_IN_RANGE) {
+                    // Move towards the target creep if it's not in range
+                    creep.say("♻️");
+                    movement.moveToWithCache(creep, targetCreep);
+                } else if (transferResult === OK) {
+                    // If transfer was successful but the hauler still has energy, try to find another target
+                    this.passEnergy(creep);
+                }
+            } else {
+                // If no suitable target is found, then switch back to collecting
+                this.waitNear(creep);
             }
         } else {
-            // If no suitable target is found, then wait
-            this.waitNear(creep);
+            // If the hauler has no energy left, switch back to collecting mode
+            creep.memory.isCollecting = true;
         }
     },
 
