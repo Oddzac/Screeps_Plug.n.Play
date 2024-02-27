@@ -303,50 +303,41 @@ var roleHauler = {
         }
     },
 
-
     passEnergy: function(creep) {
-        // Ensure we're not entering an infinite loop by checking energy and available targets
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             creep.memory.isCollecting = true;
             return; // Exit if the creep has no energy to distribute
         }
     
         var nonHarvesterCreeps = creep.room.find(FIND_MY_CREEPS, {
-            filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 40
+            filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
         });
     
+        // Check if there are eligible targets
         if (nonHarvesterCreeps.length === 0) {
             creep.memory.isCollecting = true;
             return; // Exit if there are no eligible targets
         }
     
-        for (let targetCreep of nonHarvesterCreeps) {
-            let transferResult = creep.transfer(targetCreep, RESOURCE_ENERGY);
-            
-            if (transferResult === ERR_NOT_IN_RANGE) {
-                // Move towards the target creep if it's not in range
-                creep.say("♻️");
-                movement.moveToWithCache(creep, targetCreep);
-                break; // Break after moving towards one creep, will continue next tick
-            } else if (transferResult === OK) {
-                // Successfully transferred energy, check if there's more energy to give
-                if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-                    // If the creep has no energy left, it's time to collect more
-                    creep.memory.isCollecting = true;
-                    break; // Break the loop as we're done transferring energy
-                }
-                // If the transfer was successful but the creep still has energy,
-                // continue the loop to find another target.
-            } else {
-                // Handle other cases such as ERR_FULL, in which case you might want to find another target
-                // This branch intentionally left blank for brevity, adjust based on your needs
+        // Find the creep with the greatest free capacity
+        var targetCreep = nonHarvesterCreeps.reduce((a, b) => a.store.getFreeCapacity(RESOURCE_ENERGY) > b.store.getFreeCapacity(RESOURCE_ENERGY) ? a : b);
+    
+        let transferResult = creep.transfer(targetCreep, RESOURCE_ENERGY);
+    
+        if (transferResult === ERR_NOT_IN_RANGE) {
+            // Move towards the target creep if it's not in range
+            creep.say("♻️");
+            movement.moveToWithCache(creep, targetCreep);
+        } else if (transferResult === OK) {
+            // Successfully transferred energy
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
+                creep.memory.isCollecting = true; // If the creep has no energy left, it's time to collect more
             }
         }
+        // No need for a loop here since we're targeting a single creep per execution
+    },
     
-        // If the loop completes and the creep still has energy, it should try again next tick.
-        // This can be due to all targets being out of range or full, among other reasons.
-        // Additional logic can be added here if needed, e.g., moving to a waiting position.
-    },    
+
     waitNear: function(creep) {
         let waitLocation;
     
