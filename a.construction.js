@@ -29,7 +29,7 @@ var construction = {
         if (Memory.rooms[room.name].phase.Phase < 2) {
             this.placeContainersNearSources(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase <3 && spawns > 0) {
+        } else if (Memory.rooms[room.name].phase.Phase <3 && containersBuilt > 1) {
             this.connectAndTrackProgress(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1) {
@@ -96,10 +96,11 @@ connectSpawnToPOIs: function(room) {
         const sources = room.find(FIND_SOURCES);
         const targets = [room.controller, ...sources];
         const startIndex = Memory.rooms[room.name].constructionProgress.currentTargetIndex || 0;
+        const spawn = room.find(FIND_MY_SPAWNS);
 
         for (let i = startIndex; i < targets.length; i++) {
             const target = targets[i];
-            const path = PathFinder.search(Game.spawns['Spawn1'].pos, { pos: target.pos, range: 1 }, {
+            const path = PathFinder.search(spawn.pos, { pos: target.pos, range: 1 }, {
                 roomCallback: (roomName) => this.pathCostMatrix(roomName)
             }).path;
 
