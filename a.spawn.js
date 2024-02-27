@@ -33,10 +33,10 @@ calculateDesiredCounts: function(room) {
             case 1:
                 // Phase 1 Population-based
                 desiredCounts = {
-                    harvester: 4,
-                    hauler: 3,
-                    builder: 3,
-                    upgrader: 1
+                    harvester: 3,
+                    hauler: 5,
+                    builder: 4,
+                    upgrader: 2
                 };
                 break;
             case 2:
