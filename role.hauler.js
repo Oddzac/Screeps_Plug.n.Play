@@ -318,6 +318,7 @@ var roleHauler = {
         if(targetCreep) {
             if(creep.transfer(targetCreep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                 // Move towards the target creep if it's not in range
+                creep.say("♻️");
                 movement.moveToWithCache(creep, targetCreep);
             }
         } else {
