@@ -320,6 +320,7 @@ var roleHauler = {
                 // Move towards the target creep if it's not in range
                 creep.say("♻️");
                 movement.moveToWithCache(creep, targetCreep);
+                console.log(`Hauler moving to ${targetCreep}`);
             }
         } else {
             // If no suitable target is found, then wait
