@@ -29,7 +29,7 @@ var construction = {
         if (Memory.rooms[room.name].phase.Phase < 2) {
             this.placeContainersNearSources(room);
             return;
-        } else if (Memory.rooms[room.name].phase.Phase <3 && spawns.length > 0) {
+        } else if (Memory.rooms[room.name].phase.Phase <3 && spawns > 0) {
             this.connectAndTrackProgress(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1) {
