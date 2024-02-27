@@ -304,48 +304,51 @@ var roleHauler = {
     },
 
     passEnergy: function(creep) {
+        // Check if the creep is empty and reset its state and memory
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-            delete creep.memory.targetCreep; // Clear the targetCreep memory
+            delete creep.memory.targetCreep;
             creep.memory.isCollecting = true;
-            return; // Exit if the creep has no energy to distribute
+            return;
         }
     
         let targetCreep = Game.getObjectById(creep.memory.targetCreep);
     
-        // Adjust the filter to consider the 'harvesting' flag or similar
+        // Attempt to find a new target if the current one is invalid
         if (!targetCreep || !targetCreep.memory.harvesting) {
-            var potentialTargets = creep.room.find(FIND_MY_CREEPS, {
-                filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.memory.harvesting === true
+            let potentialTargets = creep.room.find(FIND_MY_CREEPS, {
+                filter: (c) => c.memory.role !== 'harvester' && c.memory.role !== 'hauler' && c.memory.harvesting
             });
     
-            if (potentialTargets.length === 0) {
-                delete creep.memory.targetCreep; // Clear the targetCreep memory if no targets are available
-                creep.memory.isCollecting = true;
-                return; // Exit if there are no eligible targets
-            }
-    
-            // Optionally, find the closest target instead of reducing by free capacity
+            // Select the closest target that matches the criteria
             targetCreep = creep.pos.findClosestByPath(potentialTargets);
-            creep.memory.targetCreep = targetCreep.id; // Store the targetCreep's ID
+    
+            if (targetCreep) {
+                creep.memory.targetCreep = targetCreep.id;
+            } else {
+                // No valid targets found; consider waiting or changing state
+                delete creep.memory.targetCreep;
+                creep.memory.isCollecting = true;
+                return;
+            }
         }
     
+        // Transfer energy to the target creep or move towards it
         let transferResult = creep.transfer(targetCreep, RESOURCE_ENERGY);
-    
         if (transferResult === ERR_NOT_IN_RANGE) {
-            // Move towards the target creep if it's not in range
             creep.say("♻️");
             movement.moveToWithCache(creep, targetCreep.pos);
-        } else if (transferResult === OK || transferResult === ERR_FULL) {
-            // Successfully transferred energy or target is full, find a new target next tick
-            delete creep.memory.targetCreep; // Clear the targetCreep memory for next assignment
+        } else if (transferResult !== OK) {
+            // Handle transfer failures (e.g., ERR_FULL), maybe find a new target next tick
+            delete creep.memory.targetCreep;
         }
     
+        // If empty after transferring, clear the target and switch modes
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
-            delete creep.memory.targetCreep; // Ensure to clear the targetCreep memory
-            creep.memory.isCollecting = true; // Switch back to collecting mode
+            delete creep.memory.targetCreep;
+            creep.memory.isCollecting = true;
         }
     },
-            
+                
 
     waitNear: function(creep) {
         let waitLocation;
