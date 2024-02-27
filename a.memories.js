@@ -126,7 +126,17 @@ var memories = {
                 // No default case needed 
             }
         }
+
+        for (const roomName in Memory.claimRooms) {
+            // Check if the Game object has the room, and if so, whether you own the controller
+            if (Game.rooms[roomName] && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
+                // Room is claimed by you, so remove it from Memory.claimRooms
+                delete Memory.claimRooms[roomName];
+                console.log('Removing claimed room from memory:', roomName);
+            }
+        }
     },
+
         
     //Initialize Memory
     memInit: function() {
