@@ -53,8 +53,8 @@ calculateDesiredCounts: function(room) {
                 desiredCounts = {
                     harvester: 2, // Adjusted for Max Harvesters
                     hauler: 6,
-                    builder: Math.ceil(totalEnergyRequired * 0.0002) + 1,
-                    upgrader: 2
+                    builder: 3,
+                    upgrader: 3
                 };
                 break;
             case 4:
@@ -62,8 +62,8 @@ calculateDesiredCounts: function(room) {
                 desiredCounts = {
                     harvester: 2,
                     hauler: 6,
-                    builder: 2,
-                    upgrader: 1
+                    builder: 3,
+                    upgrader: 2
                 };
                 break;
 
