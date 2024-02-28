@@ -39,6 +39,22 @@ var roleScout = {
             this.recordRoomInfo(creep);
         }
     },
+
+    isHighwayRoom: function(room) {
+      // Extract the horizontal and vertical components from the room name
+      const matches = room.match(/^[WE]([0-9]+)[NS]([0-9]+)$/);
+      if (!matches) return false; // In case the room name doesn't match the expected pattern
+  
+      // Parse the numerical parts
+      const [, horizontal, vertical] = matches.map(Number);
+  
+      // Check if either the horizontal or vertical component is divisible by 10
+      if (horizontal % 10 === 0 || vertical % 10 === 0) {
+        return true;
+      } else {
+        return false;
+      }
+  }, 
       
     chooseNextRoom: function(creep) {
         if (!creep.memory.initialRoom) {
@@ -96,6 +112,7 @@ var roleScout = {
         const roomInfo = {
           name: creep.room.name,
           owner: creep.room.controller ? creep.room.controller.owner : null,
+          isHighway: this.isHighwayRoom(creep.room),
           sources: creep.room.find(FIND_SOURCES).map(source => ({
             id: source.id,
             type: source.energy ? 'energy' : 'unknown' // Add other types as necessary
@@ -103,6 +120,7 @@ var roleScout = {
           terrain: this.analyzeTerrain(creep.room),
           hasController: !!creep.room.controller,
         };
+
       
         // Determine if the room is claimable
         if (roomInfo.hasController && !roomInfo.owner) {
@@ -146,6 +164,8 @@ var roleScout = {
           wall: (counts.wall / total) * 100,
         };
     },
+
+    
 };
 
   module.exports = roleScout
