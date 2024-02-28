@@ -297,14 +297,7 @@ var roleHauler = {
                 }
             } else if (result === ERR_FULL) {
                 // If the target is full, find a new target or re-evaluate the task
-                if(creep.room.controller && !Memory.rooms[creep.room.name].signed) {
-                    const signResult = creep.signController(creep.room.controller, "The oddz favor none 🎲");
-                    if(signResult == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(creep.room.controller);
-                    } else if(signResult == OK) {
-                        Memory.rooms[creep.room.name].signed = true;
-                    }
-                }
+
                 
                 this.passEnergy(creep);
                 break; // Try to distribute any remaining energy
@@ -313,6 +306,16 @@ var roleHauler = {
     },
 
     passEnergy: function(creep) {
+
+        if(creep.room.controller && !Memory.rooms[creep.room.name].signed) {
+            const signResult = creep.signController(creep.room.controller, "The oddz favor none 🎲");
+            if(signResult == ERR_NOT_IN_RANGE) {
+                creep.moveTo(creep.room.controller);
+            } else if(signResult == OK) {
+                Memory.rooms[creep.room.name].signed = true;
+            }
+        }
+        
         // Check if the creep is empty and reset its state and memory
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) === 0) {
             delete creep.memory.targetCreep;
