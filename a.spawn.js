@@ -33,7 +33,7 @@ calculateDesiredCounts: function(room) {
             case 1:
                 // Phase 1 Population-based
                 desiredCounts = {
-                    harvester: 3,
+                    harvester: 4,
                     hauler: 5,
                     builder: 4,
                     upgrader: 2
@@ -52,9 +52,9 @@ calculateDesiredCounts: function(room) {
                 // Phase 3 Rigid counts (experimental builders calc)
                 desiredCounts = {
                     harvester: 2, // Adjusted for Max Harvesters
-                    hauler: 6,
+                    hauler: 4,
                     builder: 3,
-                    upgrader: 3
+                    upgrader: 2
                 };
                 break;
             case 4:
@@ -93,7 +93,7 @@ calculateDesiredCounts: function(room) {
                             harvester: 2,
                             hauler: 4,
                             builder: 2,
-                            upgrader: 2
+                            upgrader: 1
                         };
                     }
                 } else {
