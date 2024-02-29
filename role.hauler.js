@@ -369,6 +369,9 @@ var roleHauler = {
 
     waitNear: function(creep) {
         let waitLocation;
+
+        this.assignCollectionTask(creep);
+        
     
         // Check for containerId and linkId in memory to set waitLocation near them
         if (creep.memory.containerId) {
