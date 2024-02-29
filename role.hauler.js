@@ -59,7 +59,7 @@ var roleHauler = {
         if (linkHaulers < 1 && linksBuilt >= 1) {
             creep.memory.task = 'linkHauler';
 
-        } else if (spawnHaulers < 1 && storageBuilt > 0) {
+        } else if (spawnHaulers < 2 && storageBuilt > 0) {
             creep.memory.task = 'spawnHauler';
 
         } else {
@@ -369,6 +369,7 @@ var roleHauler = {
 
     waitNear: function(creep) {
         let waitLocation;
+
     
         // Check for containerId and linkId in memory to set waitLocation near them
         if (creep.memory.containerId) {
