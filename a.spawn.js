@@ -58,6 +58,7 @@ calculateDesiredCounts: function(room) {
                 };
                 break;
             case 4:
+                
                 // Phase 4 Rigid counts
                 desiredCounts = {
                     harvester: 2,
@@ -68,6 +69,7 @@ calculateDesiredCounts: function(room) {
                 break;
 
             case 5:
+
                 if (linksBuilt > 1) {
                     // Phase 5 post-links
                     if (scouted === false) {
@@ -96,6 +98,7 @@ calculateDesiredCounts: function(room) {
                             upgrader: 1
                         };
                     }
+
                 } else {
                     desiredCounts = {
                         harvester: 2,
@@ -105,6 +108,16 @@ calculateDesiredCounts: function(room) {
                     };
                 }
                 break;
+
+            case 6:
+
+                desiredCounts = {
+                    harvester: 2,
+                    hauler: 3,
+                    builder: 2,
+                    upgrader: 1
+                };
+
             // More as needed
             default:
                 desiredCounts = {

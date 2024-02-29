@@ -298,10 +298,31 @@ var memories = {
                         return;
                     } else {
                         // Lower Cap to 50%
+                        Memory.rooms[room.name].spawnMode.mode = 'Cap(60%)';
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .6;
+                    }
+                    break;
+
+                case 6:
+                    if (Memory.rooms[roomName].underAttack) {
+                        //Respond to hostile presence
+                        Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
+                        return;
+                    } else if (nextRole === 'harvester') {
+                        Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                        Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                        return;
+                    } else if (nextRole === 'claimer') {
+                        Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        return;
+                    } else {
+                        // Lower Cap to 50%
                         Memory.rooms[room.name].spawnMode.mode = 'Cap(50%)';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .5;
                     }
-                    break;
+                break;
                     
                 default:
                     if (Memory.rooms[roomName].underAttack) {
