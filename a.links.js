@@ -1,4 +1,5 @@
 const linker = {
+
     identifyLinks: function(room) {
         if (!room.storage) {
             console.log(`[LinkManager] ${room.name} does not have storage; cannot assign master link.`);
@@ -29,6 +30,8 @@ const linker = {
     },
 
     manageLinks: function(room) {
+
+
         if (!room.memory.links || !room.memory.links.masterLink || room.memory.links.childLinks.length === 0) {
             this.identifyLinks(room); // Initialize link identification if not already done
         }
@@ -48,13 +51,10 @@ const linker = {
         });
     },
 
-    run: function() {
-        for (const roomName in Game.rooms) {
-            const room = Game.rooms[roomName];
+    run: function(room) {
             if (Game.time % 10 === 0) { // Example: Run every 10 ticks
                 this.manageLinks(room);
             }
-        }
     }
 };
 
