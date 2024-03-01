@@ -40,6 +40,7 @@ var roleHarvester = {
     assignSource: function(creep) {
 
         const roomName = creep.room.name;
+        const minerals = creep.room.find(FIND_MINERALS);
         const extractors = creep.room.find(FIND_STRUCTURES, {
             filter: s => s.structureType === STRUCTURE_EXTRACTOR});
         const extractingHarvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName && c.memory.task === 'extractHarvest');
@@ -54,9 +55,9 @@ var roleHarvester = {
             };
         }).filter(source => source.isSafe); // Filter out sources that are not safe
     
-        if (extractors.length > 0 && extractingHarvesters < 1) {
+        if (minerals.length > 0 && extractors.length > 0 && extractingHarvesters < 1) {
             creep.memory.task = 'extractHarvest';
-            creep.memory.sourceId = extractors[0].id;
+            creep.memory.sourceId = minerals[0].id;
             return;
         }
         // Sort the safe sources by the number of creeps targeting them, and pick the one with the fewest creeps
