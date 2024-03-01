@@ -143,6 +143,7 @@ calculateDesiredCounts: function(room) {
         //console.log(`${JSON.stringify(desiredCounts)}`);
     
         return desiredCounts;
+        Memory.rooms[room.name].desiredCounts = desiredCounts;
     },
     
 
