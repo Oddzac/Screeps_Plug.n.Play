@@ -125,7 +125,6 @@ global.STATS = function() {
         const maxEnergy = room.energyCapacityAvailable;
         const currentEnergy = room.energyAvailable;
         const energy2Use = Memory.rooms[room.name].spawnMode.energyToUse
-        const collectionRate = energy2Use / avgInterval;
         
         console.log(`- Spawn mode: ${Memory.rooms[room.name].spawnMode.mode}`);
         console.log(`- Energy to use: ${energy2Use}`);

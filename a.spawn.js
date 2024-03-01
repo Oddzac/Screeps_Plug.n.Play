@@ -7,7 +7,7 @@ var spawner = {
 // Phase-based spawning counts
 calculateDesiredCounts: function(room) {
         const phase = Memory.rooms[room.name].phase.Phase;
-        const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room.name).length;
+        //const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room.name).length;
         const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
         const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
@@ -70,7 +70,7 @@ calculateDesiredCounts: function(room) {
                 break;
 
             case 5:
-
+                console.log(`Phase: ${phase} / Links: ${linksBuilt} / Scouted: ${scouted}`);
                 if (linksBuilt > 1) {
                     // Phase 5 post-links
                     if (scouted === false) {
@@ -111,7 +111,7 @@ calculateDesiredCounts: function(room) {
                 break;
 
             case 6:
-
+                console.log(`Phase: ${phase} / Extractor: ${extractorBuilt}`);
                 if (extractorBuilt > 0) {
                     desiredCounts = {
                         harvester: 3,
