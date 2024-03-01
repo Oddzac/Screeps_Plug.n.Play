@@ -149,11 +149,15 @@ var memories = {
         if (!Memory.scoutedRooms) Memory.scoutedRooms = {};
         if (!Memory.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
         
+        
     
         // Loop through each room to initialize or update room-specific memory
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
     
+            if (!Memory.rooms[room.name].extractorBuilt) {
+                Memory.rooms[room.name].extractorBuilt = 0;
+            }
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
