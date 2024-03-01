@@ -155,8 +155,8 @@ var memories = {
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
     
-            if (!Memory.rooms[room.name].extractorBuilt) {
-                Memory.rooms[room.name].extractorBuilt = 0;
+            if (!Memory.rooms[room.name].desiredCounts) {
+                Memory.rooms[room.name].desiredCounts = {};
             }
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
