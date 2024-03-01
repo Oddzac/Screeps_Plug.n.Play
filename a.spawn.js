@@ -7,7 +7,7 @@ var spawner = {
 // Phase-based spawning counts
 calculateDesiredCounts: function(room) {
         const phase = Memory.rooms[room.name].phase.Phase;
-        const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room).length;
+        const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room.name).length;
         const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
         const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
