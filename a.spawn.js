@@ -31,112 +31,113 @@ calculateDesiredCounts: function(room) {
         } else {
 
             switch (phase) {
-            case 1:
-                // Phase 1
-                desiredCounts = {
-                    harvester: 4,
-                    hauler: 5,
-                    builder: 4,
-                    upgrader: 2
-                };
-                break;
-            case 2:
-                // Phase 2
-                desiredCounts = {
-                    harvester: 3,
-                    hauler: 5,
-                    builder: 4,
-                    upgrader: 2
-                };
-                break;
-            case 3:
-                // Phase 3
-                desiredCounts = {
-                    harvester: 2, // Adjusted for Max Harvesters
-                    hauler: 4,
-                    builder: 3,
-                    upgrader: 2
-                };
-                break;
-            case 4:
-                
-                // Phase 4 Rigid counts
-                desiredCounts = {
-                    harvester: 2,
-                    hauler: 5,
-                    builder: 2,
-                    upgrader: 2
-                };
-                break;
+                case 1:
+                    // Phase 1
+                    desiredCounts = {
+                        harvester: 4,
+                        hauler: 5,
+                        builder: 4,
+                        upgrader: 2
+                    };
+                    break;
+                case 2:
+                    // Phase 2
+                    desiredCounts = {
+                        harvester: 3,
+                        hauler: 5,
+                        builder: 4,
+                        upgrader: 2
+                    };
+                    break;
+                case 3:
+                    // Phase 3
+                    desiredCounts = {
+                        harvester: 2, // Adjusted for Max Harvesters
+                        hauler: 4,
+                        builder: 3,
+                        upgrader: 2
+                    };
+                    break;
+                case 4:
+                    
+                    // Phase 4 Rigid counts
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 5,
+                        builder: 2,
+                        upgrader: 2
+                    };
+                    break;
 
-            case 5:
-                console.log(`Phase: ${phase} / Links: ${linksBuilt} / Scouted: ${scouted}`);
-                if (linksBuilt > 1) {
-                    // Phase 5 post-links
-                    if (scouted === false) {
-                        // Begin Scouting
-                        desiredCounts = {
-                            harvester: 2,
-                            hauler: 4,
-                            builder: 2,
-                            upgrader: 2,
-                            scout: 1
-                        };
-                    } else if (scouted === true && roomClaimsAvailable > 0) {                         
-                        // Scouting Complete
-                        desiredCounts = {
-                            harvester: 2,
-                            hauler: 4,
-                            builder: 2,
-                            upgrader: 2,
-                            claimer: 1
-                        };
+                case 5:
+                    console.log(`Phase: ${phase} / Links: ${linksBuilt} / Scouted: ${scouted}`);
+                    if (linksBuilt > 1) {
+                        // Phase 5 post-links
+                        if (scouted === false) {
+                            // Begin Scouting
+                            desiredCounts = {
+                                harvester: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 2,
+                                scout: 1
+                            };
+                        } else if (scouted === true && roomClaimsAvailable > 0) {                         
+                            // Scouting Complete
+                            desiredCounts = {
+                                harvester: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 2,
+                                claimer: 1
+                            };
+                        } else {
+                            desiredCounts = {
+                                harvester: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 1
+                            };
+                        }
+
                     } else {
                         desiredCounts = {
                             harvester: 2,
-                            hauler: 4,
+                            hauler: 6,
                             builder: 2,
                             upgrader: 1
                         };
                     }
+                    break;
 
-                } else {
+                case 6:
+                    console.log(`Phase: ${phase} / Extractor: ${extractorBuilt}`);
+                    if (extractorBuilt > 0) {
+                        desiredCounts = {
+                            harvester: 3,
+                            hauler: 3,
+                            builder: 2,
+                            upgrader: 1
+                        };
+                    } else {
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 3,
+                            builder: 2,
+                            upgrader: 1
+                        };
+
+                    }
+                    break;
+                // More as needed
+                default:
                     desiredCounts = {
                         harvester: 2,
-                        hauler: 6,
+                        hauler: 4,
                         builder: 2,
                         upgrader: 1
                     };
-                }
-                break;
-
-            case 6:
-                console.log(`Phase: ${phase} / Extractor: ${extractorBuilt}`);
-                if (extractorBuilt > 0) {
-                    desiredCounts = {
-                        harvester: 3,
-                        hauler: 3,
-                        builder: 2,
-                        upgrader: 1
-                    };
-                } else {
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 3,
-                        builder: 2,
-                        upgrader: 1
-                    };
-
-                }
-            // More as needed
-            default:
-                desiredCounts = {
-                    harvester: 2,
-                    hauler: 4,
-                    builder: 2,
-                    upgrader: 1
-                };
-                break;
+                    break;
             }
         }
         //console.log(`${totalEnergyRequired}`);
