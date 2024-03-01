@@ -168,6 +168,7 @@ var memories = {
                     constructionEnergyRequired: 0, // This will be calculated later
                     containersBuilt: 0,
                     storageBuilt: 0,
+                    extractorBuilt: 0,
                     linksBuilt: 0,
                     towersBuilt: 0,
                 };
@@ -399,11 +400,14 @@ var memories = {
         const towersBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER }}).length;
         const storageBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
         const linksBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK }}).length;
+        const extractorBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTRACTOR }}).length;
+
 
         Memory.rooms[room.name].containersBuilt = containersBuilt;
         Memory.rooms[room.name].towersBuilt = towersBuilt;
         Memory.rooms[room.name].storageBuilt = storageBuilt;
         Memory.rooms[room.name].linksBuilt = linksBuilt;
+        Memory.rooms[room.name].extractorBuilt = extractorBuilt;
 
         const currentPhase = Memory.rooms[room.name].phase.Phase;
         const rcl = room.controller.level;
