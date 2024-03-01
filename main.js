@@ -44,6 +44,7 @@ module.exports.loop = function() {
             // If the minimum numbers of harvesters and haulers are met, manage other creep spawning as needed
             spawner.manageCreepSpawning(room);
         }
+}
     
 
     
