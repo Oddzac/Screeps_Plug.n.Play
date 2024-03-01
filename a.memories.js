@@ -330,6 +330,7 @@ var memories = {
                 break;
                     
                 default:
+                    console.log('Spawn Mode: Default case');
                     if (Memory.rooms[roomName].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
