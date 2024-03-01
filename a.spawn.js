@@ -213,14 +213,15 @@ calculateDesiredCounts: function(room) {
             // Logging the successful spawn with current counts
             
             const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room);
-            const upgraders = _.filter(creepsInRoom, (creep) => creep.memory.role === 'upgrader').length;
-            const harvesters = _.filter(creepsInRoom, (creep) => creep.memory.role === 'harvester').length;
-            const builders = _.filter(creepsInRoom, (creep) => creep.memory.role === 'builder').length;
-            const haulers = _.filter(creepsInRoom, (creep) => creep.memory.role === 'hauler').length;
+            const upgraders = 
+            _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'upgrader').length;
+            const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
+            const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
+            const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
             const totalCreeps = Object.keys(Game.creeps).length;
-            console.log(`Room: ${room}`);
+            console.log(`Room: ${room.name} Total: ${creepsInRoom}`);
             console.log(`[spawnCreepWithRole] Spawned ${role} with ${JSON.stringify(body)}`)
-            console.log(`[spawnCreepWithRole] Current Worker Counts - Total: ${totalCreeps}, Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
+            console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
             
             
         } else {
