@@ -213,7 +213,7 @@ calculateDesiredCounts: function(room) {
         if (spawnResult == OK) {
             // Logging the successful spawn with current counts
             
-            const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room);
+            const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room.name);
             const upgraders = 
             _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'upgrader').length;
             const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
