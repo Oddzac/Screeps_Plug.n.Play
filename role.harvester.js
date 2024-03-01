@@ -39,6 +39,7 @@ var roleHarvester = {
     
     assignSource: function(creep) {
 
+        const roomName = creep.room.name;
         const extractors = creep.room.find(FIND_STRUCTURES, {
             filter: s => s.structureType === STRUCTURE_EXTRACTOR});
         const extractingHarvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName && c.memory.task === 'extractHarvest');
