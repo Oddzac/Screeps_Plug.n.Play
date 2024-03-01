@@ -274,9 +274,9 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            //this.waitNear(creep);
+            this.waitNear(creep);
 
-            this.passEnergy(creep);
+            //this.passEnergy(creep);
 
         }
     },
