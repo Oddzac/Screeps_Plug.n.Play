@@ -60,7 +60,7 @@ var roleHauler = {
         if (linkHaulers < 1 && linksBuilt >= 1) {
             creep.memory.task = 'linkHauler';
 
-        } else if (spawnHaulers < 2 && storageBuilt > 0) {
+        } else if (spawnHaulers < 1 && storageBuilt > 0) {
             creep.memory.task = 'spawnHauler';
 
         } else {
