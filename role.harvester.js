@@ -67,21 +67,28 @@ var roleHarvester = {
         }
     },
 
-    transferEnergy: function(creep) {
-        var target = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+    transferResources: function(creep) {
+        var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType === STRUCTURE_SPAWN || 
                         structure.structureType === STRUCTURE_EXTENSION ||
                         structure.structureType === STRUCTURE_CONTAINER || 
                         structure.structureType === STRUCTURE_LINK) && 
-                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                        _.sum(structure.store) < structure.storeCapacity; // Checks if the structure is not full
             }
         });
-        if (target && creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-            movement.moveToWithCache(creep, target);
-            creep.say('📥');
+        if(target) {
+            // Attempt to transfer each resource type the creep is carrying
+            for(const resourceType in creep.carry) {
+                if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, target);
+                    creep.say('📥');
+                    break; // Exit after attempting to transfer the first found resource
+                }
+            }
         }
     },
+    
 
     passEnergy: function(creep) {
         // First, check if there are containers within 20 tiles of the creep.
@@ -98,18 +105,24 @@ var roleHarvester = {
             // Find the closest link.
             var closestLink = creep.pos.findClosestByPath(links);
     
-            if (closestLink && creep.transfer(closestLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && closestLink.store.getFreeCapacity() > 0) {
-                    movement.moveToWithCache(creep, closestLink);
+
+            for(const resourceType in creep.carry) {
+                if(creep.transfer(closestLink, resourceType) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, target);
                     creep.say('📦');
+                    break;
                 }
+            }
 
         } else if (containers.length > 0) {
             // Find the closest container.
             var closestContainer = creep.pos.findClosestByPath(containers);
     
-            if (closestContainer && creep.transfer(closestContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && closestContainer.store.getFreeCapacity() > 0) {
-                    movement.moveToWithCache(creep, closestContainer);
+            for(const resourceType in creep.carry) {
+                if(creep.transfer(closestContainer, resourceType) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, target);
                     creep.say('📦');
+                    break;
                 }
 
         } else {
