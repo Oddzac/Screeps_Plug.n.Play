@@ -164,7 +164,7 @@ var roleHauler = {
             }
     
             // Assign or reaffirm container target if no tombstones or dropped resources are available.
-            if (!creep.memory.containerId || targets.length === 0) {
+            if (!creep.memory.containerId || targets.length === 0  && creep.memory.task !== 'spawnHauler') {
                 const containers = creep.room.find(FIND_STRUCTURES, {
                     filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
                                    _.sum(s.store) > 0 // Check if the container has any resources
