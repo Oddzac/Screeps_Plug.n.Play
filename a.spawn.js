@@ -70,7 +70,7 @@ calculateDesiredCounts: function(room) {
                     break;
 
                 case 5:
-                    console.log(`Phase: ${phase} / Links: ${linksBuilt} / Scouted: ${scouted}`);
+                    
                     if (linksBuilt > 1) {
                         // Phase 5 post-links
                         if (scouted === false) {
@@ -111,7 +111,7 @@ calculateDesiredCounts: function(room) {
                     break;
 
                 case 6:
-                    console.log(`Phase: ${phase} / Extractor: ${extractorBuilt}`);
+                    
                     if (extractorBuilt > 0) {
                         desiredCounts = {
                             harvester: 3,
