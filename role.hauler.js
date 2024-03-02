@@ -110,7 +110,7 @@ var roleHauler = {
 
 
         if (creep.memory.task === 'linkHauler') {
-
+            delete creep.memory.containerId;
             // Check if we already have a link assigned in memory
             if (!creep.memory.linkId) {
                 // Find the storage structure
