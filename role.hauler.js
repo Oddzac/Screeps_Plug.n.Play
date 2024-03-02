@@ -78,8 +78,8 @@ var roleHauler = {
 
     assignContainer: function(creep) {
         const containers = creep.room.find(FIND_STRUCTURES, {
-            filter: s => s.structureType === STRUCTURE_CONTAINER && 
-                         s.store[RESOURCE_ENERGY] > 0
+            filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
+                           _.sum(s.store) > 0 // Check if the container has any resources
         });
     
         if (containers.length > 0) {
@@ -138,12 +138,14 @@ var roleHauler = {
 
         } else if (creep.memory.task === 'spawnHauler') {
             //Collect from room storage exclusively
+            delete creep.memory.linkId;
             target = creep.room.storage;
             
 
         } else {
             // General collector logic including tombstones, dropped resources, and assigned container.
             // First, gather tombstones and dropped resources.
+            delete creep.memory.linkId;
             if (storageBuilt) {
                 targets = targets.concat(
                     creep.room.find(FIND_DROPPED_RESOURCES).concat(
@@ -164,7 +166,8 @@ var roleHauler = {
             // Assign or reaffirm container target if no tombstones or dropped resources are available.
             if (!creep.memory.containerId || targets.length === 0) {
                 const containers = creep.room.find(FIND_STRUCTURES, {
-                    filter: (s) => s.structureType === STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
+                    filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
+                                   _.sum(s.store) > 0 // Check if the container has any resources
                 });
     
                 if (containers.length > 0) {
