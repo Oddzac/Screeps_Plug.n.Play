@@ -85,11 +85,11 @@ var roleHarvester = {
 
     passEnergy: function(creep) {
         // First, check if there are containers within 20 tiles of the creep.
-        var containers = creep.pos.findInRange(FIND_STRUCTURES, 10, {
+        var containers = creep.pos.findInRange(FIND_STRUCTURES, 5, {
             filter: { structureType: STRUCTURE_CONTAINER }
         });
 
-        var links = creep.pos.findInRange(FIND_STRUCTURES, 10, {
+        var links = creep.pos.findInRange(FIND_STRUCTURES, 5, {
             filter: { structureType: STRUCTURE_LINK }
         });
 
