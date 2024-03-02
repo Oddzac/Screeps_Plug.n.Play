@@ -108,7 +108,7 @@ var roleHarvester = {
 
             for(const resourceType in creep.carry) {
                 if(creep.transfer(closestLink, resourceType) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, target);
+                    movement.moveToWithCache(creep, closestLink);
                     creep.say('📦');
                     break;
                 }
@@ -120,7 +120,7 @@ var roleHarvester = {
     
             for(const resourceType in creep.carry) {
                 if(creep.transfer(closestContainer, resourceType) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, target);
+                    movement.moveToWithCache(creep, closestContainer);
                     creep.say('📦');
                     break;
                 }
