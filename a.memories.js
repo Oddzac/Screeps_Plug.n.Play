@@ -73,7 +73,7 @@ var movement = require('a.movement');
 
 var memories = {
     
-    immediateMemory: function(room) {
+    immediateMemory: function() {
         
         this.memInit();
         this.spawnMode();
