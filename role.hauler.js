@@ -10,10 +10,6 @@ var roleHauler = {
     run: function(creep) {
         this.initializeMemory(creep);
         this.signRoom (creep);
-
-        if (Game.time % 100 === 0) {
-            this.assignCollectionTask(creep);
-        }
         
         if (creep.memory.isCollecting) {
             if (!creep.memory.task) {
