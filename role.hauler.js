@@ -69,6 +69,7 @@ var roleHauler = {
 
         } else {
             creep.memory.task = 'collector';
+            delete creep.memory.linkId;
             return; //Early Return For !target
         }
 
