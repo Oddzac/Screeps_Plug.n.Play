@@ -124,6 +124,7 @@ var roleHarvester = {
                     creep.say('📦');
                     break;
                 }
+            }
 
         } else {
             // If no links or containers are found within range or cannot deposit for some reason, fallback to dropping energy.
