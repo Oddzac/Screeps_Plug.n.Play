@@ -23,12 +23,15 @@ var terminals = {
                 orders.sort((a, b) => b.price - a.price);
     
                 if(orders.length > 0) {
-                    let result = Game.market.deal(orders[0].id, Math.min(terminal.store[resourceType] - threshold, orders[0].amount), room.name);
+                    let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
+                    let result = Game.market.deal(orders[0].id, amountToSell, room.name);
                     if(result === OK) {
-                        console.log('Trade executed for', resourceType, 'in', room.name);
+                        let creditsEarned = orders[0].price * amountToSell;
+                        console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
+                        Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                     }
                     else {
-                        console.log('Trade failed for', resourceType, 'in', room.name, ':', result);
+                        console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
                     }
                 }
             }
