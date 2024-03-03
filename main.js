@@ -4,6 +4,7 @@ var spawner = require('a.spawn');
 var memories = require('a.memories');
 var towers = require('a.towers');
 var linker = require('a.links');
+var terminals = require('a.terminal');
 
 module.exports.loop = function() {
 
@@ -34,7 +35,7 @@ module.exports.loop = function() {
 
         // Check if there is an available spawn in the room
         if (availableSpawn) {
-            if (harvesters.length < 1) {
+            if (harvesters.length < 2) {
                 // Spawn a harvester if there are less than 1
                 availableSpawn.spawnCreep([MOVE, CARRY, WORK], `Harvester_${Game.time}`, {memory: {role: 'harvester', room: roomName}}); 
             } else if (haulers.length < 2) {
@@ -46,6 +47,16 @@ module.exports.loop = function() {
             }
         }
     
+        //Terminal Management
+        if(room.terminal && room.controller && room.controller.my) {
+
+
+            if (Game.time % 50 === 0) {
+                terminal.adjustPrices(room);
+            }
+
+            terminal.manageTerminal(room);
+        }
 
     
         // Construction management, including checking for spawn construction
@@ -76,6 +87,7 @@ module.exports.loop = function() {
         });
 
         if (myLinksCount.length > 1) {
+
             //console.log(`calling linker for ${room}`);
             linker.manageLinks(room);
         }
