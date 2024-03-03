@@ -7,7 +7,7 @@ var terminals = {
 
         // Ensure there's at least 1000 energy before proceeding
         if (terminal.store[RESOURCE_ENERGY] < 1000) {
-            console.log('Insufficient energy for trading in', room.name);
+            //console.log('Insufficient energy for trading in', room.name);
             return; // Exit the function if there's not enough energy
         }
         
