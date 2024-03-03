@@ -328,7 +328,6 @@ var roleHauler = {
                 break; // Try to distribute any remaining energy
             }
         }
-        delete creep.memory.task;
     },               
 
     waitNear: function(creep) {
