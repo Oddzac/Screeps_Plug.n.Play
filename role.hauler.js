@@ -318,6 +318,7 @@ var roleHauler = {
                 if (creep.store.getUsedCapacity() === 0) {
                     // Set the creep to start collecting again
                     creep.memory.isCollecting = true;
+                    
                     break; // Exit the loop as the cargo is empty
                 }
             } else if (result === ERR_FULL) {
@@ -327,6 +328,7 @@ var roleHauler = {
                 break; // Try to distribute any remaining energy
             }
         }
+        delete creep.memory.task;
     },               
 
     waitNear: function(creep) {
