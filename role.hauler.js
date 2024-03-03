@@ -73,7 +73,7 @@ var roleHauler = {
         this.assignCollectionTarget(creep);
     },
 
-    assignContainer: function(creep) {
+    /*assignContainer: function(creep) {
         const containers = creep.room.find(FIND_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
                            _.sum(s.store) > 0 // Check if the container has any resources
@@ -90,7 +90,7 @@ var roleHauler = {
                 creep.memory.containerId = leastAssigned.id;
             }
         }
-    },
+    },*/
 
 
 
