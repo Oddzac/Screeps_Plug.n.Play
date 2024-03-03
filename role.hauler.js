@@ -67,10 +67,30 @@ var roleHauler = {
         } else {
             creep.memory.task = 'collector';
             delete creep.memory.linkId;
+            this.assignContainer(creep);
             return; //Early Return For !target
         }
 
         this.assignCollectionTarget(creep);
+    },
+
+    assignContainer: function(creep) {
+        const containers = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
+                           _.sum(s.store) > 0 // Check if the container has any resources
+        });
+    
+        if (containers.length > 0) {
+            const containerAssignments = containers.map(container => ({
+                id: container.id,
+                count: _.sum(Game.creeps, c => c.memory.containerId === container.id && c.memory.role === 'hauler')
+            }));
+    
+            const leastAssigned = _.min(containerAssignments, 'count');
+            if (leastAssigned && leastAssigned.id) {
+                creep.memory.containerId = leastAssigned.id;
+            }
+        }
     },
 
     //IMPLEMENT SWITCH CASE VIA ROLE
