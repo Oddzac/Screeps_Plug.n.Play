@@ -12,6 +12,7 @@ calculateDesiredCounts: function(room) {
         const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
         const linksBuilt = Memory.rooms[room.name].linksBuilt;
         const extractorBuilt = Memory.rooms[room.name].extractorBuilt;
+        const terminalBuilt = Memory.rooms[room.name].terminalBuilt;
         const scouted = Memory.rooms[room.name].scoutingComplete;
         const roomClaimsAvailable = Memory.roomClaimsAvailable;
         let desiredCounts = {};
@@ -119,6 +120,14 @@ calculateDesiredCounts: function(room) {
                             builder: 2,
                             upgrader: 1
                         };
+                    } else if (terminalBuilt > 0) {
+                        desiredCounts = {
+                            harvester: 3,
+                            hauler: 4,
+                            builder: 2,
+                            upgrader: 1
+                        };
+
                     } else {
                         desiredCounts = {
                             harvester: 2,
