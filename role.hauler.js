@@ -45,6 +45,7 @@ var roleHauler = {
         // Determine task based on room phase and structure availability
         const roomName = creep.room.name;
         const phase = Memory.rooms[creep.room.name].phase.Phase;
+        const haulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName);
         const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'spawnHauler');
         const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'linkHauler');
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt;
@@ -236,16 +237,25 @@ var roleHauler = {
 
         switch (creep.memory.task) {
             case 'spawnHauler':
-                //spawnHaulers distribute energy to any structure that requires it to function.
+                // Prioritize spawns and extensions first, then towers, by their need for energy.
                 targets = creep.room.find(FIND_MY_STRUCTURES, {
-                    filter: structure => (
-                        (structure.structureType === STRUCTURE_SPAWN || 
-                        structure.structureType === STRUCTURE_EXTENSION || 
-                        structure.structureType === STRUCTURE_TOWER) &&
-                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                    )
+                    filter: (structure) => {
+                        return (structure.structureType === STRUCTURE_SPAWN ||
+                                structure.structureType === STRUCTURE_EXTENSION) &&
+                                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                    }
                 });
-
+    
+                if (targets.length === 0) {
+                    // If all spawns and extensions are full, then look at towers.
+                    targets = creep.room.find(FIND_MY_STRUCTURES, {
+                        filter: (structure) => {
+                            return structure.structureType === STRUCTURE_TOWER &&
+                                   structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                        }
+                    });
+                }
+    
                 target = creep.pos.findClosestByPath(targets);
                 break;
 
