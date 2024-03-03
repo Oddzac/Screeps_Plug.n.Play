@@ -8,7 +8,13 @@ var movement = require('a.movement'); // Movement functions
 
 var roleHauler = {
     run: function(creep) {
-        this.initializeMemory(creep);
+
+        if (creep.store.getUsedCapacity() === 0) {
+            creep.memory.isCollecting = true;
+        } else if (creep.store.getFreeCapacity() === 0) {
+            creep.memory.isCollecting = false;
+        }
+
         this.signRoom (creep);
         
         if (creep.memory.isCollecting) {
@@ -19,14 +25,6 @@ var roleHauler = {
             
         } else {
             this.deliverResources(creep);
-        }
-    },
-
-    initializeMemory: function(creep) {
-        if (creep.store.getUsedCapacity() === 0) {
-            creep.memory.isCollecting = true;
-        } else if (creep.store.getFreeCapacity() === 0) {
-            creep.memory.isCollecting = false;
         }
     },
 
@@ -45,20 +43,26 @@ var roleHauler = {
         // Determine task based on room phase and structure availability
         const roomName = creep.room.name;
         const phase = Memory.rooms[creep.room.name].phase.Phase;
+        
         const haulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName);
         const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'spawnHauler');
         const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'linkHauler');
+        const terminalHauler = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'terminalHauler');
+        
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
         const linksBuilt = Memory.rooms[creep.room.name].linksBuilt;
-
+        const terminalBuilt = Memory.rooms[creep.room.name].terminalBuilt;
 
 
 
         let target;
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
-        if (linkHaulers < 1 && linksBuilt >= 1) {
+        if (terminalHauler < 1 && terminalBuilt) {
+            creep.memory.task = 'terminalHauler';
+
+        } else if (linkHaulers < 1 && linksBuilt > 1) {
             creep.memory.task = 'linkHauler';
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
@@ -132,7 +136,7 @@ var roleHauler = {
 
             target = Game.getObjectById(creep.memory.linkId);
 
-        } else if (creep.memory.task === 'spawnHauler') {
+        } else if (creep.memory.task === 'spawnHauler' || creep.memory.task === 'terminalHauler' ) {
             //Collect from room storage exclusively
             delete creep.memory.linkId;
             target = creep.room.storage;
@@ -207,10 +211,38 @@ var roleHauler = {
         let actionResult;
     
         if (creep.memory.task === 'spawnHauler') {
-            // Assuming target is storage for spawnHauler
+            // target = room storage
             actionResult = creep.withdraw(target, RESOURCE_ENERGY);
+
+        } else if (creep.memory.task === 'terminalHauler') {
+            let resourceType = RESOURCE_ENERGY; // Default to energy
+            let totalMinerals = _.sum(creep.room.storage.store) - creep.room.storage.store[RESOURCE_ENERGY]; // Calculate total minerals in storage
+        
+            if (totalMinerals > 0) {
+                // If there are minerals, find one to withdraw with quantity greater than 1000
+                for(const resource in creep.room.storage.store) {
+                    if(resource !== RESOURCE_ENERGY && creep.room.storage.store[resource] > 1000) {
+                        resourceType = resource;
+                        break; // Withdraw the first found surplus mineral
+                    }
+                }
+                // Check if a surplus mineral was found, if not and energy is surplus, proceed with energy
+                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 1000) {
+                    // If there's not enough surplus energy, do not proceed to withdraw
+                    this.waitNear(creep); // Wait if conditions are not met
+                    return; // Exit the function
+                }
+            } else if (creep.room.storage.store[RESOURCE_ENERGY] <= 1000) {
+                // If there's not enough energy, do not proceed to withdraw
+                this.waitNear(creep); // Wait if conditions are not met
+                return; // Exit the function
+            }
+            // Proceed to withdraw the selected surplus resource
+            actionResult = creep.withdraw(target, resourceType);
+
         } else if (target instanceof Resource) {
             actionResult = creep.pickup(target);
+
         } else if (target.store) {
             // Withdraw the most abundant resource for post-storage, or energy for pre-storage
             let resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b, RESOURCE_ENERGY);
@@ -256,6 +288,10 @@ var roleHauler = {
                 }
     
                 target = creep.pos.findClosestByPath(targets);
+                break;
+
+            case 'terminalHauler':
+                target = creep.room.terminal
                 break;
 
             case 'linkHauler':

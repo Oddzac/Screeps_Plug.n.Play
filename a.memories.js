@@ -155,26 +155,27 @@ var memories = {
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
     
-            if (!Memory.rooms[room.name].desiredCounts) {
-                Memory.rooms[room.name].desiredCounts = {};
+            if (!Memory.rooms[room.name].terminalBuilt) {
+                Memory.rooms[room.name].terminalBuilt = {};
             }
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
                     phase: { Phase: 1, RCL: room.controller.level },
-                    scoutingComplete: false,
-                    claimedDrops: {},
-                    pathCache: {},
-                    nextSpawnRole: null,
                     underAttack: room.find(FIND_HOSTILE_CREEPS).length > 0,
+                    scoutingComplete: false,
+                    nextSpawnRole: null,
                     spawnMode: { mode: null, energyToUse: 0 },
                     constructionRuns: 0,
-                    constructionEnergyRequired: 0, // This will be calculated later
+                    constructionEnergyRequired: 0,
                     containersBuilt: 0,
                     storageBuilt: 0,
                     extractorBuilt: 0,
                     linksBuilt: 0,
+                    terminalBuilt: 0,
                     towersBuilt: 0,
+                    pathCache: {},
+                    claimedDrops: {},
                 };
             } else {
                 // Update existing room memory objects
@@ -406,6 +407,7 @@ var memories = {
         const storageBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
         const linksBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK }}).length;
         const extractorBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTRACTOR }}).length;
+        const terminalBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TERMINAL }}).length;
 
 
         Memory.rooms[room.name].containersBuilt = containersBuilt;
@@ -413,6 +415,8 @@ var memories = {
         Memory.rooms[room.name].storageBuilt = storageBuilt;
         Memory.rooms[room.name].linksBuilt = linksBuilt;
         Memory.rooms[room.name].extractorBuilt = extractorBuilt;
+        Memory.rooms[room.name].terminalBuilt = terminalBuilt;
+
 
         const currentPhase = Memory.rooms[room.name].phase.Phase;
         const rcl = room.controller.level;

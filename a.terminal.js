@@ -2,7 +2,7 @@ var terminals = {
     
     manageTerminal: function(room) {
         const terminal = room.terminal;
-        const SURPLUS_THRESHOLD = { 'energy': 1000, 'O': 2000 }; // Default thresholds
+        const SURPLUS_THRESHOLD = { 'energy': 1000, 'O': 1000 }; // Default thresholds
         
         // Iterate over all resources in the terminal
         for(const resourceType in terminal.store) {
