@@ -59,7 +59,7 @@ var roleHauler = {
         let target;
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
-        if (terminalHauler < 1 && terminalBuilt) {
+        if (terminalHauler < 1 && terminalBuilt > 0) {
             creep.memory.task = 'terminalHauler';
 
         } else if (linkHaulers < 1 && linksBuilt > 1) {
