@@ -39,7 +39,7 @@ var utilities = {
         // Attempt to find storage with energy
         const storageWithEnergy = creep.room.find(FIND_STRUCTURES, {
             filter: (s) => (s.structureType === STRUCTURE_STORAGE) &&
-                            s.store[RESOURCE_ENERGY] > 100 // Only withdraw if sufficient reserve
+                            s.store[RESOURCE_ENERGY] > 300 // Only withdraw if sufficient reserve
         });
 
         if (storageCount > 0) {
