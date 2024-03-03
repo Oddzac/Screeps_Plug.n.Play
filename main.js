@@ -52,10 +52,10 @@ module.exports.loop = function() {
 
 
             if (Game.time % 50 === 0) {
-                terminal.adjustPrices(room);
+                terminals.adjustPrices(room);
             }
 
-            terminal.manageTerminal(room);
+            terminals.manageTerminal(room);
         }
 
     
