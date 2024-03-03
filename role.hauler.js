@@ -367,10 +367,6 @@ var roleHauler = {
 
     waitNear: function(creep) {
         let waitLocation;
-
-        if (creep.store.getUsedCapacity > 0) {
-            this.deliverResources(creep);
-        }
     
         // Check for containerId and linkId in memory to set waitLocation near them
         if (creep.memory.containerId) {
