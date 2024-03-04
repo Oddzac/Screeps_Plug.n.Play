@@ -142,60 +142,54 @@ var roleHauler = {
             target = creep.room.storage;
             
 
-        } else {
-            // General collector logic including tombstones, dropped resources, and assigned container.
-            // First, gather tombstones and dropped resources.
-            delete creep.memory.linkId;
-            if (storageBuilt) {
-                targets = targets.concat(
-                    creep.room.find(FIND_DROPPED_RESOURCES).concat(
-                        creep.room.find(FIND_TOMBSTONES, {
-                            filter: (t) => _.sum(t.store) > 0
-                        })
-                    )
-                );
-            } else {
-                //If no storage, focus on energy
-                targets = targets.concat(
-                    creep.room.find(FIND_DROPPED_RESOURCES, {
-                        filter: (r) => r.resourceType === RESOURCE_ENERGY && r.amount > 10
-                    })
-                );
-            }
-    
-            // Assign or reaffirm container target if no tombstones or dropped resources are available.
-            if (!creep.memory.containerId || targets.length === 0  && creep.memory.task !== 'spawnHauler' && creep.memory.task !== 'linkHauler') {
-                const containers = creep.room.find(FIND_STRUCTURES, {
-                    filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
-                                   _.sum(s.store) > 0 // Check if the container has any resources
-                });
-    
-                if (containers.length > 0) {
-                    // Ideally, you'd prioritize the creep's assigned container, but if it's not set or empty, find a new one.
-                    let assignedContainer = creep.memory.containerId ? Game.getObjectById(creep.memory.containerId) : null;
-                    if (!assignedContainer || assignedContainer.store[RESOURCE_ENERGY] === 0) {
-                        const containerAssignments = containers.map(container => ({
-                            id: container.id,
-                            count: _.sum(Game.creeps, c => c.memory.containerId === container.id && c.memory.role === 'hauler')
-                        }));
-    
-                        const leastAssigned = _.min(containerAssignments, 'count');
-                        if (leastAssigned && leastAssigned.id) {
-                            creep.memory.containerId = leastAssigned.id;
-                            assignedContainer = Game.getObjectById(leastAssigned.id);
-                        }
-                    }
-    
-                    // If an assigned container exists and is not already in targets, add it.
-                    if (assignedContainer && !targets.includes(assignedContainer)) {
-                        targets.push(assignedContainer);
-                    }
-                }
-            }
-    
-            // With all potential targets considered, find the closest.
-            target = creep.pos.findClosestByPath(targets);
+} else {
+    // Clear any irrelevant memory assignments.
+    delete creep.memory.linkId;
+
+    // Initialize targets array.
+    targets = [];
+
+    // Add dropped resources and tombstones with resources to the targets list.
+    const droppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
+        filter: (r) => storageBuilt || (r.resourceType === RESOURCE_ENERGY && r.amount > 10)
+    });
+    const tombstonesWithResources = creep.room.find(FIND_TOMBSTONES, {
+        filter: (t) => _.sum(t.store) > 0
+    });
+
+    targets = targets.concat(droppedResources, tombstonesWithResources);
+
+    // Directly work with the assigned container if specified and valid.
+    if (creep.memory.containerId) {
+        const assignedContainer = Game.getObjectById(creep.memory.containerId);
+        if (assignedContainer && _.sum(assignedContainer.store) > 0 && !targets.includes(assignedContainer)) {
+            targets.push(assignedContainer);
         }
+    }
+
+    // Find the closest target and prioritize it.
+    if (targets.length > 0) {
+        target = creep.pos.findClosestByPath(targets);
+    } else if (!creep.memory.containerId || creep.memory.task !== 'spawnHauler' && creep.memory.task !== 'linkHauler') {
+        // If no targets and no specific task, consider finding a new container to assign.
+        const containers = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) => s.structureType === STRUCTURE_CONTAINER && _.sum(s.store) > 0
+        });
+
+        if (containers.length > 0) {
+            // Assign the creep to the least assigned container if not already assigned.
+            if (!creep.memory.containerId) {
+                let containerAssignments = containers.map(container => ({
+                    id: container.id,
+                    count: _.sum(Game.creeps, c => c.memory.containerId === container.id && c.memory.role === 'hauler')
+                }));
+
+                let leastAssigned = _.min(containerAssignments, 'count');
+                creep.memory.containerId = leastAssigned.id;
+            }
+        }
+    }
+}
 
     
         if (target) {
