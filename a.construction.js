@@ -331,46 +331,33 @@ connectSpawnToPOIs: function(room) {
 
 
     placeTower: function(room) {
-        //Check tower + tower site counts to see if we're at the limit
+        // Count existing towers and tower construction sites in the room
         const myTowers = room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }
         }).length;
-        const towersPlanned = Object.values(Game.constructionSites)
-        .filter(site => site.structureType === STRUCTURE_TOWER && site.room.name === room).length;
-        
+        const towersPlanned = room.find(FIND_MY_CONSTRUCTION_SITES, {
+            filter: (site) => site.structureType === STRUCTURE_TOWER
+        }).length;
+
         let searchRadius; // Define a search area around the weighted center
-        let towerMax;
-        switch(Memory.rooms[room.name].phase.Phase) {
-            case 1:
-                towerMax = 0;
-                break;
-            case 2:
-                towerMax = 0;
-                break;
-            case 3:
-                towerMax = 1;
-                searchRadius = 3;
-                break;
-            case 4:
-                towerMax = 1;
-                break;
-            case 5:
-                towerMax = 2;
-                searchRadius = 5;
-                break;
-            case 6:
-                towerMax = 2;
-                break;
-            case 7:
-                towerMax = 3;
-                searchRadius = 7;
-            default:
-                towerMax = 2;
-                break;
+        let towerMax = 0;
+        // Determine the maximum number of towers allowed based on room's controller level
+        const controllerLevel = room.controller.level;
+        if (controllerLevel >= 3 && controllerLevel < 5) {
+            towerMax = 1; // Levels 3 and 4 can have 1 tower
+            searchRadius = 3;
+        } else if (controllerLevel == 5) {
+            towerMax = 2; // Level 5 can have 2 towers
+            searchRadius = 5;
+        } else if (controllerLevel >= 6) {
+            towerMax = 3; // Level 6+ can have 3 towers (simplify for example)
+            searchRadius = 7;
         }
 
+        // Check if the current number of towers plus planned towers is greater than or equal to the max
         if (myTowers + towersPlanned >= towerMax) {
-            return;
+            console.log("Maximum number of towers reached or exceeded. No new tower placement attempted.");
+            return; // Exit the function to prevent further tower placement
         }
 
         // Find structures to set weighted center
