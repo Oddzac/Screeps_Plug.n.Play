@@ -155,8 +155,8 @@ var memories = {
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
     
-            if (!Memory.rooms[room.name].terminalBuilt) {
-                Memory.rooms[room.name].terminalBuilt = {};
+            if (!Memory.rooms[room.name].tradeSummary) {
+                Memory.rooms[room.name].tradeSummary = { creditsEarned: 0, lastUpdate: Game.time };
             }
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
@@ -166,6 +166,7 @@ var memories = {
                     scoutingComplete: false,
                     nextSpawnRole: null,
                     spawnMode: { mode: null, energyToUse: 0 },
+                    tradeSummary:{ creditsEarned: 0, lastUpdate: Game.time },
                     constructionRuns: 0,
                     constructionEnergyRequired: 0,
                     containersBuilt: 0,

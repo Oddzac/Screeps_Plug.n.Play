@@ -4,6 +4,8 @@ var terminals = {
         const terminal = room.terminal;
         const SURPLUS_THRESHOLD = { 'energy': 1000, 'O': 1000 }; // Default thresholds
 
+        // Check and reset profit summary hourly
+        this.manageProfitSummary(room);
 
         // Ensure there's at least 1000 energy before proceeding
         if (terminal.store[RESOURCE_ENERGY] < 1000) {
@@ -29,6 +31,8 @@ var terminals = {
                         let creditsEarned = orders[0].price * amountToSell;
                         console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                         Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
+                        // Update the memory with credits earned
+                        Memory.rooms[room.name].tradeSummary.creditsEarned += creditsEarned;
                     }
                     else {
                         console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
@@ -36,6 +40,7 @@ var terminals = {
                 }
             }
         }
+        
     },
 
     adjustPrices: function(room) {
@@ -79,6 +84,20 @@ var terminals = {
             }
     
             console.log(`Setting sell price for ${resourceType} to ${myPrice.toFixed(2)} in ${room.name}`);
+        }
+    },
+
+    manageProfitSummary: function(room) {
+        const HOUR_TICKS = 1200; // ~3 seconds per tick
+        const tradeSummary = Memory.rooms[room.name].tradeSummary;
+        
+        if (Game.time - tradeSummary.lastUpdate >= HOUR_TICKS) {
+            console.log(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}`);
+            Game.notify(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}`);
+    
+            // Reset for the next period
+            tradeSummary.creditsEarned = 0;
+            tradeSummary.lastUpdate = Game.time;
         }
     }
 };
