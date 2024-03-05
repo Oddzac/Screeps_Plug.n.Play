@@ -78,8 +78,8 @@ calculateDesiredCounts: function(room) {
                             // Begin Scouting
                             desiredCounts = {
                                 harvester: 2,
-                                hauler: 4,
-                                builder: 2,
+                                hauler: 5,
+                                builder: 1,
                                 upgrader: 2,
                                 scout: 1
                             };
