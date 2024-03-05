@@ -356,7 +356,7 @@ connectSpawnToPOIs: function(room) {
 
         // Check if the current number of towers plus planned towers is greater than or equal to the max
         if (myTowers + towersPlanned >= towerMax) {
-            console.log("Maximum number of towers reached or exceeded. No new tower placement attempted.");
+            //console.log("Maximum number of towers reached or exceeded. No new tower placement attempted.");
             return; // Exit the function to prevent further tower placement
         }
 
