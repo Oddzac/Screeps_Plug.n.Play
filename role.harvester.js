@@ -80,7 +80,7 @@ var roleHarvester = {
         });
         if(target) {
             // Attempt to transfer each resource type the creep is carrying
-            for(const resourceType in creep.carry) {
+            for(const resourceType in creep.store) {
                 if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
                     movement.moveToWithCache(creep, target);
                     creep.say('📥');
@@ -107,11 +107,29 @@ var roleHarvester = {
             var closestLink = creep.pos.findClosestByPath(links);
     
 
-            for(const resourceType in creep.carry) {
-                if(creep.transfer(closestLink, resourceType) === ERR_NOT_IN_RANGE) {
+            for(const resourceType in creep.store) {
+                let transferResult = creep.transfer(closestLink, resourceType);
+            
+                if(transferResult === ERR_NOT_IN_RANGE) {
                     movement.moveToWithCache(creep, closestLink);
                     creep.say('📦');
-                    break;
+                    break; // Break after attempting to move, assuming only one action per tick
+                } else if (transferResult === ERR_FULL) {
+                    let closestContainer = creep.pos.findClosestByPath(containers);
+                    if(!closestContainer) {
+                        
+                        break; // Optionally handle the case where no container is found
+                    }
+                    
+                    transferResult = creep.transfer(closestContainer, resourceType);
+                    if(transferResult === ERR_NOT_IN_RANGE) {
+                        movement.moveToWithCache(creep, closestContainer);
+                        creep.say('📦');
+                        break;
+                    } else if(transferResult !== OK) {
+                        
+                        break; // Optionally handle other errors or continue trying other resources
+                    }
                 }
             }
 
@@ -119,7 +137,7 @@ var roleHarvester = {
             // Find the closest container.
             var closestContainer = creep.pos.findClosestByPath(containers);
     
-            for(const resourceType in creep.carry) {
+            for(const resourceType in creep.store) {
                 if(creep.transfer(closestContainer, resourceType) === ERR_NOT_IN_RANGE) {
                     movement.moveToWithCache(creep, closestContainer);
                     creep.say('📦');
