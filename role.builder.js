@@ -194,8 +194,8 @@ var roleBuilder = {
             let priority = 0;
     
             // Prioritize containers, towers, and extensions
-            if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION].includes(site.structureType)) {
-                priority -= 500; // High priority
+            if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK].includes(site.structureType)) {
+                priority -= 700; // High priority
             }
     
             // Next, prioritize based on completion percentage, closer to completion is higher
