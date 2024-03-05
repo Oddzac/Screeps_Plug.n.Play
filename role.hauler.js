@@ -16,7 +16,7 @@ var roleHauler = {
         }
 
         this.signRoom (creep);
-        if (Game.time % 50 === 0) {
+        if (Game.time % 100 === 0) {
             this.assignCollectionTask(creep);
         }
         
