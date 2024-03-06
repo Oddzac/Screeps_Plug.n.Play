@@ -155,9 +155,9 @@ var memories = {
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
     
-            if (!Memory.rooms[room.name].tradeSummary) {
-                Memory.rooms[room.name].tradeSummary = { creditsEarned: 0, lastUpdate: Game.time };
-            }
+            //if (!Memory.rooms[room.name].tradeSummary) {
+                //Memory.rooms[room.name].tradeSummary = { creditsEarned: 0, lastUpdate: Game.time };
+            //}
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
