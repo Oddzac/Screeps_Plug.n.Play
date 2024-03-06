@@ -78,9 +78,9 @@ calculateDesiredCounts: function(room) {
                             // Begin Scouting
                             desiredCounts = {
                                 harvester: 2,
-                                hauler: 5,
-                                builder: 1,
-                                upgrader: 2,
+                                hauler: 4,
+                                builder: 2,
+                                upgrader: 1,
                                 scout: 1
                             };
                         } else if (scouted === true && roomClaimsAvailable > 0) {                         
@@ -104,7 +104,7 @@ calculateDesiredCounts: function(room) {
                     } else {
                         desiredCounts = {
                             harvester: 2,
-                            hauler: 6,
+                            hauler: 5,
                             builder: 2,
                             upgrader: 1
                         };
