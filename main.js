@@ -13,11 +13,16 @@ module.exports.loop = function() {
    
         // Memory Cleanup
         memories.immediateMemory();
-        
+
+        // Market Awareness Memory
+        if (Game.time % 50 === 0) {
+            terminals.updateMarketPrices();
+        }
+
         // Short-Term Memory
         if (Game.time % 300 === 0) {
             memories.shortTerm();
-            terminals.updateMarketPrices();
+            
         }
         
         // Long-Term Memory

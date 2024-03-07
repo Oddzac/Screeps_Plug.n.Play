@@ -159,7 +159,7 @@ var terminals = {
             };
         }
         const resources = Object.keys(Memory.marketData);
-    const PRICE_HISTORY_LIMIT = 5; // Keep the history manageable
+    const PRICE_HISTORY_LIMIT = 10; // Keep the history manageable
 
     resources.forEach(resource => {
         let orders = Game.market.getAllOrders({ resourceType: resource });
