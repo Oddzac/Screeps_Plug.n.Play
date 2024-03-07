@@ -17,6 +17,7 @@ module.exports.loop = function() {
         // Short-Term Memory
         if (Game.time % 300 === 0) {
             memories.shortTerm();
+            terminals.updateMarketPrices();
         }
         
         // Long-Term Memory
