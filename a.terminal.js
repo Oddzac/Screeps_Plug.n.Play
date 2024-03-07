@@ -107,75 +107,88 @@ var terminals = {
             Memory.marketData = {
                 // Init structure for each resource
                 'energy': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
-                    lastUpdate: Game.time // Last update time to manage update frequency
+                    lastUpdate: Game.time, // Last update time to manage update frequency
                 },
                 'power': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'H': {
+                    overallAveragePrice: 0,                    
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'O': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'U': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'L': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'K': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'Z': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'X': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'G': {
+                    overallAveragePrice: 0,
                     averagePrices: [], // Array to hold the average prices
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },// Similar structure for other resources...
             };
         }
         const resources = Object.keys(Memory.marketData);
-        const PRICE_HISTORY_LIMIT = 5; // Keep the history manageable
-    
-        resources.forEach(resource => {
-            let orders = Game.market.getAllOrders({ resourceType: resource });
-            if (orders.length > 0) {
-                // Calculate the average price of the current orders
-                let averagePrice = orders.reduce((acc, order) => acc + order.price, 0) / orders.length;
-                
-                // Get the market data for the resource
-                let data = Memory.marketData[resource];
-                
-                // Add the new average price
-                data.averagePrices.push(averagePrice);
-                
-                // Ensure the averagePrices array does not exceed the PRICE_HISTORY_LIMIT
-                if (data.averagePrices.length > PRICE_HISTORY_LIMIT) {
-                    data.averagePrices.shift(); // Remove the oldest price to maintain the limit
-                }
-                
-                // Update the last update time
-                data.lastUpdate = Game.time;
-            } else {
-                // Optionally handle the case where there are no orders for the resource
-                console.log(`No market orders found for ${resource}`);
+    const PRICE_HISTORY_LIMIT = 5; // Keep the history manageable
+
+    resources.forEach(resource => {
+        let orders = Game.market.getAllOrders({ resourceType: resource });
+        if (orders.length > 0) {
+            // Calculate the average price of the current orders
+            let averagePrice = orders.reduce((acc, order) => acc + order.price, 0) / orders.length;
+
+            // Get the market data for the resource
+            let data = Memory.marketData[resource];
+
+            // Add the new average price
+            data.averagePrices.push(averagePrice);
+
+            // Ensure the averagePrices array does not exceed the PRICE_HISTORY_LIMIT
+            if (data.averagePrices.length > PRICE_HISTORY_LIMIT) {
+                data.averagePrices.shift(); // Remove the oldest price to maintain the limit
             }
-        });
-    }
+
+            // Update the overallAveragePrice
+            data.overallAveragePrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
+
+            // Update the last update time
+            data.lastUpdate = Game.time;
+        } else {
+            // Optionally handle the case where there are no orders for the resource
+            console.log(`No market orders found for ${resource}`);
+        }
+    });
+}
     
 
 };
