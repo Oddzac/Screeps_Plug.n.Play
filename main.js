@@ -112,6 +112,7 @@ global.SPAWN = function(role) {
 }
 
 global.STATS = function() {
+    terminals.updateMarketPrices();
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
         console.log(`Room: ${roomName}`);
