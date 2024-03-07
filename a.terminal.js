@@ -73,6 +73,7 @@ var terminals = {
             let existingOrder = _.find(Game.market.orders, o => o.type == ORDER_SELL && o.resourceType == resourceType && o.roomName == room.name);
             if (existingOrder) {
                 Game.market.changeOrderPrice(existingOrder.id, myPrice);
+                console.log(`Adjusting sell price for ${resourceType} to ${myPrice.toFixed(2)} for ${existingOrder.id}`);
             } else {
                 Game.market.createOrder({
                     type: ORDER_SELL,
@@ -81,9 +82,10 @@ var terminals = {
                     totalAmount: terminal.store[resourceType] - SURPLUS_THRESHOLD,
                     roomName: room.name
                 });
+                console.log(`Creating sell order ${resourceType} @ ${myPrice.toFixed(2)} in ${room.name}`);
             }
     
-            console.log(`Setting sell price for ${resourceType} to ${myPrice.toFixed(2)} in ${room.name}`);
+            
         }
     },
 
