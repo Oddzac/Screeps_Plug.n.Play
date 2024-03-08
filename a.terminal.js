@@ -14,6 +14,10 @@ var terminals = {
         
         // Iterate over all resources in the terminal
         for(const resourceType in terminal.store) {
+            // Skip selling energy
+            if (resourceType === RESOURCE_ENERGY) {
+                continue; // Skip to the next resource
+            }
             // Use specific threshold if defined, otherwise default to a general threshold
             const threshold = 1000; // Default threshold for other resources
             
