@@ -43,8 +43,9 @@ var terminals = {
     },
 
     adjustPrices: function(room) {
+
         const terminal = room.terminal;
-        
+
         // Iterate over all resources in the terminal
         for(const resourceType in terminal.store) {
             let orders = Game.market.getAllOrders({type: ORDER_SELL, resourceType: resourceType});
@@ -113,6 +114,8 @@ var terminals = {
     
 
     purchaseUnderpricedResources: function(room) {
+
+
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
         const DISCOUNT_THRESHOLD = 0.75; // Listings must be at least 25% below avg price
         
