@@ -56,7 +56,7 @@ module.exports.loop = function() {
         //Terminal Management
 
         if (!room.terminal || room.terminal.cooldown > 0) {
-            console.log('Terminal is busy or cooling down.');
+            //console.log('Terminal is busy or cooling down.');
 
         } else if(room.terminal && room.controller && room.controller.my) {
 
