@@ -150,7 +150,7 @@ var terminals = {
                         const totalSpent = orderToBuy.price * amountToBuy;
                         Memory.rooms[room.name].tradeSummary.expenditures += totalSpent;
                     } else {
-                        console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
+                        //console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
                     }
                 }
             }
