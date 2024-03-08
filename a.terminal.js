@@ -2,7 +2,6 @@ var terminals = {
     
     manageTerminal: function(room) {
         const terminal = room.terminal;
-        const SURPLUS_THRESHOLD = { 'energy': 1000, 'O': 1000 }; // Default thresholds
 
         // Check and reset profit summary hourly
         this.manageProfitSummary(room);
@@ -16,7 +15,7 @@ var terminals = {
         // Iterate over all resources in the terminal
         for(const resourceType in terminal.store) {
             // Use specific threshold if defined, otherwise default to a general threshold
-            const threshold = SURPLUS_THRESHOLD[resourceType] || 1000; // Default threshold for other resources
+            const threshold = 1000; // Default threshold for other resources
             
             if(terminal.store[resourceType] > threshold) {
                 let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY);
