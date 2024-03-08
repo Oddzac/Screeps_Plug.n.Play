@@ -5,7 +5,6 @@ var terminals = {
 
         // Check and reset profit summary hourly
         this.manageProfitSummary(room);
-        this.purchaseUnderpricedResources(room);
 
         // Ensure there's at least 1000 energy before proceeding
         if (terminal.store[RESOURCE_ENERGY] < 1000) {
