@@ -63,7 +63,7 @@ module.exports.loop = function() {
             terminals.manageTerminal(room);
             //Manage Buys
             if (Game.time % 10 === 0) {
-                //terminals.purchaseUnderpricedResources(room);
+                terminals.purchaseUnderpricedResources(room);
             }
 
             //Manage Sell Prices
