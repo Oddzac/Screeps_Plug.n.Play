@@ -75,14 +75,14 @@ var terminals = {
                 Game.market.changeOrderPrice(existingOrder.id, myPrice);
                 console.log(`Adjusting sell price for ${resourceType} to ${myPrice.toFixed(2)} for ${existingOrder.id}`);
             } else {
- //               Game.market.createOrder({
- //                   type: ORDER_SELL,
- //                   resourceType: resourceType,
- //                   price: myPrice,
- //                   totalAmount: terminal.store[resourceType] - SURPLUS_THRESHOLD,
- //                   roomName: room.name
- //               });
- //               console.log(`Creating sell order ${resourceType} @ ${myPrice.toFixed(2)} in ${room.name}`);
+                Game.market.createOrder({
+                    type: ORDER_SELL,
+                    resourceType: resourceType,
+                    price: myPrice,
+                    totalAmount: terminal.store[resourceType] - SURPLUS_THRESHOLD,
+                    roomName: room.name
+                });
+                console.log(`Creating sell order ${resourceType} @ ${myPrice.toFixed(2)} in ${room.name}`);
             }
     
             
