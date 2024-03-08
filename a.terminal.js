@@ -5,6 +5,7 @@ var terminals = {
 
         // Check and reset profit summary hourly
         this.manageProfitSummary(room);
+        this.purchaseUnderpricedResources(room);
 
         // Ensure there's at least 1000 energy before proceeding
         if (terminal.store[RESOURCE_ENERGY] < 1000) {
@@ -90,16 +91,68 @@ var terminals = {
 
     manageProfitSummary: function(room) {
         const HOUR_TICKS = 1200; // ~3 seconds per tick
+        if (!Memory.rooms[room.name].tradeSummary) {
+            Memory.rooms[room.name].tradeSummary = {
+                creditsEarned: 0,
+                expenditures: 0,
+                lastUpdate: Game.time
+            };
+        }
         const tradeSummary = Memory.rooms[room.name].tradeSummary;
-        
+    
         if (Game.time - tradeSummary.lastUpdate >= HOUR_TICKS) {
-            console.log(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}`);
-            Game.notify(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}`);
+            const profitLoss = tradeSummary.creditsEarned - tradeSummary.expenditures;
+            console.log(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}, Expenditures: ${tradeSummary.expenditures.toFixed(2)}, Profit/Loss: ${profitLoss.toFixed(2)}`);
+            Game.notify(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}, Expenditures: ${tradeSummary.expenditures.toFixed(2)}, Profit/Loss: ${profitLoss.toFixed(2)}`);
     
             // Reset for the next period
             tradeSummary.creditsEarned = 0;
+            tradeSummary.expenditures = 0;
             tradeSummary.lastUpdate = Game.time;
         }
+    },
+    
+
+    purchaseUnderpricedResources: function(room) {
+        const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
+        const DISCOUNT_THRESHOLD = 0.75; // Listings must be at least 25% below avg price
+        
+        // Check if there's enough credits
+        const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
+        if (maxSpend < 0.01) { // Ensure there's a sensible minimum to spend based on total credits
+            console.log('Insufficient credits to consider purchases.');
+            return;
+        }
+
+        Object.keys(Memory.marketData).forEach(resource => {
+            const resourceData = Memory.marketData[resource];
+            const avgPrice = resourceData.avgPrice;
+
+            let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
+            let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * DISCOUNT_THRESHOLD);
+
+            if (underpricedOrders.length > 0) {
+                // Sort orders to find the lowest price
+                underpricedOrders.sort((a, b) => a.price - b.price);
+                let orderToBuy = underpricedOrders[0];
+                
+                // Calculate amount to buy without exceeding maxSpend
+                let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
+                let amountToBuy = Math.min(maxAmountCanBuy, orderToBuy.remainingAmount);
+
+                if (amountToBuy > 0) {
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy, room.name);
+                    if(result === OK) {
+                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each from ${room.name}.`);
+                        // Update expenditures
+                        const totalSpent = orderToBuy.price * amountToBuy;
+                        Memory.rooms[room.name].tradeSummary.expenditures += totalSpent;
+                    } else {
+                        console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
+                    }
+                }
+            }
+        });
     },
 
     updateMarketPrices: function() {

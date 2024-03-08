@@ -16,7 +16,7 @@ module.exports.loop = function() {
 
         // Market Awareness Memory
         if (Game.time % 50 === 0) {
-            terminals.updateMarketPrices();
+            
         }
 
         // Short-Term Memory
@@ -58,6 +58,7 @@ module.exports.loop = function() {
 
 
             if (Game.time % 50 === 0) {
+                terminals.updateMarketPrices();
                 terminals.adjustPrices(room);
             }
 
