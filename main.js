@@ -60,9 +60,10 @@ module.exports.loop = function() {
 
         } else if(room.terminal && room.controller && room.controller.my) {
 
+            terminals.manageTerminal(room);
             //Manage Buys
             if (Game.time % 10 === 0) {
-                terminals.purchaseUnderpricedResources(room);
+                //terminals.purchaseUnderpricedResources(room);
             }
 
             //Manage Sell Prices
@@ -70,7 +71,7 @@ module.exports.loop = function() {
                 terminals.adjustPrices(room);
             }
 
-            terminals.manageTerminal(room);
+            
         }
 
     
