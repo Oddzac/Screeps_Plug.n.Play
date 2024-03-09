@@ -15,7 +15,7 @@ module.exports.loop = function() {
         memories.immediateMemory();
 
         // Market Awareness Memory
-        if (Game.time % 50 === 0) {
+        if (Game.time % 100 === 0) {
             terminals.updateMarketPrices();
         }
 
