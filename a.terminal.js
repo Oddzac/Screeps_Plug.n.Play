@@ -70,6 +70,7 @@ var terminals = {
             let recordedAverage = marketData.avgPrice;
     
             let myInventory = terminal.store[resourceType];
+            let SURPLUS_THRESHOLD = 1000;
             let myPrice;
             if (currentSellAverage < recordedAverage) {
                 // If current average is below recorded average, set myPrice to recorded average
