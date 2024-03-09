@@ -39,6 +39,7 @@ var terminals = {
                         Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                         // Update the memory with credits earned
                         Memory.rooms[room.name].tradeSummary.creditsEarned += creditsEarned;
+                        Memory.rooms[room.name].tradeSummary.pauseBuy = 0
                     }
                     else {
                         console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
@@ -102,7 +103,8 @@ var terminals = {
             Memory.rooms[room.name].tradeSummary = {
                 creditsEarned: 0,
                 expenditures: 0,
-                lastUpdate: Game.time
+                lastUpdate: Game.time,
+                pauseBuy: 0
             };
         }
         const tradeSummary = Memory.rooms[room.name].tradeSummary;
@@ -122,6 +124,10 @@ var terminals = {
 
     purchaseUnderpricedResources: function(room) {
 
+
+        if (Memory.rooms[room.name].tradeSummary.pauseSell = 1) {
+            return;
+        }
 
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
         const DISCOUNT_THRESHOLD = 0.5; // Listings must be at least 25% below avg price
@@ -156,6 +162,7 @@ var terminals = {
                         // Update expenditures
                         const totalSpent = orderToBuy.price * amountToBuy;
                         Memory.rooms[room.name].tradeSummary.expenditures += totalSpent;
+                        Memory.rooms[room.name].tradeSummary.pauseSell = 1
                     } else {
                         //console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
                     }
