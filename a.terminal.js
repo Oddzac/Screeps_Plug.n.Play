@@ -267,16 +267,23 @@ var terminals = {
                 },// Similar structure for other resources...
             };
         }
-        const resources = Object.keys(Memory.marketData);
-    const PRICE_HISTORY_LIMIT = 10; // Keep the history manageable
+ 
+    const resources = Object.keys(Memory.marketData);
+    const PRICE_HISTORY_LIMIT = 10;
 
     resources.forEach(resource => {
-        let orders = Game.market.getAllOrders({ resourceType: resource });
-        if (orders.length > 0) {
-            // Calculate the average price of the current orders
+        let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL }).filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name); // Filtering out own room's orders if necessary
+
+        if (orders.length > 2) {
+            // Sort orders by price in ascending order to easily remove the highest prices
+            orders.sort((a, b) => a.price - b.price);
+
+            // Remove the 2 highest prices
+            orders.splice(-2);
+
+            // Calculate the average price of the remaining orders
             let averagePrice = orders.reduce((acc, order) => acc + order.price, 0) / orders.length;
 
-            // Get the market data for the resource
             let data = Memory.marketData[resource];
 
             // Add the new average price
