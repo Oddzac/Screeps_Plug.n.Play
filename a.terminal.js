@@ -64,10 +64,12 @@ var terminals = {
             let sellOrders = currentOrders.filter(o => o.type === ORDER_SELL && o.roomName !== room.name);
             let buyOrders = currentOrders.filter(o => o.type === ORDER_BUY);
     
+
             let currentSellAverage = sellOrders.length ? sellOrders.reduce((acc, o) => acc + o.price, 0) / sellOrders.length : 0;
             let marketData = Memory.marketData[resourceType];
             let recordedAverage = marketData.avgPrice;
     
+            let myInventory = terminal.store[resourceType];
             let myPrice;
             if (currentSellAverage < recordedAverage) {
                 // If current average is below recorded average, set myPrice to recorded average
