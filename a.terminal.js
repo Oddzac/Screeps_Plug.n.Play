@@ -125,7 +125,7 @@ var terminals = {
     purchaseUnderpricedResources: function(room) {
 
 
-        if (Memory.rooms[room.name].tradeSummary.pauseSell = 1) {
+        if (Memory.rooms[room.name].tradeSummary.pauseBuy = 1) {
             return;
         }
 
@@ -162,7 +162,7 @@ var terminals = {
                         // Update expenditures
                         const totalSpent = orderToBuy.price * amountToBuy;
                         Memory.rooms[room.name].tradeSummary.expenditures += totalSpent;
-                        Memory.rooms[room.name].tradeSummary.pauseSell = 1
+                        Memory.rooms[room.name].tradeSummary.pauseBuy = 1
                     } else {
                         //console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
                     }
