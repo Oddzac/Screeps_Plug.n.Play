@@ -94,7 +94,7 @@ var terminals = {
 
         // Adjustment based on order balance
         let orderBalance = buyOrders.length - sellOrders.length;
-        let adjustmentFactor = 0.05 // .05% per balance point
+        let adjustmentFactor = 0.005 // .05% per balance point
         myPrice *= 1 + (orderBalance * adjustmentFactor);
 
         let existingOrder = _.find(Game.market.orders, o => o.type === ORDER_SELL && o.resourceType === resourceType && o.roomName === room.name);
