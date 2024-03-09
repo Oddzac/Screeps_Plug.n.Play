@@ -1,3 +1,6 @@
+//TODO
+// MEMORY SWITCH FLIP ON SELL / BUY
+
 var terminals = {
     
     manageTerminal: function(room) {
