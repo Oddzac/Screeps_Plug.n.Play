@@ -80,8 +80,29 @@ var terminals = {
 
             let existingOrder = _.find(Game.market.orders, o => o.type == ORDER_SELL && o.resourceType == resourceType && o.roomName == room.name);
             if (existingOrder) {
+                // Update price
                 Game.market.changeOrderPrice(existingOrder.id, myPrice);
-                console.log(`Adjusting sell price for ${resourceType} to ${myPrice.toFixed(2)} for ${existingOrder.id}`);
+    
+                // Calculate the amount to adjust to match current inventory
+                let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
+                
+                if(amountToUpdate > 0) {
+                    // Increase the amount if we have more resources to sell
+                    Game.market.extendOrder(existingOrder.id, amountToUpdate);
+                } else if(amountToUpdate < 0) {
+                    // Cancel the order and repost it if we have less to sell
+                    Game.market.cancelOrder(existingOrder.id);
+                    Game.market.createOrder({
+                        type: ORDER_SELL,
+                        resourceType: resourceType,
+                        price: myPrice,
+                        totalAmount: terminal.store[resourceType] - SURPLUS_THRESHOLD,
+                        roomName: room.name
+                    });
+
+                    
+                }
+                console.log(`Updated sell order for ${resourceType} to ${myPrice.toFixed(2)} and adjusted amount in ${room.name}`);
             } else {
                 Game.market.createOrder({
                     type: ORDER_SELL,
