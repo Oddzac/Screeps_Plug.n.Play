@@ -160,7 +160,7 @@ var terminals = {
     purchaseUnderpricedResources: function(room) {
 
 
-        if (Memory.rooms[room.name].tradeSummary.pauseBuy > 9) {
+        if (Memory.rooms[room.name].tradeSummary.creditsEarned < Memory.rooms[room.name].tradeSummary.expenditures) {
             return;
         }
 
