@@ -30,7 +30,7 @@ var roleHarvester = {
     manageEnergy: function(creep, haulers) {
         if (haulers < 1) {
             // Transfer energy directly to the spawn or other structures
-            this.transferEnergy(creep);
+            this.transferResources(creep);
         } else {
             // Move towards spawn for 10 ticks then drop energy
             this.passEnergy(creep);
