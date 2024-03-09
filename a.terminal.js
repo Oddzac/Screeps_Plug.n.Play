@@ -42,7 +42,7 @@ var terminals = {
                         Memory.rooms[room.name].tradeSummary.pauseBuy = 0
                     }
                     else {
-                        console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
+                        //console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
                     }
                 }
             }
