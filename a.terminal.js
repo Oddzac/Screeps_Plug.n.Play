@@ -94,7 +94,7 @@ var terminals = {
 
         // Adjustment based on order balance
         let orderBalance = buyOrders.length - sellOrders.length;
-        let adjustmentFactor = 0.0005; // 0.05% as a decimal
+        let adjustmentFactor = 0.05 // .05% per balance point
         myPrice *= 1 + (orderBalance * adjustmentFactor);
 
         let existingOrder = _.find(Game.market.orders, o => o.type === ORDER_SELL && o.resourceType === resourceType && o.roomName === room.name);
@@ -164,8 +164,8 @@ var terminals = {
             return;
         }
 
-        const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
-        const DISCOUNT_THRESHOLD = 0.5; // Listings must be at least 25% below avg price
+        const MAX_CREDIT_SPEND_RATIO = 0.1; // Max spend ratio (10% of total credits)
+        const DISCOUNT_THRESHOLD = 0.75; // Listings must be at least 75% below avg price
         
         // Check if there's enough credits
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
