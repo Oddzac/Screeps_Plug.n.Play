@@ -63,7 +63,7 @@ var terminals = {
 
             // Skip selling energy
             if (resourceType === RESOURCE_ENERGY) {
-                continue; // Skip to the next resource
+                return; // Skip to the next resource
             }
             let currentOrders = Game.market.getAllOrders({resourceType: resourceType});
             let sellOrders = currentOrders.filter(o => o.type === ORDER_SELL && o.roomName !== room.name);
