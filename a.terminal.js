@@ -39,7 +39,7 @@ var terminals = {
                         Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                         // Update the memory with credits earned
                         Memory.rooms[room.name].tradeSummary.creditsEarned += creditsEarned;
-                        Memory.rooms[room.name].tradeSummary.pauseBuy = 0
+                        Memory.rooms[room.name].tradeSummary.pauseBuy += -1
                     }
                     else {
                         //console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
