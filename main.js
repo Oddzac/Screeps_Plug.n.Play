@@ -114,6 +114,21 @@ module.exports.loop = function() {
 
 
 // Console Calls
+
+global.MemRefresh = function() {
+    memories.immediateMemory();
+    memories.shortTerm();
+    memories.longTerm();
+    terminals.updateMarketPrices();
+    for (const roomName in Game.rooms) {
+        const room = Game.rooms[roomName];
+
+        if(room.terminal && room.controller && room.controller.my) {
+            terminals.adjustPrices(room);
+        }
+    }
+}
+
 global.RACS = function() {
     construction.removeAllConstructionSites();   
 }
