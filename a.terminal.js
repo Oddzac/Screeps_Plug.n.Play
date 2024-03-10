@@ -344,18 +344,29 @@ cleanupOldOrders: function() {
     });
 },
 
+
 updateSaleProfits: function(room) {
     _.forEach(Game.market.orders, order => {
         if (order.roomName === room.name && order.type === ORDER_SELL) {
+            // Check if the memory entry for this resource type exists before attempting to access its orders
+            if (!Memory.marketData[order.resourceType]) {
+    Memory.marketData[order.resourceType] = {
+        avgPrice: 0,
+        averagePrices: [],
+        lastUpdate: Game.time,
+        orders: {}
+    };
+}
+
             const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
             if (storedOrder) {
                 const amountSold = storedOrder.remainingAmount - order.remainingAmount;
                 if (amountSold > 0) {
                     const creditsEarned = amountSold * storedOrder.price;
                     Memory.rooms[room.name].tradeSummary.creditsEarned += creditsEarned;
-                    
+
                     // Update the stored remainingAmount for next comparison
-                    storedOrder.remainingAmount = order.remainingAmount;
+                    Memory.marketData[order.resourceType].orders[order.id].remainingAmount = order.remainingAmount;
                 }
             }
         }
