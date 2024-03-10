@@ -347,6 +347,7 @@ ensureMarketDataForResource: function(resourceType) {
 
 cleanupOldOrders: function() {
     Object.keys(Memory.marketData).forEach(resourceType => {
+        // No need to call ensureMarketDataForResource here since we're iterating over existing resource types
         if (Memory.marketData[resourceType].orders && typeof Memory.marketData[resourceType].orders === 'object') {
             Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
                 if (!Game.market.orders[orderId]) {
@@ -362,9 +363,8 @@ cleanupOldOrders: function() {
 updateSaleProfits: function(room) {
     _.forEach(Game.market.orders, order => {
         if (order.roomName === room.name && order.type === ORDER_SELL) {
-            // Check if the memory entry for this resource type exists before attempting to access its orders
-        this.ensureMarketDataForResource(resourceType);
-}
+            // Ensure market data structure exists for the resource type
+            this.ensureMarketDataForResource(order.resourceType);
 
             const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
             if (storedOrder) {
@@ -379,7 +379,7 @@ updateSaleProfits: function(room) {
             }
         }
     });
-}
+},
     
 
 };
