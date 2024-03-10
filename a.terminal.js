@@ -58,9 +58,11 @@ ensureMarketDataForResource: function(resourceType) {
         Memory.marketData[resourceType] = {
             avgPrice: 0,
             averagePrices: [],
-            lastUpdate: Game.time,
-            orders: {}
+            orders: {},
+            lastUpdate: Game.time
         };
+    } else if (!Memory.marketData[resourceType].orders) { // Ensure the orders object exists
+        Memory.marketData[resourceType].orders = {};
     }
 },
 
@@ -363,8 +365,7 @@ cleanupOldOrders: function() {
 updateSaleProfits: function(room) {
     _.forEach(Game.market.orders, order => {
         if (order.roomName === room.name && order.type === ORDER_SELL) {
-            // Ensure market data structure exists for the resource type
-            this.ensureMarketDataForResource(order.resourceType);
+            this.ensureMarketDataForResource(order.resourceType); // Ensure memory structure is ready
 
             const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
             if (storedOrder) {
