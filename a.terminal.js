@@ -150,8 +150,8 @@ var terminals = {
             Game.notify(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}, Expenditures: ${tradeSummary.expenditures.toFixed(2)}, Profit/Loss: ${profitLoss.toFixed(2)}`);
     
             // Reset for the next period
-            tradeSummary.creditsEarned = 0;
-            tradeSummary.expenditures = 0;
+            //tradeSummary.creditsEarned = 0;
+           // tradeSummary.expenditures = 0;
             tradeSummary.lastUpdate = Game.time;
         }
     },
