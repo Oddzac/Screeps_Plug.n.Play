@@ -333,29 +333,26 @@ var terminals = {
 
 cleanupOldOrders: function() {
     Object.keys(Memory.marketData).forEach(resourceType => {
-        Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
-            if (!Game.market.orders[orderId]) {
-                // If the order no longer exists in the game, remove it from memory
-                delete Memory.marketData[resourceType].orders[orderId];
-            }
-        });
+        if (Memory.marketData[resourceType].orders && typeof Memory.marketData[resourceType].orders === 'object') {
+            Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
+                if (!Game.market.orders[orderId]) {
+                    // If the order no longer exists in the game, remove it from memory
+                    delete Memory.marketData[resourceType].orders[orderId];
+                }
+            });
+        }
     });
 },
 
-updateSaleProfits: function(room) {
-    _.forEach(Game.market.orders, order => {
-        if (order.roomName === room.name && order.type === ORDER_SELL) {
-            const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
-            if (storedOrder) {
-                const amountSold = storedOrder.remainingAmount - order.remainingAmount;
-                if (amountSold > 0) {
-                    const creditsEarned = amountSold * storedOrder.price;
-                    Memory.rooms[room.name].tradeSummary.creditsEarned += creditsEarned;
-                    
-                    // Update the stored remainingAmount for next comparison
-                    storedOrder.remainingAmount = order.remainingAmount;
+cleanupOldOrders: function() {
+    Object.keys(Memory.marketData).forEach(resourceType => {
+        if (Memory.marketData[resourceType].orders && typeof Memory.marketData[resourceType].orders === 'object') {
+            Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
+                if (!Game.market.orders[orderId]) {
+                    // If the order no longer exists in the game, remove it from memory
+                    delete Memory.marketData[resourceType].orders[orderId];
                 }
-            }
+            });
         }
     });
 },
