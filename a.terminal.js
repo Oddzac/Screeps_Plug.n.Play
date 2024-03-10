@@ -1,5 +1,4 @@
 //TODO
-// DISREGARD 2 HIGHEST PRICES WHEN DETERMINING AVERAGE
 // purchase limiter based on profit to expense
 
 var terminals = {
