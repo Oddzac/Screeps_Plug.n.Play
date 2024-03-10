@@ -247,11 +247,7 @@ ensureMarketDataForResource: function(resourceType) {
         if (!Memory.marketData) {
             Memory.marketData = {
 
-                'PL': {
-                    currentCredits: 0,
-                    lastCredits: 0,
-                    PL: 0
-                },
+                
 
                 // Init structure for each resource
                 'energy': {
@@ -315,6 +311,12 @@ ensureMarketDataForResource: function(resourceType) {
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },// Similar structure for other resources...
             };
+            if (!Memory.marketData.PL) {
+              Memory.marketData.PL = {
+                    currentCredits: 0,
+                    lastCredits: 0,
+                    PL: 0
+              }
         }
     let lastCredits = Memory.marketData.PL.lastCredits
     const currentCredits = Game.market.credits;
