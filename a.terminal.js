@@ -200,7 +200,7 @@ ensureMarketDataForResource: function(resourceType) {
         }
 
         const MAX_CREDIT_SPEND_RATIO = 0.1; // Max spend ratio (10% of total credits)
-        const DISCOUNT_THRESHOLD = 0.75; // Listings must be at least 75% below avg price
+        const DISCOUNT_THRESHOLD = 0.50; // Listings must be at least 50% below avg price
         
         // Check if there's enough credits
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
