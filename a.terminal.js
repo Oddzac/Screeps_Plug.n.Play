@@ -53,6 +53,17 @@ var terminals = {
         
     },
 
+ensureMarketDataForResource: function(resourceType) {
+    if (!Memory.marketData[resourceType]) {
+        Memory.marketData[resourceType] = {
+            avgPrice: 0,
+            averagePrices: [],
+            lastUpdate: Game.time,
+            orders: {}
+        };
+    }
+},
+
 
     adjustPrices: function(room) {
     const terminal = room.terminal;
@@ -118,6 +129,7 @@ var terminals = {
                         roomName: room.name
                     });
 
+                    this.ensureMarketDataForResource(resourceType);
 
                     if (typeof orderResult === "string") {
                         // Store or update the order details in Memory
@@ -137,6 +149,8 @@ var terminals = {
                 totalAmount: myInventory - SURPLUS_THRESHOLD,
                 roomName: room.name
             });
+           
+            this.ensureMarketDataForResource(resourceType);
 
             if (typeof orderResult === "string") {
                 // Store or update the order details in Memory
@@ -349,13 +363,7 @@ updateSaleProfits: function(room) {
     _.forEach(Game.market.orders, order => {
         if (order.roomName === room.name && order.type === ORDER_SELL) {
             // Check if the memory entry for this resource type exists before attempting to access its orders
-            if (!Memory.marketData[order.resourceType]) {
-    Memory.marketData[order.resourceType] = {
-        avgPrice: 0,
-        averagePrices: [],
-        lastUpdate: Game.time,
-        orders: {}
-    };
+        this.ensureMarketDataForResource(resourceType);
 }
 
             const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
