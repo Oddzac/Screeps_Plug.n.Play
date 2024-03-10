@@ -243,8 +243,16 @@ ensureMarketDataForResource: function(resourceType) {
 
     updateMarketPrices: function() {
 
+    
         if (!Memory.marketData) {
             Memory.marketData = {
+
+                'PL': {
+                    currentCredits: 0,
+                    lastCredits: 0,
+                    PL: 0
+                },
+
                 // Init structure for each resource
                 'energy': {
                     avgPrice: 0,
@@ -308,7 +316,12 @@ ensureMarketDataForResource: function(resourceType) {
                 },// Similar structure for other resources...
             };
         }
- 
+    let lastCredits = Memory.marketData.PL.lastCredits
+    const currentCredits = Game.market.credits;
+    let PL = currentCredits - lastCredits;
+    Memory.marketData.PL.PL = PL;
+    Memory.marketData.PL.lastCredits = currentCredits;
+
     const resources = Object.keys(Memory.marketData);
     const PRICE_HISTORY_LIMIT = 10;
 
