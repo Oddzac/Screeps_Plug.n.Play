@@ -23,7 +23,7 @@ var terminals = {
                 continue; // Skip to the next resource
             }
             // Use specific threshold if defined, otherwise default to a general threshold
-            const threshold = 500; // Default threshold for other resources
+            const threshold = 250; // Default threshold for other resources
             
             if(terminal.store[resourceType] > threshold) {
                 let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY);
@@ -84,7 +84,7 @@ var terminals = {
         let recordedAverage = marketData.avgPrice;
 
         let myInventory = terminal.store[resourceType] || 0;
-        let SURPLUS_THRESHOLD = 500;
+        let SURPLUS_THRESHOLD = 250;
         let myPrice;
         if (currentSellAverage < recordedAverage) {
             myPrice = recordedAverage;
