@@ -16,14 +16,15 @@ var terminals = {
             return; // Exit the function if there's not enough energy
         }
         
+        let threshold = 0;
         // Iterate over all resources in the terminal
         for(const resourceType in terminal.store) {
             // Skip selling energy
             if (resourceType === RESOURCE_ENERGY) {
-                const threshold = 10000; //
+                threshold = 10000; //
             } else {
                 //Immediate cut-off for inventory management. This number determines max maintained inventory
-                const threshold = 500; // Default threshold for other resources
+                threshold = 500; // Default threshold for other resources
             }
             
             if(terminal.store[resourceType] > threshold) {
