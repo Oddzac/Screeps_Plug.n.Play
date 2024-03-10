@@ -124,7 +124,12 @@ global.MemRefresh = function() {
         const room = Game.rooms[roomName];
 
         if(room.terminal && room.controller && room.controller.my) {
+            const tradeSummary = Memory.rooms[room.name].tradeSummary;
+            tradeSummary.creditsEarned = 0;
+            tradeSummary.expenditures = 0;
+            tradeSummary.lastUpdate = Game.time;
             terminals.adjustPrices(room);
+
         }
     }
 }
