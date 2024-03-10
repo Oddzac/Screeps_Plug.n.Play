@@ -117,6 +117,15 @@ var terminals = {
                         totalAmount: myInventory - SURPLUS_THRESHOLD,
                         roomName: room.name
                     });
+
+
+                    if (typeof orderResult === "string") {
+                        // Store or update the order details in Memory
+                        Memory.marketData[resourceType].orders[orderResult] = {
+                            remainingAmount: myInventory - SURPLUS_THRESHOLD,
+                            price: myPrice
+                        };
+                    }
                 }
             }
             console.log(`Updated sell order for ${resourceType} to ${myPrice.toFixed(2)} in ${room.name}`);
@@ -128,6 +137,14 @@ var terminals = {
                 totalAmount: myInventory - SURPLUS_THRESHOLD,
                 roomName: room.name
             });
+
+            if (typeof orderResult === "string") {
+                // Store or update the order details in Memory
+                Memory.marketData[resourceType].orders[orderResult] = {
+                    remainingAmount: myInventory - SURPLUS_THRESHOLD,
+                    price: myPrice
+                };
+            }
             console.log(`Creating sell order ${resourceType} @ ${myPrice.toFixed(2)} in ${room.name}`);
         }
     });
@@ -216,51 +233,61 @@ var terminals = {
                 'energy': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time, // Last update time to manage update frequency
                 },
                 'power': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'H': {
                     avgPrice: 0,                    
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'O': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'U': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'L': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'K': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'Z': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'X': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },
                 'G': {
                     avgPrice: 0,
                     averagePrices: [], // Array to hold the average prices
+                    orders: {},
                     lastUpdate: Game.time // Last update time to manage update frequency
                 },// Similar structure for other resources...
             };
@@ -302,7 +329,36 @@ var terminals = {
             console.log(`No market orders found for ${resource}`);
         }
     });
-}
+},
+
+cleanupOldOrders: function() {
+    Object.keys(Memory.marketData).forEach(resourceType => {
+        Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
+            if (!Game.market.orders[orderId]) {
+                // If the order no longer exists in the game, remove it from memory
+                delete Memory.marketData[resourceType].orders[orderId];
+            }
+        });
+    });
+},
+
+function updateSaleProfits(room) {
+    _.forEach(Game.market.orders, order => {
+        if (order.roomName === room.name && order.type === ORDER_SELL) {
+            const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
+            if (storedOrder) {
+                const amountSold = storedOrder.remainingAmount - order.remainingAmount;
+                if (amountSold > 0) {
+                    const creditsEarned = amountSold * storedOrder.price;
+                    Memory.rooms[room.name].tradeSummary.creditsEarned += creditsEarned;
+                    
+                    // Update the stored remainingAmount for next comparison
+                    storedOrder.remainingAmount = order.remainingAmount;
+                }
+            }
+        }
+    });
+},
     
 
 };
