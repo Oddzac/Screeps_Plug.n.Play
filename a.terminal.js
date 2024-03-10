@@ -342,7 +342,7 @@ cleanupOldOrders: function() {
     });
 },
 
-function updateSaleProfits(room) {
+updateSaleProfits: function(room) {
     _.forEach(Game.market.orders, order => {
         if (order.roomName === room.name && order.type === ORDER_SELL) {
             const storedOrder = Memory.marketData[order.resourceType].orders[order.id];
