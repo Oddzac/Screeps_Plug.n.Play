@@ -1,5 +1,6 @@
 //TODO
 // purchase limiter based on profit to expense
+// if energy hi threshold
 
 var terminals = {
     
