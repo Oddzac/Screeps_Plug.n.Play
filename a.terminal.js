@@ -20,10 +20,11 @@ var terminals = {
         for(const resourceType in terminal.store) {
             // Skip selling energy
             if (resourceType === RESOURCE_ENERGY) {
-                continue; // Skip to the next resource
+                const threshold = 10000; //
+            } else {
+                //Immediate cut-off for inventory management. This number determines max maintained inventory
+                const threshold = 500; // Default threshold for other resources
             }
-            //Immediate cut-off for inventory management. This number determines max maintained inventory
-            const threshold = 500; // Default threshold for other resources
             
             if(terminal.store[resourceType] > threshold) {
                 let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY);
