@@ -22,7 +22,7 @@ var terminals = {
             if (resourceType === RESOURCE_ENERGY) {
                 continue; // Skip to the next resource
             }
-            // Use specific threshold if defined, otherwise default to a general threshold
+            //Immediate cut-off for inventory management. This number determines max maintained inventory
             const threshold = 500; // Default threshold for other resources
             
             if(terminal.store[resourceType] > threshold) {
@@ -84,7 +84,7 @@ var terminals = {
         let recordedAverage = marketData.avgPrice;
 
         let myInventory = terminal.store[resourceType] || 0;
-        let SURPLUS_THRESHOLD = 250;
+        let SURPLUS_THRESHOLD = 0;
         let myPrice;
         if (currentSellAverage < recordedAverage) {
             myPrice = recordedAverage;
