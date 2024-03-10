@@ -13,8 +13,10 @@ module.exports.loop = function() {
    
         // Memory Cleanup
         memories.immediateMemory();
+       terminals.cleanupOldOrders();
 
         // Market Awareness Memory
+        terminals.updateSaleProfits(room);
         if (Game.time % 100 === 0) {
             terminals.updateMarketPrices();
         }
