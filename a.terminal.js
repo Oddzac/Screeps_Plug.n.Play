@@ -16,7 +16,7 @@ var terminals = {
             return; // Exit the function if there's not enough energy
         }
         
-        let threshold = 0;
+        let threshold;
         // Iterate over all resources in the terminal
         for(const resourceType in terminal.store) {
             // Skip selling energy
