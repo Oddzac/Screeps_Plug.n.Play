@@ -127,6 +127,8 @@ var memories = {
             }
         }
 
+        
+
         for (const roomName in Memory.claimRooms) {
             // Check if the Game object has the room, and if so, whether you own the controller
             if (Game.rooms[roomName] && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
@@ -135,6 +137,8 @@ var memories = {
                 console.log('Removing claimed room from memory:', roomName);
             }
         }
+
+
     },
 
         
@@ -148,6 +152,25 @@ var memories = {
         if (!Memory.claimRooms) Memory.claimRooms = {};
         if (!Memory.scoutedRooms) Memory.scoutedRooms = {};
         if (!Memory.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
+        if (!Memory.marketData) {
+            Memory.marketData = {};
+            
+            RESOURCES_ALL.forEach(resource => {
+                Memory.marketData[resource] = {
+                    avgPrice: 0,
+                    averagePrices: [],
+                    orders: {},
+                    lastUpdate: Game.time
+                };
+            });
+        
+            // Initialize P&L tracking object
+            Memory.marketData.PL = {
+                currentCredits: 0,
+                lastCredits: 0,
+                PL: 0
+            };
+        }
         
         
     
