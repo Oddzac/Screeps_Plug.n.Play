@@ -290,7 +290,7 @@ var terminals = {
                 data.lastUpdate = Game.time;
             } else {
                 // Optionally handle the case where there are no orders for the resource
-                console.log(`No market orders found for ${resource}`);
+                //console.log(`No market orders found for ${resource}`);
             }
         });
     },
