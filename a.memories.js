@@ -157,11 +157,10 @@ var memories = {
             
             // Initialize P&L tracking object
             Memory.marketData.PL = {
-                currentCredits: 0,
                 lastCredits: 0,
                 PL: 0
             };
-            
+
             RESOURCES_ALL.forEach(resource => {
                 Memory.marketData[resource] = {
                     avgPrice: 0,

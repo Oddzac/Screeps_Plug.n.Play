@@ -193,7 +193,9 @@ var terminals = {
     purchaseUnderpricedResources: function(room) {
 
 
+        console.log(`PL before purchasing: ${Memory.marketData.PL.PL}`);
         if (Memory.marketData.PL.PL < 0) {
+            console.log('PL is negative, skipping purchase.');
             return;
         }
 
@@ -237,19 +239,21 @@ var terminals = {
     },
 
     updatePL: function() {
-                // Retrieve the last recorded credits amount
-                const lastCredits = Memory.marketData.PL.lastCredits;
-                // Get the current credits amount from the game
-                const currentCredits = Game.market.credits;
+        // Retrieve the last recorded credits amount
+        const lastCredits = Memory.marketData.PL.lastCredits;
+        // Get the current credits amount from the game
+        const currentCredits = Game.market.credits;
+        
+        // Calculate the profit and loss by subtracting the last recorded credits from the current credits
+        let PL = currentCredits - lastCredits;
+        
+        // Store the calculated P&L in memory
+        Memory.marketData.PL.PL = PL;
+        
+        // Update the lastCredits with the currentCredits for the next comparison
+        Memory.marketData.PL.lastCredits = currentCredits;
+        console.log(`Updating PL: Last Credits = ${lastCredits}, Current Credits = ${currentCredits}, New PL = ${PL}`);
                 
-                // Calculate the profit and loss by subtracting the last recorded credits from the current credits
-                let PL = currentCredits - lastCredits;
-                
-                // Store the calculated P&L in memory
-                Memory.marketData.PL.PL = PL;
-                
-                // Update the lastCredits with the currentCredits for the next comparison
-                Memory.marketData.PL.lastCredits = currentCredits;
     },
 
     updateMarketPrices: function() {
