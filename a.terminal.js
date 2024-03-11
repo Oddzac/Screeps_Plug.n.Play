@@ -58,7 +58,7 @@ var terminals = {
         if (!Memory.marketData[resourceType]) {
             Memory.marketData[resourceType] = {
                 avgPrice: 0,
-                costBasis: 999,
+                costBasis: 0,
                 averagePrices: [],
                 orders: {},
                 lastUpdate: Game.time
