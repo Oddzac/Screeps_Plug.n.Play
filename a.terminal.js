@@ -24,7 +24,7 @@ var terminals = {
                 threshold = 10000; //
             } else {
                 //Immediate cut-off for inventory management. This number determines max maintained inventory
-                threshold = 500; // Default threshold for other resources
+                threshold = 100; // Default threshold for other resources
             }
             
             if(terminal.store[resourceType] > threshold) {
