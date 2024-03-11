@@ -205,12 +205,19 @@ var terminals = {
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, room.name);
                     if(result === OK) {
                         let totalCost = orderToBuy.price * amountToBuy;
+                        // Check if this is the initial purchase for the resource
                         let currentQuantity = terminal.store[resource] || 0; // Existing quantity before purchase
-                        let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
-                        Memory.marketData[resource].costBasis = newCostBasis;
-                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each from ${room.name}. Current cost basis: ${newCostBasis}`);
+                        if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
+                            // If this is the first purchase, set costBasis to the purchase price
+                            Memory.marketData[resource].costBasis = orderToBuy.price;
+                        } else {
+                            // Otherwise, calculate the new average cost basis
+                            let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
+                            Memory.marketData[resource].costBasis = newCostBasis;
+                        }
+                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each from ${room.name}. Current cost basis: ${Memory.marketData[resource].costBasis}`);
                     } else {
-                        //console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
+                        // Handle purchase failure
                     }
                 }
             }
