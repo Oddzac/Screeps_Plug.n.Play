@@ -38,6 +38,7 @@ var terminals = {
                     let result = Game.market.deal(orders[0].id, amountToSell, room.name);
                     if(result === OK) {
                         let creditsEarned = orders[0].price * amountToSell;
+                        this.updatePL();
                         console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                         Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                     }
