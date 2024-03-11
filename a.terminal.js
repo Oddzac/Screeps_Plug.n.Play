@@ -163,6 +163,7 @@ var terminals = {
     
 
     purchaseUnderpricedResources: function(room) {
+        const terminal = room.terminal;
 
 
         console.log(`PL before purchasing: ${Memory.marketData.PL.PL}`);
