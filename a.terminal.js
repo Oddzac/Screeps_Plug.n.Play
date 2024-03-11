@@ -165,7 +165,7 @@ ensureMarketDataForResource: function(resourceType) {
         }
     });
 },
-    
+     
 
     manageProfitSummary: function(room) {
         const HOUR_TICKS = 1200; // ~3 seconds per tick
@@ -186,7 +186,7 @@ ensureMarketDataForResource: function(resourceType) {
     
             // Reset for the next period
             //tradeSummary.creditsEarned = 0;
-           // tradeSummary.expenditures = 0;
+            //tradeSummary.expenditures = 0;
             tradeSummary.lastUpdate = Game.time;
         }
     },
