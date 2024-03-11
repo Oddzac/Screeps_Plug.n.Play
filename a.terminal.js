@@ -319,7 +319,7 @@ ensureMarketDataForResource: function(resourceType) {
                     }
             }
         }
-    let lastCredits = Memory.marketData.PL.lastCredits
+    const lastCredits = Memory.marketData.PL.lastCredits
     const currentCredits = Game.market.credits;
     let PL = currentCredits - lastCredits;
     Memory.marketData.PL.PL = PL;
