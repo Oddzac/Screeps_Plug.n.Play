@@ -8,7 +8,7 @@ var terminals = {
         const terminal = room.terminal;
 
         // Check and reset profit summary hourly
-        this.manageProfitSummary(room);
+        
 
         // Ensure there's at least 1000 energy before proceeding
         if (terminal.store[RESOURCE_ENERGY] < 1000) {
@@ -159,16 +159,7 @@ var terminals = {
         });
     },     
 
-    manageProfitSummary: function(room) {
-        const HOUR_TICKS = 1200; // ~3 seconds per tick
-        const PL = Memory.marketData.PL.PL;
-    
-        if (Game.time - tradeSummary.lastUpdate >= HOUR_TICKS) {
-            const profitLoss = tradeSummary.creditsEarned - tradeSummary.expenditures;
-            console.log(`Hourly Trade Summary for ${room.name} - P&L: ${PL}`);
-            Game.notify(`Hourly Trade Summary for ${room.name} - P&L: ${PL}`);
-        }
-    },
+
     
 
     purchaseUnderpricedResources: function(room) {
