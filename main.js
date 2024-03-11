@@ -73,7 +73,7 @@ module.exports.loop = function() {
                 terminals.updatePL();
             }
             //Manage Sell Prices
-            if (Game.time % 100 === 0) {
+            if (Game.time % 75 === 0) {
                 terminals.adjustPrices(room);
             }
 
