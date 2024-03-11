@@ -99,7 +99,9 @@ var terminals = {
             // Ensure price covers cost basis + a minimal profit margin
             let profitMargin = 0.05; // 5% profit margin
             myPrice = Math.max(myPrice, costBasis * (1 + profitMargin));
-    
+            if (recordedAverage === 0) {
+                myPrice = 9999
+            }
             // Adjust based on market balance
             let orderBalance = buyOrders.length - sellOrders.length;
             let adjustmentFactor = 0.005; // Adjust price based on order balance
