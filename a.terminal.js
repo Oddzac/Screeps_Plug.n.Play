@@ -316,7 +316,8 @@ ensureMarketDataForResource: function(resourceType) {
                     currentCredits: 0,
                     lastCredits: 0,
                     PL: 0
-              }
+                    }
+            }
         }
     let lastCredits = Memory.marketData.PL.lastCredits
     const currentCredits = Game.market.credits;
