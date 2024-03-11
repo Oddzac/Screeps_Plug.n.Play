@@ -164,6 +164,7 @@ var memories = {
             RESOURCES_ALL.forEach(resource => {
                 Memory.marketData[resource] = {
                     avgPrice: 0,
+                    costBasis: 0,
                     averagePrices: [],
                     orders: {},
                     lastUpdate: Game.time
