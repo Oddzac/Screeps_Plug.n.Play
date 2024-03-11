@@ -16,7 +16,7 @@ module.exports.loop = function() {
        terminals.cleanupOldOrders();
 
         // Market Awareness Memory
-        if (Game.time % 100 === 0) {
+        if (Game.time % 200 === 0) {
             terminals.updateMarketPrices();
         }
 
