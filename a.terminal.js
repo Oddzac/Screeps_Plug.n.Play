@@ -39,10 +39,11 @@ var terminals = {
                         let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
                         let result = Game.market.deal(orders[0].id, amountToSell, room.name);
                         if(result === OK) {
+                            let pl = Memory.marketData.PL.PL;
                             let creditsEarned = marketPrice * amountToSell;
                             this.updatePL();
                             console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-                            Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
+                            Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned} Current P&L: ${pl}`);
                         }
                     } else {
                         //console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
