@@ -175,11 +175,12 @@ var terminals = {
             };
         }
         const tradeSummary = Memory.rooms[room.name].tradeSummary;
+        const PL = Memory.marketData.PL.PL;
     
         if (Game.time - tradeSummary.lastUpdate >= HOUR_TICKS) {
             const profitLoss = tradeSummary.creditsEarned - tradeSummary.expenditures;
-            console.log(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}, Expenditures: ${tradeSummary.expenditures.toFixed(2)}, Profit/Loss: ${profitLoss.toFixed(2)}`);
-            Game.notify(`Hourly Trade Summary for ${room.name}: Credits earned: ${tradeSummary.creditsEarned.toFixed(2)}, Expenditures: ${tradeSummary.expenditures.toFixed(2)}, Profit/Loss: ${profitLoss.toFixed(2)}`);
+            console.log(`Hourly Trade Summary for ${room.name} - P&L: ${PL}`);
+            Game.notify(`Hourly Trade Summary for ${room.name} - P&L: ${PL}`);
     
             // Reset for the next period
             //tradeSummary.creditsEarned = 0;
@@ -226,10 +227,6 @@ var terminals = {
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, room.name);
                     if(result === OK) {
                         console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each from ${room.name}.`);
-                        // Update expenditures
-                        const totalSpent = orderToBuy.price * amountToBuy;
-                        Memory.rooms[room.name].tradeSummary.expenditures += totalSpent;
-                        Memory.rooms[room.name].tradeSummary.pauseBuy += 1;
                     } else {
                         //console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
                     }
