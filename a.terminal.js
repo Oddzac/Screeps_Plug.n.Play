@@ -98,14 +98,14 @@ var terminals = {
             let myPrice = Math.max(currentSellAverage, recordedAverage); // Start with higher of the two averages
     
             // Ensure price covers cost basis + a minimal profit margin
-            let profitMargin = 0.05; // 5% profit margin
+            let profitMargin = 0.025; // 5% profit margin
             myPrice = Math.max(myPrice, costBasis * (1 + profitMargin));
             if (recordedAverage === 0) {
-                myPrice = 9999
+                myPrice = 999
             }
             // Adjust based on market balance
             let orderBalance = buyOrders.length - sellOrders.length;
-            let adjustmentFactor = 0.0001; // Adjust price based on order balance
+            let adjustmentFactor = -0.001; // Adjust price based on order balance
             myPrice *= 1 + (orderBalance * adjustmentFactor);
     
             let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
@@ -177,7 +177,7 @@ var terminals = {
         }
 
         const MAX_CREDIT_SPEND_RATIO = 0.1; // Max spend ratio (10% of total credits)
-        const DISCOUNT_THRESHOLD = 0.50; // Listings must be at least 50% below avg price
+        const DISCOUNT_THRESHOLD = 0.25; // Listings must be at least 50% below avg price
         
         // Check if there's enough credits
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
