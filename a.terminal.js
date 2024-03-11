@@ -40,7 +40,6 @@ var terminals = {
                         let result = Game.market.deal(orders[0].id, amountToSell, room.name);
                         if(result === OK) {
                             let creditsEarned = marketPrice * amountToSell;
-                            let creditsEarned = orders[0].price * amountToSell;
                             this.updatePL();
                             console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                             Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
@@ -162,26 +161,12 @@ var terminals = {
 
     manageProfitSummary: function(room) {
         const HOUR_TICKS = 1200; // ~3 seconds per tick
-        if (!Memory.rooms[room.name].tradeSummary) {
-            Memory.rooms[room.name].tradeSummary = {
-                creditsEarned: 0,
-                expenditures: 0,
-                lastUpdate: Game.time,
-                pauseBuy: 0
-            };
-        }
-        const tradeSummary = Memory.rooms[room.name].tradeSummary;
         const PL = Memory.marketData.PL.PL;
     
         if (Game.time - tradeSummary.lastUpdate >= HOUR_TICKS) {
             const profitLoss = tradeSummary.creditsEarned - tradeSummary.expenditures;
             console.log(`Hourly Trade Summary for ${room.name} - P&L: ${PL}`);
             Game.notify(`Hourly Trade Summary for ${room.name} - P&L: ${PL}`);
-    
-            // Reset for the next period
-            //tradeSummary.creditsEarned = 0;
-            //tradeSummary.expenditures = 0;
-            tradeSummary.lastUpdate = Game.time;
         }
     },
     
