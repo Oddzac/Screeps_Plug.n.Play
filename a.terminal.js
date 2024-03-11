@@ -177,7 +177,7 @@ var terminals = {
         }
 
         const MAX_CREDIT_SPEND_RATIO = 0.1; // Max spend ratio (10% of total credits)
-        const DISCOUNT_THRESHOLD = 0.25; // Listings must be at least 50% below avg price
+        const DISCOUNT_THRESHOLD = 0.35; // Listings must be at least 50% below avg price
         
         // Check if there's enough credits
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
