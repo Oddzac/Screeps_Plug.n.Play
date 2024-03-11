@@ -243,6 +243,11 @@ var terminals = {
         const lastCredits = Memory.marketData.PL.lastCredits;
         // Get the current credits amount from the game
         const currentCredits = Game.market.credits;
+
+        if (lastCredits === currentCredits) {
+            //P&L has not changed since last update
+            return;
+        }
         
         // Calculate the profit and loss by subtracting the last recorded credits from the current credits
         let PL = currentCredits - lastCredits;
