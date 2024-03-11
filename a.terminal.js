@@ -33,16 +33,19 @@ var terminals = {
                 // Sort orders by price, descending
                 orders.sort((a, b) => b.price - a.price);
     
-                if(orders.length > 0) {
-                    let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
-                    let result = Game.market.deal(orders[0].id, amountToSell, room.name);
-                    if(result === OK) {
-                        let creditsEarned = orders[0].price * amountToSell;
-                        this.updatePL();
-                        console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-                        Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-                    }
-                    else {
+                if(orders.length > 0 && Memory.marketData[resourceType].costBasis > 0) {
+                    let marketPrice = orders[0].price;
+                    if(marketPrice > Memory.marketData[resourceType].costBasis) { // Only sell if market price is higher than cost basis
+                        let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
+                        let result = Game.market.deal(orders[0].id, amountToSell, room.name);
+                        if(result === OK) {
+                            let creditsEarned = marketPrice * amountToSell;
+                            let creditsEarned = orders[0].price * amountToSell;
+                            this.updatePL();
+                            console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
+                            Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
+                        }
+                    } else {
                         //console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
                     }
                 }
@@ -65,57 +68,49 @@ var terminals = {
     },
 
 
+
     adjustPrices: function(room) {
         const terminal = room.terminal;
-
+    
         if (!terminal) {
             console.log('No terminal in room');
             return;
         }
-
+    
         Object.keys(Memory.marketData).forEach(resourceType => {
-            // Skip selling energy
-            if (resourceType === RESOURCE_ENERGY) {
-                return; // Skip to the next resource
-            }
-            
+            if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
+    
             let currentOrders = Game.market.getAllOrders({resourceType: resourceType});
             let sellOrders = currentOrders.filter(o => o.type === ORDER_SELL && o.roomName !== room.name);
             let buyOrders = currentOrders.filter(o => o.type === ORDER_BUY);
-
-            // Sort sell orders by price in ascending order
+    
             sellOrders.sort((a, b) => a.price - b.price);
-
-            // Remove the 2 highest prices if there are enough orders
-            if (sellOrders.length > 2) {
-                sellOrders.splice(-2);
-            }
-
-            // Calculate the average sell price excluding the 2 highest prices
+            if (sellOrders.length > 2) sellOrders.splice(-2); // Exclude the 2 highest prices
+    
             let currentSellAverage = sellOrders.length ? sellOrders.reduce((acc, o) => acc + o.price, 0) / sellOrders.length : 0;
             let marketData = Memory.marketData[resourceType];
             let recordedAverage = marketData.avgPrice;
-
+            let costBasis = marketData.costBasis || 0;
+    
             let myInventory = terminal.store[resourceType] || 0;
-            let SURPLUS_THRESHOLD = 0;
-            let myPrice;
-            if (currentSellAverage < recordedAverage) {
-                myPrice = recordedAverage;
-            } else {
-                myPrice = currentSellAverage;
-            }
-
-            // Adjustment based on order balance
+            let SURPLUS_THRESHOLD = 0; // Define this as needed
+            let myPrice = Math.max(currentSellAverage, recordedAverage); // Start with higher of the two averages
+    
+            // Ensure price covers cost basis + a minimal profit margin
+            let profitMargin = 0.05; // 5% profit margin
+            myPrice = Math.max(myPrice, costBasis * (1 + profitMargin));
+    
+            // Adjust based on market balance
             let orderBalance = buyOrders.length - sellOrders.length;
-            let adjustmentFactor = 0.005 // n% per balance point
+            let adjustmentFactor = 0.005; // Adjust price based on order balance
             myPrice *= 1 + (orderBalance * adjustmentFactor);
-
-            let existingOrder = _.find(Game.market.orders, o => o.type === ORDER_SELL && o.resourceType === resourceType && o.roomName === room.name);
-
+    
+            let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
+    
             if (existingOrder) {
                 Game.market.changeOrderPrice(existingOrder.id, myPrice);
                 let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
-
+                // Extend or cancel the order based on new calculations
                 if (amountToUpdate > 0) {
                     Game.market.extendOrder(existingOrder.id, amountToUpdate);
                 } else if (amountToUpdate < 0) {
@@ -140,9 +135,9 @@ var terminals = {
                         }
                     }
                 }
-                console.log(`Updated sell order for ${resourceType} to ${myPrice.toFixed(2)} in ${room.name}`);
             } else if (myInventory > SURPLUS_THRESHOLD) {
-                Game.market.createOrder({
+                // Create a new order if there's enough inventory
+                let orderResult = Game.market.createOrder({
                     type: ORDER_SELL,
                     resourceType: resourceType,
                     price: myPrice,
@@ -159,11 +154,11 @@ var terminals = {
                         price: myPrice
                     };
                 }
-                console.log(`Creating sell order ${resourceType} @ ${myPrice.toFixed(2)} in ${room.name}`);
+                // Update market data with the new order
             }
+            console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(2)} in ${room.name}`);
         });
-    },
-     
+    },     
 
     manageProfitSummary: function(room) {
         const HOUR_TICKS = 1200; // ~3 seconds per tick
@@ -229,7 +224,11 @@ var terminals = {
                 if (amountToBuy > 0) {
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, room.name);
                     if(result === OK) {
-                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each from ${room.name}.`);
+                        let totalCost = orderToBuy.price * amountToBuy;
+                        let currentQuantity = terminal.store[resource] || 0; // Existing quantity before purchase
+                        let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
+                        Memory.marketData[resource].costBasis = newCostBasis;
+                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each from ${room.name}. Current cost basis: ${newCostBasis}`);
                     } else {
                         //console.log(`Failed to purchase ${resource} from ${room.name}: ${result}`);
                     }
