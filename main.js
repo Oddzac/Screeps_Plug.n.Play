@@ -27,7 +27,7 @@ module.exports.loop = function() {
         }
 
         // 1-hr Memory
-        if (Game.time % 1200 === 0) {
+        if (Game.time % 12 === 0) {
             terminals.generateMarketSummary();
             
         }
@@ -75,7 +75,8 @@ module.exports.loop = function() {
             }
 
             //Check P&L
-            if (Game.time % 50 === 0) {
+            if (Game.time % 50 === 0) {
+
                 terminals.updatePL();
             }
             //Manage Sell Prices
