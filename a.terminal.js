@@ -272,7 +272,57 @@ var terminals = {
                 });
             }
         });
-    },    
+    },  
+
+
+
+    generateMarketSummary: function() {
+        const previousSummary = Memory.marketData.marketSummary || {};
+        const currentSummary = {
+            activeListings: [],
+            overallPL: 0,
+            lastRun: Game.time,
+        };
+        let changes = false;
+        let message = "Market Summary:\n";
+
+        // Active listings and their cost basis and listed price
+        for (const orderId in Game.market.orders) {
+            const order = Game.market.orders[orderId];
+            if (order.active) {
+                const resourceData = Memory.marketData[order.resourceType];
+                const listing = {
+                    resourceType: order.resourceType,
+                    amount: order.remainingAmount,
+                    costBasis: resourceData ? resourceData.costBasis : 'N/A',
+                    listedPrice: order.price,
+                };
+                currentSummary.activeListings.push(listing);
+                message += `Resource: ${listing.resourceType}, Amount: ${listing.amount}, Cost Basis: ${listing.costBasis}, Listed Price: ${listing.listedPrice}\n`;
+                changes = true;
+            }
+        }
+
+        // Overall P&L comparison
+        const currentPL = Memory.marketData.PL ? Memory.marketData.PL.PL : 0;
+        const previousPL = previousSummary.overallPL || 0;
+        currentSummary.overallPL = currentPL;
+        if (currentPL !== previousPL) {
+            message += `Overall P&L: ${currentPL} (Previous: ${previousPL})\n`;
+            changes = true;
+        }
+
+        // Update the market summary in memory
+        Memory.marketData.marketSummary = currentSummary;
+
+        // Send an email notification if there are changes
+        if (changes) {
+            Game.notify(message);
+            console.log("Market summary email sent.");
+        } else {
+            console.log("No significant changes in market activities.");
+        }
+    },  
 
 };
 
