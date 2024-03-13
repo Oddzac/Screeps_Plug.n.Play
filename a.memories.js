@@ -173,6 +173,8 @@ var memories = {
         
 
         }
+        if (!Memory.marketData.marketSummary) Memory.marketData.marketSummary = {};
+        if (!Memory.marketData.marketSummary.soldQuantities) Memory.marketData.marketSummary.soldQuantities = {};
         
         
     

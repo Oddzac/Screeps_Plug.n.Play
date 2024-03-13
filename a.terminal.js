@@ -285,10 +285,12 @@ var terminals = {
 
 
     generateMarketSummary: function() {
+
         const previousSummary = Memory.marketData.marketSummary || {};
         const currentSummary = {
             activeListings: [],
             overallPL: 0,
+            soldQuantities: previousSummary.soldQuantities || {},
             lastRun: Game.time,
         };
         let changes = false;
@@ -324,11 +326,13 @@ var terminals = {
         }
 
         // Sold quantities since last run
-        for (const [resourceType, quantity] of Object.entries(currentSummary.soldQuantities)) {
-            message2 += `Sold ${resourceType}: ${quantity}\n`;
-            changes = true;
+        if (Object.keys(currentSummary.soldQuantities).length > 0) {
+            for (const [resourceType, quantity] of Object.entries(currentSummary.soldQuantities)) {
+                message2 += `Sold ${resourceType}: ${quantity}\n`;
+                changes = true;
+            }
         }
-
+        currentSummary.soldQuantities = {};
         
 
 
