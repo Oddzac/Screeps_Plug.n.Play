@@ -48,7 +48,7 @@ var terminals = {
                             if (!Memory.marketData.soldQuantities[resourceType]) {
                                 Memory.marketData.soldQuantities[resourceType] = 0;
                             }
-                            Memory.marketData.soldQuantities[resourceType] += amountToSell;
+                            Memory.marketData.marketSummary.soldQuantities[resourceType] += amountToSell;
                             this.updatePL();
                             console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                             //Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned} Current P&L: ${pl}`);
