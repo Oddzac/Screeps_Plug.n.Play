@@ -41,9 +41,17 @@ var terminals = {
                         if(result === OK) {
                             let pl = Memory.marketData.PL.PL;
                             let creditsEarned = marketPrice * amountToSell;
+                            // Track sold quantity
+                            if (!Memory.marketData.soldQuantities) {
+                                Memory.marketData.soldQuantities = {};
+                            }
+                            if (!Memory.marketData.soldQuantities[resourceType]) {
+                                Memory.marketData.soldQuantities[resourceType] = 0;
+                            }
+                            Memory.marketData.soldQuantities[resourceType] += amountToSell;
                             this.updatePL();
                             console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-                            Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned} Current P&L: ${pl}`);
+                            //Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned} Current P&L: ${pl}`);
                         }
                     } else {
                         //console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
@@ -302,6 +310,14 @@ var terminals = {
                 changes = true;
             }
         }
+
+        // Sold quantities since last run
+        for (const [resourceType, quantity] of Object.entries(currentSummary.soldQuantities)) {
+            message += `Sold ${resourceType}: ${quantity}\n`;
+            changes = true;
+        }
+
+        
 
         // Overall P&L comparison
         const currentPL = Memory.marketData.PL ? Memory.marketData.PL.PL : 0;
