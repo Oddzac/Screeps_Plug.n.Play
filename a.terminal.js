@@ -293,6 +293,7 @@ var terminals = {
         };
         let changes = false;
         let message = "Market Summary:\n";
+        let message2 = "Profit Summary:\n";
 
         // Active listings and their cost basis and listed price
         for (const orderId in Game.market.orders) {
@@ -311,22 +312,25 @@ var terminals = {
             }
         }
 
-        // Sold quantities since last run
-        for (const [resourceType, quantity] of Object.entries(currentSummary.soldQuantities)) {
-            message += `Sold ${resourceType}: ${quantity}\n`;
-            changes = true;
-        }
-
-        
 
         // Overall P&L comparison
         const currentPL = Memory.marketData.PL ? Memory.marketData.PL.PL : 0;
         const previousPL = previousSummary.overallPL || 0;
         currentSummary.overallPL = currentPL;
         if (currentPL !== previousPL) {
-            message += `Overall P&L: ${currentPL} (Previous: ${previousPL})\n`;
+            message2 += `Overall P&L: ${currentPL} (Previous: ${previousPL})\n`;
             changes = true;
         }
+
+        // Sold quantities since last run
+        for (const [resourceType, quantity] of Object.entries(currentSummary.soldQuantities)) {
+            message2 += `Sold ${resourceType}: ${quantity}\n`;
+            changes = true;
+        }
+
+        
+
+
 
         // Update the market summary in memory
         Memory.marketData.marketSummary = currentSummary;
