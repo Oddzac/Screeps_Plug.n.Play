@@ -42,11 +42,11 @@ var terminals = {
                             let pl = Memory.marketData.PL.PL;
                             let creditsEarned = marketPrice * amountToSell;
                             // Track sold quantity
-                            if (!Memory.marketData.soldQuantities) {
-                                Memory.marketData.soldQuantities = {};
+                            if (!Memory.marketData.marketSummary.soldQuantities) {
+                                Memory.marketData.marketSummary.soldQuantities = {};
                             }
-                            if (!Memory.marketData.soldQuantities[resourceType]) {
-                                Memory.marketData.soldQuantities[resourceType] = 0;
+                            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
+                                Memory.marketData.marketSummary.soldQuantities[resourceType] = 0;
                             }
                             Memory.marketData.marketSummary.soldQuantities[resourceType] += amountToSell;
                             this.updatePL();
@@ -294,6 +294,7 @@ var terminals = {
         let changes = false;
         let message = "Market Summary:\n";
         let message2 = "Profit Summary:\n";
+
 
         // Active listings and their cost basis and listed price
         for (const orderId in Game.market.orders) {
