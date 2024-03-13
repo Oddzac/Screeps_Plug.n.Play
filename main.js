@@ -25,6 +25,12 @@ module.exports.loop = function() {
             memories.shortTerm();
             
         }
+
+        // 1-hr Memory
+        if (Game.time % 1200 === 0) {
+            terminals.generateMarketSummary();
+            
+        }
         
         // Long-Term Memory
         if (Game.time % 5000 === 0) {
