@@ -149,9 +149,9 @@ var terminals = {
         const terminal = room.terminal;
 
 
-        console.log(`PL before purchasing: ${Memory.marketData.PL.PL}`);
-        if (Memory.marketData.PL.PL < Memory.marketData.PL.lastCredits * .05) {
-            //console.log('PL < 5%, skipping purchase.');
+        
+        if (Memory.marketData.PL.PL < Memory.marketData.PL.lastCredits) {
+            console.log('PL: ${Memory.marketData.PL.PL} (no profit, skipping purchase.)');
             return;
         }
 
