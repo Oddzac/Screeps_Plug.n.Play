@@ -148,10 +148,12 @@ var terminals = {
     purchaseUnderpricedResources: function(room) {
         const terminal = room.terminal;
 
+        let lastCredits = Memory.marketData.PL.lastCredits;
+        let limitSwitch = lastCredits * .001
 
         
-        if (Memory.marketData.PL.PL < Memory.marketData.PL.lastCredits * .001) {
-            console.log(`PL: ${Memory.marketData.PL.PL} (no profit, skipping purchase.)`);
+        if (Memory.marketData.PL.PL < limitSwitch) {
+            console.log(`PL: ${Memory.marketData.PL.PL} / ${limitSwitch} (no profit, skipping purchase.)`);
             return;
         }
 
