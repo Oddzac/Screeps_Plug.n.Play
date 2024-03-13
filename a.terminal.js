@@ -143,7 +143,7 @@ var terminals = {
 
         console.log(`PL before purchasing: ${Memory.marketData.PL.PL}`);
         if (Memory.marketData.PL.PL < Memory.marketData.PL.lastCredits * .1) {
-            console.log('PL is negative, skipping purchase.');
+            console.log('PL < 10%, skipping purchase.');
             return;
         }
 
