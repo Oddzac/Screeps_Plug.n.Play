@@ -72,7 +72,6 @@ var terminals = {
 
     adjustPrices: function(room) {
         const terminal = room.terminal;
-    
         if (!terminal) {
             console.log('No terminal in room');
             return;
@@ -81,88 +80,60 @@ var terminals = {
         Object.keys(Memory.marketData).forEach(resourceType => {
             if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
     
-            let currentOrders = Game.market.getAllOrders({resourceType: resourceType});
-            let sellOrders = currentOrders.filter(o => o.type === ORDER_SELL && o.roomName !== room.name);
-            let buyOrders = currentOrders.filter(o => o.type === ORDER_BUY);
-    
+            // Fetch the lowest sell order price from the market for the resourceType
+            let sellOrders = Game.market.getAllOrders({resourceType: resourceType, type: ORDER_SELL});
             sellOrders.sort((a, b) => a.price - b.price);
-            if (sellOrders.length > 2) sellOrders.splice(-2); // Exclude the 2 highest prices
+            let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
     
-            let currentSellAverage = sellOrders.length ? sellOrders.reduce((acc, o) => acc + o.price, 0) / sellOrders.length : 0;
             let marketData = Memory.marketData[resourceType];
-            let recordedAverage = marketData.avgPrice;
             let costBasis = marketData.costBasis || 0;
+            let profitMargin = 0.10; // Adjust to set desired profit margin
     
             let myInventory = terminal.store[resourceType] || 0;
-            let SURPLUS_THRESHOLD = 0; // Define this as needed
-            let myPrice = Math.max(currentSellAverage, recordedAverage); // Start with higher of the two averages
+            let SURPLUS_THRESHOLD = 50; // Adjust as needed
     
-            // Ensure price covers cost basis + a minimal profit margin
-            let profitMargin = 0.025; // 5% profit margin
-            myPrice = Math.max(myPrice, costBasis * (1 + profitMargin));
-            if (recordedAverage === 0) {
-                myPrice = 999
+            let myPrice;
+            if (costBasis === 0 && lowestSellPrice !== null) {
+                // Set price to be slightly lower than the lowest market price if cost basis is 0
+                myPrice = lowestSellPrice - 0.001;
+            } else if (costBasis > 0) {
+                // Set price based on cost basis and profit margin
+                myPrice = costBasis * (1 + profitMargin);
+            } else {
+                // Fallback if no cost basis and no market orders
+                myPrice = 999; // Arbitrary high price to avoid accidental listing
             }
-            // Adjust based on market balance
-            let orderBalance = buyOrders.length - sellOrders.length;
-            let adjustmentFactor = 0.000; // Adjust price based on order balance
-            myPrice *= 1 + (orderBalance * adjustmentFactor);
     
-            let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
+            // Example logic to create or update market order based on the new price
+            // Simplified for demonstration; you may need to integrate with your existing order logic
+            if (myInventory > SURPLUS_THRESHOLD) {
+                let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
+                if (existingOrder) {
+                    Game.market.changeOrderPrice(existingOrder.id, myPrice);
+                } else {
+                    let orderResult = Game.market.createOrder({
+                        type: ORDER_SELL,
+                        resourceType: resourceType,
+                        price: myPrice,
+                        totalAmount: myInventory - SURPLUS_THRESHOLD,
+                        roomName: room.name
+                    });
     
-            if (existingOrder) {
-                Game.market.changeOrderPrice(existingOrder.id, myPrice);
-                let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
-                // Extend or cancel the order based on new calculations
-                if (amountToUpdate > 0) {
-                    Game.market.extendOrder(existingOrder.id, amountToUpdate);
-                } else if (amountToUpdate < 0) {
-                    Game.market.cancelOrder(existingOrder.id);
-                    if (myInventory > SURPLUS_THRESHOLD) {
-                        Game.market.createOrder({
-                            type: ORDER_SELL,
-                            resourceType: resourceType,
-                            price: myPrice,
-                            totalAmount: myInventory - SURPLUS_THRESHOLD,
-                            roomName: room.name
-                        });
-
-                        this.ensureMarketDataForResource(resourceType);
-
-                        if (typeof orderResult === "string") {
-                            // Store or update the order details in Memory
-                            Memory.marketData[resourceType].orders[orderResult] = {
-                                remainingAmount: myInventory - SURPLUS_THRESHOLD,
-                                price: myPrice
-                            };
-                        }
+                    this.ensureMarketDataForResource(resourceType);
+    
+                    if (typeof orderResult === "string") {
+                        // Store or update the order details in Memory
+                        Memory.marketData[resourceType].orders[orderResult] = {
+                            remainingAmount: myInventory - SURPLUS_THRESHOLD,
+                            price: myPrice
+                        };
                     }
+                    // Update Memory.marketData accordingly
                 }
-            } else if (myInventory > SURPLUS_THRESHOLD) {
-                // Create a new order if there's enough inventory
-                let orderResult = Game.market.createOrder({
-                    type: ORDER_SELL,
-                    resourceType: resourceType,
-                    price: myPrice,
-                    totalAmount: myInventory - SURPLUS_THRESHOLD,
-                    roomName: room.name
-                });
-            
-                this.ensureMarketDataForResource(resourceType);
-
-                if (typeof orderResult === "string") {
-                    // Store or update the order details in Memory
-                    Memory.marketData[resourceType].orders[orderResult] = {
-                        remainingAmount: myInventory - SURPLUS_THRESHOLD,
-                        price: myPrice
-                    };
-                }
-                // Update market data with the new order
+                console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} in ${room.name}`);
             }
-            console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(2)} in ${room.name}`);
         });
-    },     
-
+    },
 
     
 
