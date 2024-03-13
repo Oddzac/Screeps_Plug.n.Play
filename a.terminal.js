@@ -151,7 +151,7 @@ var terminals = {
 
         
         if (Memory.marketData.PL.PL < Memory.marketData.PL.lastCredits) {
-            console.log('PL: ${Memory.marketData.PL.PL} (no profit, skipping purchase.)');
+            console.log(`PL: ${Memory.marketData.PL.PL} (no profit, skipping purchase.)`);
             return;
         }
 
