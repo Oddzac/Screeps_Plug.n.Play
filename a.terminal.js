@@ -345,7 +345,7 @@ var terminals = {
         // Send an email notification if there are changes
         if (changes) {
             Game.notify(message);
-            Game.notoify(message2);
+            Game.notify(message2);
             console.log("Market summary email sent.");
         } else {
             console.log("No significant changes in market activities.");
