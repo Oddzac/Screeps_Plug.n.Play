@@ -38,25 +38,25 @@ var terminals = {
                     if(marketPrice > Memory.marketData[resourceType].costBasis) { // Only sell if market price is higher than cost basis
                         let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
                         let result = Game.market.deal(orders[0].id, amountToSell, room.name);
-                        if(result === OK) {
-                            let pl = Memory.marketData.PL.PL;
-                            let creditsEarned = marketPrice * amountToSell;
-                            // Track sold quantity
-                            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
-    Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+                        if (result === OK) {
+    let creditsEarned = marketPrice * amountToSell;
+    
+    // Ensure initialization of soldQuantities for this resourceType
+    if (!Memory.marketData.marketSummary.soldQuantities) {
+        Memory.marketData.marketSummary.soldQuantities = {};
+    }
+    if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
+        Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+    }
+
+    // Update sold quantity and credits earned
+    Memory.marketData.marketSummary.soldQuantities[resourceType].quantity += amountToSell;
+    Memory.marketData.marketSummary.soldQuantities[resourceType].creditsEarned += creditsEarned;
+
+    // Update profit and loss
+    this.updatePL();
+    console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
 }
-                            }
-                            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
-                                Memory.marketData.marketSummary.soldQuantities[resourceType] = 0;
-                            }
-                            Memory.marketData.marketSummary.soldQuantities[resourceType] += amountToSell;
-                            this.updatePL();
-                            console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-                            //Game.notify(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned} Current P&L: ${pl}`);
-                        }
-                    } else {
-                        //console.log(`Trade failed for ${resourceType} in ${room.name}: ${result}`);
-                    }
                 }
             }
         }
