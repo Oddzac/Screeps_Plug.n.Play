@@ -134,7 +134,7 @@ var terminals = {
             return;
         }
 
-        const MAX_CREDIT_SPEND_RATIO = 0.1; // Max spend ratio (10% of total credits)
+        const MAX_CREDIT_SPEND_RATIO = 0.2; // Max spend ratio (10% of total credits)
         const DISCOUNT_THRESHOLD = 0.35; // Listings must be at least 50% below avg price
         
         // Check if there's enough credits
