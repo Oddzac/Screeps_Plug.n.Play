@@ -126,7 +126,7 @@ var terminals = {
         const terminal = room.terminal;
 
         let lastCredits = Memory.marketData.PL.lastCredits;
-        let limitSwitch = lastCredits * .025;
+        let limitSwitch = lastCredits * .1;
 
         
         if (Memory.marketData.PL.PL < limitSwitch) {
