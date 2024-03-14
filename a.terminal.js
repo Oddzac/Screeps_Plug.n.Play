@@ -6,54 +6,30 @@ var terminals = {
     
     manageTerminal: function(room) {
         const terminal = room.terminal;
-
-        // Check and reset profit summary hourly
-        
-
-        // Ensure there's at least 1000 energy before proceeding
         if (terminal.store[RESOURCE_ENERGY] < 1000) {
-            //console.log('Insufficient energy for trading in', room.name);
-            return; // Exit the function if there's not enough energy
+            return; // Exit if not enough energy
         }
-        
-        let threshold;
-        // Iterate over all resources in the terminal
-        for(const resourceType in terminal.store) {
-            // Skip selling energy
-            if (resourceType === RESOURCE_ENERGY) {
-                threshold = 10000; //
-            } else {
-                //Immediate cut-off for inventory management. This number determines max maintained inventory
-                threshold = 99; // Default threshold for other resources
-            }
-            
-            if(terminal.store[resourceType] > threshold) {
-                let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY);
-                
-                // Sort orders by price, descending
-                orders.sort((a, b) => b.price - a.price);
     
-                if(orders.length > 0 && Memory.marketData[resourceType].costBasis > 0) {
+        let threshold;
+        for (const resourceType in terminal.store) {
+            threshold = resourceType === RESOURCE_ENERGY ? 10000 : 100; // Adjust thresholds as needed
+    
+            if (terminal.store[resourceType] > threshold) {
+                let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY).sort((a, b) => b.price - a.price);
+    
+                if (orders.length > 0 && Memory.marketData[resourceType].costBasis > 0) {
                     let marketPrice = orders[0].price;
-                    if(marketPrice > Memory.marketData[resourceType].costBasis) { // Only sell if market price is higher than cost basis
+                    if (marketPrice > Memory.marketData[resourceType].costBasis) { // Sell if market price is higher than cost basis
                         let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
                         let result = Game.market.deal(orders[0].id, amountToSell, room.name);
                         if (result === OK) {
                             let creditsEarned = marketPrice * amountToSell;
-    
-                            // Ensure initialization of soldQuantities for this resourceType
-                            if (!Memory.marketData.marketSummary.soldQuantities) {
-                                Memory.marketData.marketSummary.soldQuantities = {};
-                            }
                             if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
                                 Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
                             }
-
-                            // Update sold quantity and credits earned
                             Memory.marketData.marketSummary.soldQuantities[resourceType].quantity += amountToSell;
                             Memory.marketData.marketSummary.soldQuantities[resourceType].creditsEarned += creditsEarned;
-
-                            // Update profit and loss
+    
                             this.updatePL();
                             console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
                         }
@@ -61,7 +37,6 @@ var terminals = {
                 }
             }
         }
-        
     },
 
     ensureMarketDataForResource: function(resourceType) {
@@ -274,7 +249,6 @@ var terminals = {
 
     cleanupOldOrders: function() {
         Object.keys(Memory.marketData).forEach(resourceType => {
-            // No need to call ensureMarketDataForResource here since we're iterating over existing resource types
             if (Memory.marketData[resourceType].orders && typeof Memory.marketData[resourceType].orders === 'object') {
                 Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
                     if (!Game.market.orders[orderId]) {

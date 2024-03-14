@@ -155,11 +155,16 @@ var memories = {
         if (!Memory.marketData) {
             Memory.marketData = {};
             
+
             // Initialize P&L tracking object
             Memory.marketData.PL = {
                 lastCredits: 0,
                 PL: 0
             };
+
+            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
+                Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+            }
 
             RESOURCES_ALL.forEach(resource => {
                 Memory.marketData[resource] = {
