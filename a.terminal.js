@@ -56,7 +56,7 @@ var terminals = {
     // Update profit and loss
     this.updatePL();
     console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-}
+
                 }
             }
         }
