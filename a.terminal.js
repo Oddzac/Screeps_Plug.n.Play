@@ -12,7 +12,7 @@ var terminals = {
     
         let threshold;
         for (const resourceType in terminal.store) {
-            threshold = resourceType === RESOURCE_ENERGY ? 10000 : 100; // Adjust thresholds as needed
+            threshold = resourceType === RESOURCE_ENERGY ? 10000 : 0; // Adjust thresholds as needed
     
             if (terminal.store[resourceType] > threshold) {
                 let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY).sort((a, b) => b.price - a.price);
