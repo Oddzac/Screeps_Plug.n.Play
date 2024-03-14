@@ -72,7 +72,7 @@ var terminals = {
     
             let marketData = Memory.marketData[resourceType];
             let costBasis = marketData.costBasis || 0;
-            let profitMargin = 0.10; // Adjust to set desired profit margin
+            let profitMargin = 0.05; // Adjust to set desired profit margin
     
             let myInventory = terminal.store[resourceType] || 0;
             let SURPLUS_THRESHOLD = 50; // Adjust as needed
