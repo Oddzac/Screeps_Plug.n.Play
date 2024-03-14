@@ -55,71 +55,67 @@ var terminals = {
 
 
 
-    adjustPrices: function(room) {
-        const terminal = room.terminal;
-        if (!terminal) {
-            console.log('No terminal in room');
-            return;
-        }
-    
-        Object.keys(Memory.marketData).forEach(resourceType => {
-            if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
-    
-            // Fetch the lowest sell order price from the market for the resourceType
-            let sellOrders = Game.market.getAllOrders({resourceType: resourceType, type: ORDER_SELL});
-            sellOrders.sort((a, b) => a.price - b.price);
-            let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
-    
-            let marketData = Memory.marketData[resourceType];
-            let costBasis = marketData.costBasis || 0;
-            let profitMargin = 0.05; // Adjust to set desired profit margin
-    
-            let myInventory = terminal.store[resourceType] || 0;
-            let SURPLUS_THRESHOLD = 50; // Adjust as needed
-    
-            let myPrice;
-            if (costBasis === 0 && lowestSellPrice !== null) {
-                // Set price to be slightly lower than the lowest market price if cost basis is 0
-                myPrice = lowestSellPrice - 0.001;
-            } else if (costBasis > 0) {
-                // Set price based on cost basis and profit margin
-                myPrice = costBasis * (1 + profitMargin);
-            } else {
-                // Fallback if no cost basis and no market orders
-                myPrice = 999; // Arbitrary high price to avoid accidental listing
-            }
-    
-            // Example logic to create or update market order based on the new price
-            // Simplified for demonstration; you may need to integrate with your existing order logic
-            if (myInventory > SURPLUS_THRESHOLD) {
-                let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
-                if (existingOrder) {
-                    Game.market.changeOrderPrice(existingOrder.id, myPrice);
-                } else {
-                    let orderResult = Game.market.createOrder({
-                        type: ORDER_SELL,
-                        resourceType: resourceType,
-                        price: myPrice,
-                        totalAmount: myInventory - SURPLUS_THRESHOLD,
-                        roomName: room.name
-                    });
-    
-                    this.ensureMarketDataForResource(resourceType);
-    
-                    if (typeof orderResult === "string") {
-                        // Store or update the order details in Memory
-                        Memory.marketData[resourceType].orders[orderResult] = {
-                            remainingAmount: myInventory - SURPLUS_THRESHOLD,
-                            price: myPrice
-                        };
-                    }
-                    // Update Memory.marketData accordingly
-                }
-                console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} in ${room.name}`);
-            }
-        });
-    },
+adjustPrices: function(room) {
+    const terminal = room.terminal;
+    if (!terminal) {
+        console.log('No terminal in room');
+        return;
+    }
 
+    Object.keys(Memory.marketData).forEach(resourceType => {
+        if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
+
+        let sellOrders = Game.market.getAllOrders({resourceType: resourceType, type: ORDER_SELL});
+        sellOrders.sort((a, b) => a.price - b.price);
+        let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
+
+        let marketData = Memory.marketData[resourceType];
+        let costBasis = marketData.costBasis || 0;
+        let profitMargin = 0.05; // Adjust to set desired profit margin
+        let significantlyLowerThreshold = 0.10; // 10% lower than the lowest sell price
+
+        let myInventory = terminal.store[resourceType] || 0;
+        let SURPLUS_THRESHOLD = 50; // Adjust as needed
+
+        let myPrice;
+        if (costBasis > 0 && lowestSellPrice != null && costBasis <= (lowestSellPrice * (1 - significantlyLowerThreshold))) {
+            // If cost basis is significantly lower than the lowest market price, undercut the lowest price
+            myPrice = lowestSellPrice - 0.001;
+        } else if (costBasis > 0) {
+            // If cost basis is greater than 0 but not significantly lower, set price based on cost basis and desired profit margin
+            myPrice = costBasis * (1 + profitMargin);
+        } else if (costBasis === 0 && lowestSellPrice !== null) {
+            // If cost basis is 0, slightly undercut the lowest market price
+            myPrice = lowestSellPrice - 0.001;
+        } else {
+            // Fallback if no cost basis and no market orders
+            myPrice = 999; // Arbitrary high price to avoid accidental listing
+        }
+
+        if (myInventory > SURPLUS_THRESHOLD) {
+            let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
+            if (existingOrder) {
+                Game.market.changeOrderPrice(existingOrder.id, myPrice);
+            } else {
+                let orderResult = Game.market.createOrder({
+                    type: ORDER_SELL,
+                    resourceType: resourceType,
+                    price: myPrice,
+                    totalAmount: myInventory - SURPLUS_THRESHOLD,
+                    roomName: room.name
+                });
+                this.ensureMarketDataForResource(resourceType);
+                if (typeof orderResult === "string") {
+                    Memory.marketData[resourceType].orders[orderResult] = {
+                        remainingAmount: myInventory - SURPLUS_THRESHOLD,
+                        price: myPrice
+                    };
+                }
+            }
+            console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} in ${room.name}`);
+        }
+    });
+},
     
 
     purchaseUnderpricedResources: function(room) {
