@@ -39,24 +39,25 @@ var terminals = {
                         let amountToSell = Math.min(terminal.store[resourceType] - threshold, orders[0].amount);
                         let result = Game.market.deal(orders[0].id, amountToSell, room.name);
                         if (result === OK) {
-    let creditsEarned = marketPrice * amountToSell;
+                            let creditsEarned = marketPrice * amountToSell;
     
-    // Ensure initialization of soldQuantities for this resourceType
-    if (!Memory.marketData.marketSummary.soldQuantities) {
-        Memory.marketData.marketSummary.soldQuantities = {};
-    }
-    if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
-        Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
-    }
+                            // Ensure initialization of soldQuantities for this resourceType
+                            if (!Memory.marketData.marketSummary.soldQuantities) {
+                                Memory.marketData.marketSummary.soldQuantities = {};
+                            }
+                            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
+                                Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+                            }
 
-    // Update sold quantity and credits earned
-    Memory.marketData.marketSummary.soldQuantities[resourceType].quantity += amountToSell;
-    Memory.marketData.marketSummary.soldQuantities[resourceType].creditsEarned += creditsEarned;
+                            // Update sold quantity and credits earned
+                            Memory.marketData.marketSummary.soldQuantities[resourceType].quantity += amountToSell;
+                            Memory.marketData.marketSummary.soldQuantities[resourceType].creditsEarned += creditsEarned;
 
-    // Update profit and loss
-    this.updatePL();
-    console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
-
+                            // Update profit and loss
+                            this.updatePL();
+                            console.log(`Trade executed for ${resourceType} in ${room.name}. Credits earned: ${creditsEarned}`);
+                        }
+                    }
                 }
             }
         }
