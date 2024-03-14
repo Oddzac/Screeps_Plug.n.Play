@@ -42,8 +42,9 @@ var terminals = {
                             let pl = Memory.marketData.PL.PL;
                             let creditsEarned = marketPrice * amountToSell;
                             // Track sold quantity
-                            if (!Memory.marketData.marketSummary.soldQuantities) {
-                                Memory.marketData.marketSummary.soldQuantities = {};
+                            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
+    Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+}
                             }
                             if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
                                 Memory.marketData.marketSummary.soldQuantities[resourceType] = 0;
