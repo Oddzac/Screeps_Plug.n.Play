@@ -304,23 +304,38 @@ var roleHauler = {
 
 
             default:
-                //All other haulers follow this logic to deposit
-                if (storageBuilt && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                    target = creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0 ? creep.room.storage : null; 
-                } else {
-                    targets = creep.room.find(FIND_MY_STRUCTURES, {
-                        filter: structure => (
-                            (structure.structureType === STRUCTURE_SPAWN || 
-                            structure.structureType === STRUCTURE_EXTENSION ||
-                            structure.structureType === STRUCTURE_TOWER || 
-                            structure.structureType === STRUCTURE_STORAGE) &&
-                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                        )
-                    }).sort((a, b) => this.getDeliveryPriority(a) - this.getDeliveryPriority(b));
-    
-                    target = targets.length ? targets[0] : null;
-                }
-                break;
+    // Check if storage is built and has free capacity
+    if (storageBuilt && creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+        target = creep.room.storage;
+    } else {
+        // Check for spawns, extensions, and towers with free capacity
+        targets = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: structure => (
+                (structure.structureType === STRUCTURE_SPAWN || 
+                structure.structureType === STRUCTURE_EXTENSION ||
+                structure.structureType === STRUCTURE_TOWER) &&
+                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            )
+        });
+
+        // If spawns, extensions, and towers are full or not present, find containers
+        if (targets.length === 0) {
+            let containers = creep.room.find(FIND_STRUCTURES, {
+                filter: structure => structure.structureType === STRUCTURE_CONTAINER &&
+                                      structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            });
+
+            // Find the container closest to the room's controller
+            if (containers.length > 0) {
+                let controller = creep.room.controller;
+                target = controller ? creep.pos.findClosestByPath(containers) : null;
+            }
+        } else {
+            // If there are spawns, extensions, or towers with free capacity, use the closest one
+            target = creep.pos.findClosestByPath(targets);
+        }
+    }
+    break;
         }
     
         if (target) {
