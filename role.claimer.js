@@ -1,7 +1,22 @@
+
 var roleClaimer = {
     run: function(creep) {
-        const targetRoom = Memory.claimRooms[0];
-        // Ensure the target room is persisted in memory
+        // Check if targetRoom is already set or if claimRooms is undefined
+        if (!creep.memory.targetRoom || !Memory.claimRooms) {
+            // Initialize Memory.claimRooms if it doesn't exist
+            if (!Memory.claimRooms) Memory.claimRooms = {};
+
+            // Find the first room in Memory.claimRooms to claim
+            const targetRoomName = Object.keys(Memory.claimRooms)[0]; // Get the first room name
+            if (targetRoomName) {
+                creep.memory.targetRoom = targetRoomName;
+            } else {
+                console.log(`[${creep.name}] No target room available.`);
+                return; // Exit if no rooms to claim
+            }
+        }
+
+        const targetRoom = creep.memory.targetRoom;
         if (!creep.memory.targetRoom) {
             creep.memory.targetRoom = targetRoom;
         }
