@@ -17,6 +17,20 @@ calculateDesiredCounts: function(room) {
         const roomClaimsAvailable = Memory.roomClaimsAvailable;
         let desiredCounts = {};
 
+
+    // Check the number of energy sources in the room
+    const energySources = room.find(FIND_SOURCES).length;
+
+    // Adjust desired counts if there is only one energy source
+    if (energySources === 1) {
+        return {
+            harvester: 1,
+            hauler: 2,
+            builder: 2,
+            upgrader: 0
+        };
+    }
+
         if (Memory.rooms[room.name].underAttack) {
     
             const healersNeeded = totalHostiles; // 1 healer for every hostile
