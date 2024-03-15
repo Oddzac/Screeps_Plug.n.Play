@@ -123,7 +123,7 @@ var roleBuilder = {
     performAway: function(creep) {
         // Define the target room for the away team
         const claimRooms = Object.keys(Memory.claimRooms).filter(roomName => Memory.claimRooms[roomName] === true);
-        const targetRoom = claimRooms[0];
+        const targetRoom = 'E23S18';
         // Check if the creep is in the target room
         if (creep.room.name !== targetRoom) {
             // Not in target room, find and move towards the exit to target room
