@@ -328,7 +328,7 @@ var roleHauler = {
             // Find the container closest to the room's controller
             if (containers.length > 0) {
                 let controller = creep.room.controller;
-                target = controller ? creep.pos.findinRange(containers, 3) : null;
+                target = controller ? creep.pos.findInRange(containers, 4) : null;
             }
         } else {
             // If there are spawns, extensions, or towers with free capacity, use the closest one
