@@ -85,9 +85,17 @@ var roleHauler = {
     },
 
     assignContainer: function(creep) {
+        const sourcesAndMinerals = creep.room.find(FIND_SOURCES).concat(creep.room.find(FIND_MINERALS));
         const containers = creep.room.find(FIND_STRUCTURES, {
-            filter: (s) => s.structureType === STRUCTURE_CONTAINER && 
-                           _.sum(s.store) > 0 // Check if the container has any resources
+            filter: (s) => {
+                if (s.structureType !== STRUCTURE_CONTAINER || _.sum(s.store) <= 0) {
+                    return false;
+                }
+                // Check if the container is within 3 tiles of any source or mineral
+                return sourcesAndMinerals.some(sourceOrMineral => 
+                    s.pos.inRangeTo(sourceOrMineral, 3)
+                );
+            }
         });
     
         if (containers.length > 0) {
@@ -102,7 +110,7 @@ var roleHauler = {
             }
         }
     },
-
+    
     //IMPLEMENT SWITCH CASE VIA ROLE
     assignCollectionTarget: function(creep) {
 
@@ -319,33 +327,21 @@ var roleHauler = {
                     });
 
                     // If spawns, extensions, and towers are full or not present, find containers
+                        // When looking for containers, exclude the assigned container
                     if (targets.length === 0) {
+                        const assignedContainerId = creep.memory.containerId;
                         let containers = creep.room.find(FIND_STRUCTURES, {
-                            filter: structure => structure.structureType === STRUCTURE_CONTAINER &&
-                                                  structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                        });
-            
-                        if (containers.length > 0) {
-                            const sources = creep.room.find(FIND_SOURCES);
-                            let maxDistance = 0;
-                            let farthestContainer = null;
-            
-                            // Find the container with the maximum minimum distance from all sources
-                            for (let container of containers) {
-                                let minDistance = Infinity;
-                                for (let source of sources) {
-                                    let path = PathFinder.search(source.pos, {pos: container.pos, range: 1});
-                                    let distance = path.path.length;
-                                    if (distance < minDistance) {
-                                        minDistance = distance;
-                                    }
-                                }
-                                if (minDistance > maxDistance) {
-                                    maxDistance = minDistance;
-                                    farthestContainer = container;
-                                }
+                            filter: (structure) => {
+                                return structure.structureType === STRUCTURE_CONTAINER &&
+                                    structure.id !== assignedContainerId &&
+                                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                             }
-                            target = farthestContainer;
+                        });
+
+                        // Find the container closest to the room's controller
+                        if (containers.length > 0) {
+                            let controller = creep.room.controller;
+                            target = controller ? controller.pos.findClosestByPath(containers) : null;
                         }
                     } else {
                         // If there are spawns, extensions, or towers with free capacity, use the closest one
