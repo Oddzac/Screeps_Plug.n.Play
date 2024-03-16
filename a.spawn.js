@@ -75,7 +75,6 @@ calculateDesiredCounts: function(room) {
                     break;
                 case 4:
                     
-                    // Phase 4 Rigid counts
                     desiredCounts = {
                         harvester: 2,
                         hauler: 5,
@@ -98,19 +97,19 @@ calculateDesiredCounts: function(room) {
                                 scout: 1
                             };
                         } else if (scouted === true && roomClaimsAvailable > 0) {                         
-                            // Scouting Complete
+                            // Scouting Complete & Can Claim
                             desiredCounts = {
                                 harvester: 2,
                                 hauler: 4,
                                 builder: 2,
-                                upgrader: 2,
+                                upgrader: 1,
                                 claimer: 1
                             };
                         } else {
                             desiredCounts = {
                                 harvester: 2,
                                 hauler: 4,
-                                builder: 2,
+                                builder: 3,
                                 upgrader: 1
                             };
                         }
@@ -119,7 +118,7 @@ calculateDesiredCounts: function(room) {
                         desiredCounts = {
                             harvester: 2,
                             hauler: 5,
-                            builder: 2,
+                            builder: 3,
                             upgrader: 1
                         };
                     }
@@ -146,7 +145,7 @@ calculateDesiredCounts: function(room) {
                         desiredCounts = {
                             harvester: 2,
                             hauler: 3,
-                            builder: 2,
+                            builder: 3,
                             upgrader: 1
                         };
 
@@ -155,9 +154,9 @@ calculateDesiredCounts: function(room) {
                 // More as needed
                 default:
                     desiredCounts = {
-                        harvester: 2,
+                        harvester: 3,
                         hauler: 4,
-                        builder: 2,
+                        builder: 3,
                         upgrader: 1
                     };
                     break;
