@@ -122,7 +122,7 @@ adjustPrices: function(room) {
         const terminal = room.terminal;
 
         let lastCredits = Memory.marketData.PL.lastCredits;
-        let limitSwitch = lastCredits * .1;
+        let limitSwitch = lastCredits * .05;
 
         
         if (Memory.marketData.PL.PL < limitSwitch) {
