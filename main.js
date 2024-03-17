@@ -13,7 +13,7 @@ module.exports.loop = function() {
    
         // Memory Cleanup
         memories.immediateMemory();
-       terminals.cleanupOldOrders();
+        terminals.cleanupOldOrders();
 
         // Market Awareness Memory
         if (Game.time % 200 === 0) {
@@ -67,11 +67,11 @@ module.exports.loop = function() {
 
         } else if(room.terminal && room.controller && room.controller.my) {
 
-            terminals.manageTerminal(room);
+
 
             //Manage Buys
             if (Game.time % 10 === 0) {
-                
+            terminals.manageTerminal(room);   
             }
 
             //Check P&L & Manage Buys
