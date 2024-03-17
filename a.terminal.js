@@ -63,30 +63,35 @@ adjustPrices: function(room) {
     }
 
     Object.keys(Memory.marketData).forEach(resourceType => {
+
         if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
 
+        // Get lowest price or null orders
         let sellOrders = Game.market.getAllOrders({resourceType: resourceType, type: ORDER_SELL});
         sellOrders.sort((a, b) => a.price - b.price);
         let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
 
+        // Get current cost basis
         let marketData = Memory.marketData[resourceType];
         let costBasis = marketData.costBasis || 0;
-        let profitMargin = 0.05; // Adjust to set desired profit margin
+
+        let profitMargin = 0.01; // Adjust to set desired profit margin
         let significantlyLowerThreshold = 0.10; // 10% lower than the lowest sell price
 
+        // Maintain minimum inventory
         let myInventory = terminal.store[resourceType] || 0;
         let SURPLUS_THRESHOLD = 50; // Adjust as needed
 
         let myPrice;
         if (costBasis > 0 && lowestSellPrice != null && costBasis <= (lowestSellPrice * (1 - significantlyLowerThreshold))) {
             // If cost basis is significantly lower than the lowest market price, undercut the lowest price
-            myPrice = lowestSellPrice - 0.001;
+            myPrice = lowestSellPrice - 0.0001;
         } else if (costBasis > 0) {
             // If cost basis is greater than 0 but not significantly lower, set price based on cost basis and desired profit margin
             myPrice = costBasis * (1 + profitMargin);
         } else if (costBasis === 0 && lowestSellPrice !== null) {
             // If cost basis is 0, slightly undercut the lowest market price
-            myPrice = lowestSellPrice - 0.001;
+            myPrice = lowestSellPrice - 0.0001;
         } else {
             // Fallback if no cost basis and no market orders
             myPrice = 999; // Arbitrary high price to avoid accidental listing
@@ -96,6 +101,18 @@ adjustPrices: function(room) {
             let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
             if (existingOrder) {
                 Game.market.changeOrderPrice(existingOrder.id, myPrice);
+
+                // Calculate the amount by which to extend or reduce the existing order
+                let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
+
+                if (amountToUpdate > 0) {
+                    // Extend the order if we have more inventory than the order covers
+                    Game.market.extendOrder(existingOrder.id, amountToUpdate);
+                } else if (amountToUpdate < 0) {
+                    // Note: Canceling and recreating an order might not be efficient due to CPU and credit costs.
+                    // Consider whether adjusting downwards is necessary or if it can be managed differently.
+                }
+
             } else {
                 let orderResult = Game.market.createOrder({
                     type: ORDER_SELL,
