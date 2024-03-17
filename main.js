@@ -28,7 +28,7 @@ module.exports.loop = function() {
 
         // 1-hr Memory
         if (Game.time % 1200 === 0) {
-            terminals.generateMarketSummary();
+            //terminals.generateMarketSummary();
             
         }
         
