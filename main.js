@@ -40,7 +40,8 @@ module.exports.loop = function() {
         // Count the number of harvesters and haulers specifically in this room
         const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester' && creep.room.name === roomName);
         const haulers = _.filter(Game.creeps, (creep) => creep.memory.role === 'hauler' && creep.room.name === roomName);
-
+        // Check the number of energy sources in the room
+        const energySources = room.find(FIND_SOURCES).length;
         // Find available spawns in the room
         const availableSpawn = room.find(FIND_MY_SPAWNS, {
             filter: (spawn) => !spawn.spawning
@@ -48,15 +49,30 @@ module.exports.loop = function() {
 
         // Check if there is an available spawn in the room
         if (availableSpawn) {
+
             if (harvesters.length < 1 && haulers.length < 1) {
                 // Spawn a harvester if there are less than 1
                 availableSpawn.spawnCreep([MOVE, CARRY, WORK], `Harvester_${Game.time}`, {memory: {role: 'harvester', room: roomName}}); 
-            } else if (haulers.length < 2) {
-                // Spawn a hauler if there are less than 2
-                availableSpawn.spawnCreep([CARRY, MOVE, MOVE], `Hauler_${Game.time}`, {memory: {role: 'hauler', room: roomName}});
+            }
+
+            // Handle Spawning if there is only one energy source
+            if (energySources === 1) {
+                if (haulers.length < 1) {
+                    // Spawn a hauler if there are less than 2
+                    availableSpawn.spawnCreep([CARRY, MOVE, MOVE], `Hauler_${Game.time}`, {memory: {role: 'hauler', room: roomName}});
+                } else {
+                    // If the minimum numbers of harvesters and haulers are met, manage other creep spawning as needed
+                    spawner.manageCreepSpawning(room);
+                }
+
             } else {
-                // If the minimum numbers of harvesters and haulers are met, manage other creep spawning as needed
-                spawner.manageCreepSpawning(room);
+                if (haulers.length < 2) {
+                    // Spawn a hauler if there are less than 2
+                    availableSpawn.spawnCreep([CARRY, MOVE, MOVE], `Hauler_${Game.time}`, {memory: {role: 'hauler', room: roomName}});
+                } else {
+                    // If the minimum numbers of harvesters and haulers are met, manage other creep spawning as needed
+                    spawner.manageCreepSpawning(room);
+                }
             }
         }
     
