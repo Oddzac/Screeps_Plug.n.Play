@@ -1,3 +1,6 @@
+// TODO
+// AGE BASED PATH INVALIDATION
+
 var movement = {
 
     // PATH CACHING AND MOVEMENT
