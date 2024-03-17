@@ -399,7 +399,7 @@ var memories = {
         // Update claims available
         console.log('Updating available claims...');
         Memory.roomClaimsAvailable = roomsAvailableToClaim;
-        //Refresh Construction Energy Reqs / Room Phase
+        // Refresh Construction Energy Reqs / Room Phase
         Object.values(Game.rooms).forEach(room => {
             const constructionSites = _.filter(Game.constructionSites, site => site.my);
             let totalEnergyRequired = 0;

@@ -57,7 +57,7 @@ module.exports.loop = function() {
 
             // Handle Spawning if there is only one energy source
             if (energySources === 1) {
-                if (haulers.length < 0) {
+                if (haulers.length < 1) {
                     // Spawn a hauler if there are less than... additional logic needed since limit is 1
                     availableSpawn.spawnCreep([CARRY, MOVE, MOVE], `Hauler_${Game.time}`, {memory: {role: 'hauler', room: roomName}});
                 } else {
@@ -98,7 +98,8 @@ module.exports.loop = function() {
             }
 
             //Manage Sell Prices
-            if (Game.time % 75 === 0) {
+            if (Game.time % 1200 === 0) {
+                Memory.marketData.PL.lastCredits = Game.market.credits;
                 
             }
 

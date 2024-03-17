@@ -21,15 +21,15 @@ calculateDesiredCounts: function(room) {
     // Check the number of energy sources in the room
     const energySources = room.find(FIND_SOURCES).length;
 
-    // Adjust desired counts if there is only one energy source
-    if (energySources === 1) {
-        return {
-            harvester: 1,
-            hauler: 1,
-            builder: 2,
-            upgrader: 1
-        };
-    }
+        // Adjust desired counts if there is only one energy source
+        if (energySources === 1) {
+            return {
+                harvester: 1,
+                hauler: 2,
+                builder: 2,
+                upgrader: 0
+            };
+        }
 
         if (Memory.rooms[room.name].underAttack) {
     
