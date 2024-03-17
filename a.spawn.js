@@ -1,4 +1,5 @@
-
+//TODO
+// Logic to periodically spawn scouts to track changes (possibly in main instead?)
 
 var spawner = {
 

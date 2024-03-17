@@ -1,3 +1,8 @@
+// TODO
+// When conquering:
+// Target structures that impede path
+// Squad composition
+
 var movement = require('a.movement');
 var roleAttacker = {
 

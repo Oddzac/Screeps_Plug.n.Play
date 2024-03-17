@@ -1,3 +1,6 @@
+// TODO
+// Expand scouting logic to track owned rooms as 
+
 
 var roleScout = {
     run: function(creep) {
@@ -125,6 +128,11 @@ var roleScout = {
         // Determine if the room is claimable
         if (roomInfo.hasController && !roomInfo.owner) {
           Memory.claimRooms[roomInfo.name] = true;
+        }
+
+        // Determine if the room is attack target (check that room owner formatted correctly) 
+        if (roomInfo.hasController && roomInfo.owner !== 'Odd-z') {
+          Memory.targetRooms[roomInfo.name] = true;
         }
       
         // Avoid duplicating info
