@@ -122,7 +122,7 @@ adjustPrices: function(room) {
         const terminal = room.terminal;
 
         let lastCredits = Memory.marketData.PL.lastCredits;
-        let limitSwitch = lastCredits * .05;
+        let limitSwitch = lastCredits * .1;
 
         
         if (Memory.marketData.PL.PL < limitSwitch) {
@@ -130,8 +130,8 @@ adjustPrices: function(room) {
             return;
         }
 
-        const MAX_CREDIT_SPEND_RATIO = 0.25; // Max spend ratio (10% of total credits)
-        const DISCOUNT_THRESHOLD = 0.45; // Listings must be at least 50% below avg price
+        const MAX_CREDIT_SPEND_RATIO = 0.1; // Max spend ratio (10% of total credits)
+        const DISCOUNT_THRESHOLD = 0.40; // Listings must be at least 50% below avg price
         
         // Check if there's enough credits
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
