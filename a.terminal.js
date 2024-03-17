@@ -187,7 +187,7 @@ adjustPrices: function(room) {
     updatePL: function() {
         // Retrieve the last recorded credits amount
         const lastCredits = Memory.marketData.PL.lastCredits;
-
+        const currentCredits = Game.market.credits;
 
         if (lastCredits === currentCredits) {
             //P&L has not changed since last update
