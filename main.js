@@ -87,18 +87,19 @@ module.exports.loop = function() {
 
             //Manage Buys
             if (Game.time % 10 === 0) {
-            terminals.manageTerminal(room);   
+                terminals.manageTerminal(room); 
+                terminals.updatePL();  
             }
 
             //Check P&L & Manage Buys
             if (Game.time % 50 === 0) {
-
-                terminals.updatePL();
+                terminals.adjustPrices(room);
                 terminals.purchaseUnderpricedResources(room);
             }
+            
             //Manage Sell Prices
             if (Game.time % 75 === 0) {
-                terminals.adjustPrices(room);
+                
             }
 
             
