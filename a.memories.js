@@ -399,7 +399,7 @@ var memories = {
         // Update claims available
         console.log('Updating available claims...');
         Memory.roomClaimsAvailable = roomsAvailableToClaim;
-        //Refresh pathCache Memory / Construction Energy Reqs / Room Phase
+        //Refresh Construction Energy Reqs / Room Phase
         Object.values(Game.rooms).forEach(room => {
             const constructionSites = _.filter(Game.constructionSites, site => site.my);
             let totalEnergyRequired = 0;
@@ -408,8 +408,8 @@ var memories = {
             Memory.rooms[room.name].constructionEnergyRequired = totalEnergyRequired;
             
             console.log(`Checking ${room.name}`);
-            console.log('Path caches reset...');
-            delete Memory.rooms[room.name].pathCache;
+            //console.log('Path caches reset...');
+            //delete Memory.rooms[room.name].pathCache;
             console.log('Checking phase...');
             this.updateRoomPhase(room);
         });
