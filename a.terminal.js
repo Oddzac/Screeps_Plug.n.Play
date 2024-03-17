@@ -177,14 +177,17 @@ adjustPrices: function(room) {
                 }
             }
         });
-        this.updatePL();
+
+        // Get the current credits amount from the game
+        const currentCredits = Game.market.credits;
+        // Update the lastCredits with the currentCredits for the next comparison
+        Memory.marketData.PL.lastCredits = currentCredits;
     },
 
     updatePL: function() {
         // Retrieve the last recorded credits amount
         const lastCredits = Memory.marketData.PL.lastCredits;
-        // Get the current credits amount from the game
-        const currentCredits = Game.market.credits;
+
 
         if (lastCredits === currentCredits) {
             //P&L has not changed since last update
@@ -197,8 +200,7 @@ adjustPrices: function(room) {
         // Store the calculated P&L in memory
         Memory.marketData.PL.PL = PL;
         
-        // Update the lastCredits with the currentCredits for the next comparison
-        Memory.marketData.PL.lastCredits = currentCredits;
+
         console.log(`Updating PL: Last Credits = ${lastCredits}, Current Credits = ${currentCredits}, New PL = ${PL}`);
                 
     },
