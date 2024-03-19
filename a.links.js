@@ -31,8 +31,11 @@ const linker = {
 
     manageLinks: function(room) {
 
+        const myLinksCount = room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_LINK }
+        });
 
-        if (!room.memory.links || !room.memory.links.masterLink || room.memory.links.childLinks.length === 0) {
+        if (!room.memory.links || !room.memory.links.masterLink || room.memory.links.childLinks.length === 0 || myLinksCount.length - 1 > room.memory.childLinks.length) {
             this.identifyLinks(room); // Initialize link identification if not already done
         }
 
