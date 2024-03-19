@@ -35,7 +35,7 @@ const linker = {
             filter: { structureType: STRUCTURE_LINK }
         });
 
-        if (!room.memory.links || !room.memory.links.masterLink || room.memory.links.childLinks.length === 0 || myLinksCount.length - 1 > room.memory.linjs.childLinks.length) {
+        if (!room.memory.links || !room.memory.links.masterLink || room.memory.links.childLinks.length === 0 || myLinksCount.length - 1 > room.memory.links.childLinks.length) {
             this.identifyLinks(room); // Initialize link identification if not already done
         }
 
