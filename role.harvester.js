@@ -91,98 +91,35 @@ var roleHarvester = {
     },
     
 
-    passEnergy: function(creep) {
-        // First, check if there are containers within 20 tiles of the creep.
-        var containers = creep.pos.findInRange(FIND_STRUCTURES, 5, {
-            filter: { structureType: STRUCTURE_CONTAINER }
-        });
+passEnergy: function(creep) {
+    let targets = creep.pos.findInRange(FIND_STRUCTURES, 5, {
+        filter: (structure) => {
+            return [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER].includes(structure.structureType);
+        }
+    }).sort((a, b) => {
+        const priority = [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER];
+        return priority.indexOf(a.structureType) - priority.indexOf(b.structureType);
+    });
 
-        var links = creep.pos.findInRange(FIND_STRUCTURES, 5, {
-            filter: { structureType: STRUCTURE_LINK }
-        });
-
-        var storage = creep.pos.findInRange(FIND_STRUCTURES, 5, {
-            filter: { structureType: STRUCTURE_STORAGE }
-        });
-
-        // If there are containers available, try to deposit energy in the nearest one.
-        if (links.length > 0) {
-            // Find the closest link.
-            var closestLink = creep.pos.findClosestByPath(links);
-    
-
+    if(targets.length > 0) {
+        for(const target of targets) {
             for(const resourceType in creep.store) {
-                let transferResult = creep.transfer(closestLink, resourceType);
-            
-                if(transferResult === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, closestLink);
+                let transferResult = creep.transfer(target, resourceType);
+                if(transferResult == ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, target);
                     creep.say('📦');
-                    break; // Break after attempting to move, assuming only one action per tick
-                } else if (transferResult === ERR_FULL) {
-                    let closestContainer = creep.pos.findClosestByPath(containers);
-                    if(!closestContainer) {
-                        
-                        break; // Optionally handle the case where no container is found
-                    }
-                    
-                    transferResult = creep.transfer(closestContainer, resourceType);
-                    if(transferResult === ERR_NOT_IN_RANGE) {
-                        movement.moveToWithCache(creep, closestContainer);
-                        creep.say('📦');
-                        break;
-                    } else if(transferResult !== OK) {
-                        
-                        break; // Optionally handle other errors or continue trying other resources
-                    }
+                    return; // Exit after the first attempt to move/transfer
+                } else if(transferResult == OK) {
+                    return; // Successful transfer, exit the method
                 }
-            }
-
-        } else if (storage.length > 0) {
-            // Find the closest container.
-            var closestStorage = creep.pos.findClosestByPath(storage);
-    
-            for(const resourceType in creep.store) {
-                if(creep.transfer(closestStorage, resourceType) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, closestStorage);
-                    creep.say('📦');
-                    break;
-                }
-            }
-
-        } else if (containers.length > 0) {
-            // Find the closest container.
-            var closestContainer = creep.pos.findClosestByPath(containers);
-    
-            for(const resourceType in creep.store) {
-                if(creep.transfer(closestContainer, resourceType) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, closestContainer);
-                    creep.say('📦');
-                    break;
-                }
-            }
-
-        } else {
-            // If no links or containers are found within range or cannot deposit for some reason, fallback to dropping energy.
-            // This section might be reached if, for example, all containers are full or too far away.
-            if (!creep.memory.moveTicks) {
-                creep.memory.moveTicks = 0;
-            }
-    
-            if (creep.memory.moveTicks < 5) { // Keeping your original logic for moving towards the spawn before dropping.
-                var spawn = creep.room.find(FIND_MY_SPAWNS)[0];
-                if (spawn) {
-                    movement.moveToWithCache(creep, spawn); // Move towards the spawn
-                    creep.say('🧭');
-                    creep.memory.moveTicks++;
-                }
-            } else {
-                // Drop energy if not near a container or unable to transfer to it.
-                creep.drop(RESOURCE_ENERGY);
-                creep.say('⏬');
-                creep.memory.moveTicks = 0; // Reset for the next cycle
             }
         }
-    },
+    } else {
+        // If no suitable targets, attempt to drop the resource.
+        creep.drop(RESOURCE_ENERGY);
+        creep.say('⏬');
+    }
+},
 };
 
 module.exports = roleHarvester;
