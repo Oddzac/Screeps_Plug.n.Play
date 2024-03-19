@@ -101,6 +101,10 @@ var roleHarvester = {
             filter: { structureType: STRUCTURE_LINK }
         });
 
+        var storage = creep.pos.findInRange(FIND_STRUCTURES, 5, {
+            filter: { structureType: STRUCTURE_STORAGE }
+        });
+
         // If there are containers available, try to deposit energy in the nearest one.
         if (links.length > 0) {
             // Find the closest link.
@@ -130,6 +134,18 @@ var roleHarvester = {
                         
                         break; // Optionally handle other errors or continue trying other resources
                     }
+                }
+            }
+
+        } else if (storage.length > 0) {
+            // Find the closest container.
+            var closestStorage = creep.pos.findClosestByPath(storage);
+    
+            for(const resourceType in creep.store) {
+                if(creep.transfer(closestStorage, resourceType) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, closestStorage);
+                    creep.say('📦');
+                    break;
                 }
             }
 
