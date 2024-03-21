@@ -239,7 +239,7 @@ global.Connect = function(roomName, pointA, pointB) {
 
 
 
-global.MemRefresh = function() {
+global.Refresh = function() {
     memories.immediateMemory();
     memories.shortTerm();
     memories.longTerm();
