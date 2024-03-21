@@ -152,6 +152,92 @@ module.exports.loop = function() {
 
 
 // Console Calls
+/**
+ * Connect two points in a room with a road, using simplified point references.
+ * @param {string} roomName - The name of the room.
+ * @param {string} pointA - The identifier for the starting point (e.g., 'controller', 'storage').
+ * @param {string} pointB - The identifier for the ending point.
+ */
+global.Connect = function(roomName, pointA, pointB) {
+    const room = Game.rooms[roomName];
+    if (!room) {
+        console.log('Connect: room not found');
+        return;
+    }
+
+    // Function to resolve point names to actual RoomPosition objects
+    function resolvePoint(room, pointName) {
+        switch (pointName) {
+            case 'controller':
+                return room.controller.pos;
+            case 'storage':
+                return room.storage ? room.storage.pos : null;
+            case 'spawn': // Assuming you want to connect to the first spawn
+                let spawns = room.find(FIND_MY_SPAWNS);
+                return spawns.length > 0 ? spawns[0].pos : null;
+            case 'extractor':
+                let extractors = room.find(FIND_STRUCTURES, {
+                    filter: { structureType: STRUCTURE_EXTRACTOR }
+                });
+                return extractors.length > 0 ? extractors[0].pos : null;
+            case 'terminal':
+                let terminalss = room.find(FIND_STRUCTURES, {
+                    filter: { structureType: STRUCTURE_TERMINAL }
+                });
+            return extractors.length > 0 ? extractors[0].pos : null;
+            // Handling sources dynamically, assuming 'source1', 'source2', ...
+            default:
+                if (pointName.startsWith('source')) {
+                    let index = parseInt(pointName.slice(6)) - 1; // Convert 'source1' to 0, 'source2' to 1, etc.
+                    let sources = room.find(FIND_SOURCES);
+                    if (index >= 0 && index < sources.length) {
+                        return sources[index].pos;
+                    }
+                }
+                console.log(`Unrecognized point: ${pointName}`);
+                return null;
+            
+        }
+    }
+
+    const startPos = resolvePoint(room, pointA);
+    const endPos = resolvePoint(room, pointB);
+
+    if (!startPos || !endPos) {
+        console.log('Connect: Unable to resolve start or end point.');
+        return;
+    }
+
+    // Use PathFinder to find the path and place construction sites
+    const path = PathFinder.search(startPos, { pos: endPos, range: 1 }, {
+        plainCost: 2,
+        swampCost: 10,
+        roomCallback: function(roomName) {
+            let room = Game.rooms[roomName];
+            if (!room) return;
+            let costs = new PathFinder.CostMatrix;
+
+            room.find(FIND_STRUCTURES).forEach(function(struct) {
+                if (struct.structureType === STRUCTURE_ROAD) {
+                    costs.set(struct.pos.x, struct.pos.y, 1);
+                } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                           (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
+                    costs.set(struct.pos.x, struct.pos.y, 0xff);
+                }
+            });
+            return costs;
+        },
+    });
+
+    for (let i = 0; i < path.path.length; i++) {
+        const pos = path.path[i];
+        room.createConstructionSite(pos, STRUCTURE_ROAD);
+    }
+}
+
+
+
+
 
 global.MemRefresh = function() {
     memories.immediateMemory();
