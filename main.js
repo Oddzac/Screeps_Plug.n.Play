@@ -5,6 +5,7 @@ var memories = require('a.memories');
 var towers = require('a.towers');
 var linker = require('a.links');
 var terminals = require('a.terminal');
+var movement = require('a.movement');
 
 module.exports.loop = function() {
 
@@ -240,6 +241,7 @@ global.Connect = function(roomName, pointA, pointB) {
 
 
 global.Refresh = function() {
+    movement.cleanupOldPaths();
     memories.immediateMemory();
     memories.shortTerm();
     memories.longTerm();
