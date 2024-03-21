@@ -55,7 +55,7 @@ module.exports.loop = function() {
 
             // Handle Spawning if there is only one energy source
             if (energySources === 1) {
-                if (harvesters.length < 1 && haulers.length < 1) {
+                if (harvesters.length < 1 && haulers.length < 2) {
                 // Spawn a harvester if there are less than 1
                 availableSpawn.spawnCreep([MOVE, CARRY, WORK], `Harvester_${Game.time}`, {memory: {role: 'harvester', room: roomName}}); 
             }
