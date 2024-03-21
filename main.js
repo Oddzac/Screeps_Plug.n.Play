@@ -181,10 +181,10 @@ global.Connect = function(roomName, pointA, pointB) {
                 });
                 return extractors.length > 0 ? extractors[0].pos : null;
             case 'terminal':
-                let terminalss = room.find(FIND_STRUCTURES, {
+                let terminals = room.find(FIND_STRUCTURES, {
                     filter: { structureType: STRUCTURE_TERMINAL }
                 });
-            return extractors.length > 0 ? extractors[0].pos : null;
+            return terminals.length > 0 ? extractors[0].pos : null;
             // Handling sources dynamically, assuming 'source1', 'source2', ...
             default:
                 if (pointName.startsWith('source')) {
