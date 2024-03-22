@@ -42,7 +42,7 @@ var construction = {
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 6) {
             if (linksBuilt < 2) {
-                this.placeLinks(room);
+                //this.placeLinks(room);
             }
             this.placeTower(room);
             return;
