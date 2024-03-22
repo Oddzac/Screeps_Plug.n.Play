@@ -155,7 +155,8 @@ calculateDesiredCounts: function(room) {
 
                  case 7:
                     
-                    if (extractorBuilt > 0 && terminalBuilt >
+                    if (extractorBuilt > 0 && terminalBuilt > 0) {
+                        desiredCounts = {
                             harvester: 3,
                             hauler: 4,
                             builder: 3,
