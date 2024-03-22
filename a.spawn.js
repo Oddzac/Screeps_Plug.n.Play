@@ -152,6 +152,26 @@ calculateDesiredCounts: function(room) {
 
                     }
                     break;
+
+                 case 7:
+                    
+                    if (extractorBuilt > 0 && terminalBuilt >
+                            harvester: 3,
+                            hauler: 4,
+                            builder: 3,
+                            upgrader: 1
+                        };
+
+                    } else {
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 3,
+                            builder: 3,
+                            upgrader: 1
+                        };
+
+                    }
+                    break;
                 // More as needed
                 default:
                     desiredCounts = {
