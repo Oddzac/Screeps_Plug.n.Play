@@ -52,6 +52,7 @@ var roleHauler = {
         const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'spawnHauler');
         const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'linkHauler');
         const terminalHauler = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'terminalHauler');
+
         
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
@@ -66,6 +67,9 @@ var roleHauler = {
         
         if (linkHaulers < 1 && linksBuilt > 1) {
             creep.memory.task = 'linkHauler';
+
+        } else if (phase > 6 && spawnHaulers < 2) {
+            creep.memory.task = 'spawnHauler';
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
             creep.memory.task = 'spawnHauler';
@@ -238,7 +242,7 @@ var roleHauler = {
                     }
                 }
                 // Check if a surplus mineral was found, if not and energy is surplus, proceed with energy
-                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 2000) {
+                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
                     // If there's not enough surplus energy, do not proceed to withdraw
                     this.waitNear(creep); // Wait if conditions are not met
                     return; // Exit the function
