@@ -1,5 +1,6 @@
 //TODO
 // Logic to periodically spawn scouts to track changes (possibly in main instead?)
+// If phase > 7 && Spawn1 busy, try Spawn2
 
 var spawner = {
 
@@ -249,13 +250,37 @@ calculateDesiredCounts: function(room) {
        
         // Find spawns in the specified room
         const spawns = Game.rooms[room.name].find(FIND_MY_SPAWNS);
-        const selectedSpawn = spawns[0];
+        const mainSpawn = spawns[0];
+        const backupSpawn = spawns[1];
 
-        const spawnResult = selectedSpawn.spawnCreep(body, name, {
+
+        const spawnResult = mainSpawn.spawnCreep(body, name, {
             memory: { role: role, working: false }
         });
 
-        if (spawnResult == OK) {
+        if (spawnResult == ERR_BUSY) {
+            const secondSpawnResult = backupSpawn.spawnCreep(body, name, {
+                memory: { role: role, working: false }
+            });
+
+            if (secondSpawnResult == OK) {
+                // Logging the successful spawn with current counts
+                
+                const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room.name);
+                const upgraders = 
+                _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'upgrader').length;
+                const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
+                const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
+                const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
+                const totalCreeps = Object.keys(Game.creeps).length;
+                console.log(`Room: ${room.name} Total: ${creepsInRoom.length}`);
+                console.log(`[spawnCreepWithRole] Spawned ${role} with ${JSON.stringify(body)}`)
+                console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
+                
+            } else {
+                return;
+            }
+        } else if (spawnResult == OK) {
             // Logging the successful spawn with current counts
             
             const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room.name);
