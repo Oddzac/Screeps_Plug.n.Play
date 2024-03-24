@@ -12,7 +12,7 @@ var roleHauler = {
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
 
-        } else if (creep.memory.task === 'linkHauler' && creep.store.getUsedCapacity() > 0) {
+        } else if (creep.memory.task === 'linkHauler' || creep.memory.task === 'spawnHauler' && creep.store.getUsedCapacity() > 0) {
             creep.memory.isCollecting = false;
 
         } else if (creep.store.getFreeCapacity() === 0) {
