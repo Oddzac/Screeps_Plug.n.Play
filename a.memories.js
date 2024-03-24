@@ -362,6 +362,27 @@ var memories = {
                         Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .45;
                     }
                 break;
+
+                case 7:
+                    if (Memory.rooms[roomName].underAttack) {
+                        //Respond to hostile presence
+                        Memory.rooms[room.name].spawnMode.mode = 'Defense';
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
+                        return;
+                    } else if (nextRole === 'harvester') {
+                        Memory.rooms[room.name].spawnMode.mode = 'Harvester';
+                        Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                        return;
+                    } else if (nextRole === 'claimer') {
+                        Memory.rooms[room.name].spawnMode.mode = 'Claimer';
+                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        return;
+                    } else {
+                        // Lower Cap to 50%
+                        Memory.rooms[room.name].spawnMode.mode = 'Cap(35%)';
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .35;
+                    }
+                break;
                     
                 default:
                     console.log('Spawn Mode: Default case');
