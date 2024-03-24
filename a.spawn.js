@@ -159,7 +159,7 @@ calculateDesiredCounts: function(room) {
                         desiredCounts = {
                             harvester: 3,
                             hauler: 5,
-                            builder: 3,
+                            builder: 2,
                             upgrader: 1
                         };
 
