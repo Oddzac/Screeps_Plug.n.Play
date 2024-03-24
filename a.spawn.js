@@ -177,8 +177,8 @@ calculateDesiredCounts: function(room) {
                 default:
                     desiredCounts = {
                         harvester: 3,
-                        hauler: 4,
-                        builder: 3,
+                        hauler: 5,
+                        builder: 2,
                         upgrader: 1
                     };
                     break;
