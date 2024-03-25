@@ -58,7 +58,7 @@ X Storage Placed
 
 
 //TODO
-// Claimed Drop stored in room object
+// 
 
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
@@ -379,7 +379,7 @@ var memories = {
                         return;
                     } else {
                         // Lower Cap to 50%
-                        Memory.rooms[room.name].spawnMode.mode = 'Cap(35%)';
+                        Memory.rooms[room.name].spawnMode.mode = 'Cap(25%)';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .25;
                     }
                 break;
