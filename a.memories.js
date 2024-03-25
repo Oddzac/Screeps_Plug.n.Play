@@ -380,7 +380,7 @@ var memories = {
                     } else {
                         // Lower Cap to 50%
                         Memory.rooms[room.name].spawnMode.mode = 'Cap(35%)';
-                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .35;
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .25;
                     }
                 break;
                     
