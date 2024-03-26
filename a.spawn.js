@@ -382,6 +382,37 @@ calculateDesiredCounts: function(room) {
                     };
                 }
                 break;
+
+            case 6:
+                roleBlueprints = {
+                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
+                    //Defensive Units
+                    attacker: ["tough", "move", "move", "ranged_attack"],
+                    healer: ["move","heal"],
+                    //Recon
+                    scout: ["move"],
+                    claimer: ["claim", "move"],
+                };
+                break;
+
+            case 7:
+                roleBlueprints = {
+                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
+                    upgrader: ["work", "move", "carry"],
+                    builder: ["work", "move", "carry"],
+                    hauler: ["carry", "move", "move"],
+                    //Defensive Units
+                    attacker: ["tough", "move", "move", "ranged_attack"],
+                    healer: ["move","heal"],
+                    //Recon
+                    scout: ["move"],
+                    claimer: ["claim", "move"],
+                };
+                break;
+
             // Additional phases handled by default
             default:
                 roleBlueprints = {
