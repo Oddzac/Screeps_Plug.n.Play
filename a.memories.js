@@ -370,6 +370,7 @@ var memories = {
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
                         return;
                     } else if (nextRole === 'harvester') {
+                        
                         Memory.rooms[room.name].spawnMode.mode = 'Harvester';
                         Memory.rooms[room.name].spawnMode.energyToUse = 600;
                         return;
@@ -403,7 +404,7 @@ var memories = {
                     } else {
                         // Default Cap: 75%
                         Memory.rooms[room.name].spawnMode.mode = 'Cap(75%)';
-                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .5; // Let spawn manager handle
+                        Memory.rooms[room.name].spawnMode.energyToUse = energyCapacity * .25; // Let spawn manager handle
                     }                        
                     break;            
 
@@ -514,6 +515,13 @@ var memories = {
                 if (rcl >= 6 && linksBuilt > 1) {
                     Memory.rooms[room.name].phase.Phase = 6;
                     console.log(`Room ${room.name} has advanced to Phase 6.`);
+                    transitioned = true;
+                }
+                break;
+            case 6:
+                if (rcl >= 7) {
+                    Memory.rooms[room.name].phase.Phase = 7;
+                    console.log(`Room ${room.name} has advanced to Phase 7.`);
                     transitioned = true;
                 }
                 break;
