@@ -92,12 +92,12 @@ var roleHarvester = {
     
 
 passEnergy: function(creep) {
-    let targets = creep.pos.findInRange(FIND_STRUCTURES, 2, {
+    let targets = creep.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: (structure) => {
             return [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER].includes(structure.structureType);
         }
     }).sort((a, b) => {
-        const priority = [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER];
+        const priority = [STRUCTURE_LINK, STRUCTURE_CONTAINER, STRUCTURE_STORAGE];
         return priority.indexOf(a.structureType) - priority.indexOf(b.structureType);
     });
 
