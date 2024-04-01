@@ -15,15 +15,27 @@ var towers = {
         this.repairStructures(tower);
     },
 
-    attackHostiles: function(tower) {
-        const hostiles = tower.room.find(FIND_HOSTILE_CREEPS);
-        if (hostiles.length > 0) {
-            const target = tower.pos.findClosestByRange(hostiles);
-            tower.attack(target);
-            return true; // Action taken
-        }
-        return false; // No action taken
-    },
+ attackHostiles: function(tower) {
+    const hostiles = tower.room.find(FIND_HOSTILE_CREEPS);
+    // Filter hostiles to find those with ATTACK or RANGED_ATTACK parts
+    const aggressiveHostiles = hostiles.filter(creep => 
+        creep.body.some(part => part.type === ATTACK || part.type === RANGED_ATTACK)
+    );
+
+    if (aggressiveHostiles.length > 0) {
+        // Prioritize aggressive hostiles
+        const target = tower.pos.findClosestByRange(aggressiveHostiles);
+        tower.attack(target);
+        return true; // Action taken
+    } else if (hostiles.length > 0) {
+        // Fallback to any hostile if no aggressive ones are found
+        const target = tower.pos.findClosestByRange(hostiles);
+        tower.attack(target);
+        return true; // Action taken
+    }
+
+    return false; // No action taken
+},
 
     healCreeps: function(tower) {
         const injuredCreeps = tower.room.find(FIND_MY_CREEPS, {
