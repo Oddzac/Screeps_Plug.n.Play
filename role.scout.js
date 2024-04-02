@@ -4,44 +4,56 @@
 
 var roleScout = {
     run: function(creep) {
+    // Directly set initialRoom if it's not already set
+    if (!creep.memory.initialRoom) {
+        console.log('Directly setting initial room for:', creep.name);
+        creep.memory.initialRoom = creep.room.name;
+    }
 
-        // Directly set initialRoom if it's not already set
-        if (!creep.memory.initialRoom) {
-            console.log('Directly setting initial room for:', creep.name);
-            creep.memory.initialRoom = creep.room.name;
+    // If scouting of the initial room is complete, suicide the scout
+    if (Memory.rooms[creep.memory.initialRoom] && Memory.rooms[creep.memory.initialRoom].scoutingComplete === true) {
+        creep.suicide();
+    }
+
+    // Determine the next target room if necessary
+    if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
+        console.log('Scout MemInit for:', creep.name);
+        if (creep.room.name !== creep.memory.initialRoom) {
+            console.log('Setting Initial Room for:', creep.name);
+            this.recordRoomInfo(creep);
+            creep.memory.targetRoom = creep.memory.initialRoom;
+        } else {
+            console.log('Scout Calling chooseNextRoom for:', creep.name);
+            creep.memory.targetRoom = this.chooseNextRoom(creep);
         }
+    }
 
-        if (Memory.rooms[creep.memory.initialRoom].scoutingComplete === true) {
-            creep.suicide();
-        }
+    // Move to the target room if it's not the current room
+    if (creep.room.name !== creep.memory.targetRoom) {
+        const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
+        const exit = creep.pos.findClosestByRange(exitDir);
+        creep.moveTo(exit);
+    } else if (creep.room.name === creep.memory.targetRoom) {
+        console.log('Scout in target room:', creep.name);
 
-        // Check if the scouting of the current target room is complete or if there's no target room set
-        if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
-            console.log('Scout MemInit for:', creep.name);
-            // If the scout is not in the initial room, set the target room as the initial room
-            if (creep.room.name !== creep.memory.initialRoom) {
-                console.log('Setting Initial Room for:', creep.name);
-                this.recordRoomInfo(creep);
-                creep.memory.targetRoom = creep.memory.initialRoom;
+        // Attempt to move towards the controller if it's an unowned room
+        const controller = creep.room.controller;
+        if (controller && !controller.owner) {
+            // Only try to move towards the controller if not within 5 tiles
+            if (creep.pos.getRangeTo(controller) > 5) {
+                creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
             } else {
-                // If the scout is in the initial room, choose the next room to scout
-                console.log('Scout Calling chooseNextRoom for:', creep.name);
-                creep.memory.targetRoom = this.chooseNextRoom(creep);
+                // If within 5 tiles, set accessibleController flag to true
+                if (!Memory.scoutedRooms[creep.room.name]) {
+                    Memory.scoutedRooms[creep.room.name] = {}; // Ensure the room info object exists
+                }
+                Memory.scoutedRooms[creep.room.name].accessibleController = true;
             }
         }
-    
-        // Move to the target room if it's not the current room
-        if (creep.room.name !== creep.memory.targetRoom) {
-            //console.log('Moving to exit for:', creep.name);
-            const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
-            const exit = creep.pos.findClosestByRange(exitDir);
-            creep.moveTo(exit);
-        } else if (creep.memory.targetRoom && creep.room.name === creep.memory.targetRoom) {
-            console.log('Scout in target room:', creep.name);
-            // Once in the target room, record room info. This also covers returning to the initial room.
-            this.recordRoomInfo(creep);
-        }
-    },
+        // Call recordRoomInfo after attempting to move towards the controller
+        this.recordRoomInfo(creep);
+    }
+},
 
     /*isHighwayRoom: function(room) {
       // Extract the horizontal and vertical components from the room name
@@ -122,6 +134,7 @@ var roleScout = {
           })),
           terrain: this.analyzeTerrain(creep.room),
           hasController: !!creep.room.controller,
+          accessibleController: false,
         };
 
       
