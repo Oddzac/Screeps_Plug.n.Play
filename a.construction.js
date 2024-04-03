@@ -28,14 +28,16 @@ var construction = {
         if (this.checkExtensionsAvailable(room) > 0) {
             this.placeExtensionsAroundSpawn(room);
         }
+
+        if (this.checkTowersAvailable(room) > 0) {
+            this.placeTower(room);
+        }
+
         if (Memory.rooms[room.name].phase.Phase < 2) {
             this.placeContainersNearSources(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase <3 && containersBuilt > 1) {
             //this.connectAndTrackProgress(room);
-            return;
-        } else if (Memory.rooms[room.name].phase.Phase < 4 && memories.towersBuilt < 1 && towerSites < 1) {
-            this.placeTower(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1 && storageSites < 1) {
             this.placeStorage(room);
@@ -44,7 +46,6 @@ var construction = {
             if (linksBuilt < 2) {
                 //this.placeLinks(room);
             }
-            this.placeTower(room);
             return;
         }
 
@@ -601,6 +602,26 @@ connectSpawnToPOIs: function(room) {
         const extensionsAvailable = extensionsLimits[controllerLevel] - totalExtensions;
     
         return extensionsAvailable;
+    },
+
+    checkTowersAvailable: function(room) {
+        // Maximum extensions allowed by controller level
+        const towersLimits = [0, 0, 0, 1, 1, 2, 2, 3, 6]; // Indexed by controller level
+        const controllerLevel = room.controller.level;
+    
+        // Get current number of extensions and extension construction sites
+        const towers = room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_TOWER }
+        });
+        const towerSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
+            filter: { structureType: STRUCTURE_TOWER }
+        });
+        const totalTowers = towers.length + towerSites.length;
+    
+        // Calculate the number of extensions that can still be built
+        const towersAvailable = towerLimits[controllerLevel] - totalTowers;
+    
+        return towersAvailable;
     }
     
     
