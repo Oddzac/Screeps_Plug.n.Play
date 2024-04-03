@@ -619,7 +619,7 @@ connectSpawnToPOIs: function(room) {
         const totalTowers = towers.length + towerSites.length;
     
         // Calculate the number of extensions that can still be built
-        const towersAvailable = towerLimits[controllerLevel] - totalTowers;
+        const towersAvailable = towersLimits[controllerLevel] - totalTowers;
     
         return towersAvailable;
     }
