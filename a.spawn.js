@@ -35,12 +35,13 @@ calculateDesiredCounts: function(room) {
 
         if (Memory.rooms[room.name].underAttack) {
     
-            const healersNeeded = totalHostiles; // 1 healer for every hostile
+            const healersNeeded = Math.ceil(totalHostiles / 2); // 1 healer for every hostile
             const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
     
             return {
-                healer: healersNeeded,
                 attacker: attackersNeeded,
+                healer: healersNeeded,
+
                 harvester: 2, // Minimal sustaining number during an attack
                 hauler: 2, // Minimal sustaining number
             };
