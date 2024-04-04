@@ -62,6 +62,9 @@ var roleHauler = {
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
         const linksBuilt = Memory.rooms[creep.room.name].linksBuilt;
         const terminalBuilt = Memory.rooms[creep.room.name].terminalBuilt;
+        const extensions = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_EXTENSION }
+        });
 
 
 
@@ -73,6 +76,9 @@ var roleHauler = {
             creep.memory.task = 'linkHauler';
 
         } else if (phase >= 6 && energySources > 1 && spawnHaulers < 2) {
+            creep.memory.task = 'spawnHauler';
+
+        } else if (energySources === 1 && extensions > 30 && spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
