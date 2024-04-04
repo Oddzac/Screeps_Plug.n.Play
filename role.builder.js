@@ -63,6 +63,9 @@ var roleBuilder = {
         });
         var constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
         let spawnSites = 0; //find spawn construction sites
+        const towers = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: { structureType: STRUCTURE_TOWER }
+        });
         for (const roomName in Game.rooms) {
             let room = Game.rooms[roomName];
             
@@ -70,9 +73,7 @@ var roleBuilder = {
             let spawnSite = room.find(FIND_CONSTRUCTION_SITES, {
                 filter: {structureType: STRUCTURE_SPAWN}
             });
-            const towers = room.find(FIND_MY_STRUCTURES, {
-                filter: { structureType: STRUCTURE_TOWER }
-            });
+            
             
             // Add the count of spawn sites in the current room to the total
             spawnSites += spawnSite.length;
