@@ -78,7 +78,7 @@ var roleHauler = {
         } else if (phase >= 6 && energySources > 1 && spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
 
-        } else if (energySources === 1 && extensions > 30 && spawnHaulers < 2) {
+        } else if (energySources < 2 && extensions > 30 && spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
 
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
