@@ -56,7 +56,7 @@ var roleHarvester = {
             };
         }).filter(source => source.isSafe); // Filter out sources that are not safe
     
-        if (harvesters > 2 && minerals.length > 0 && extractors.length > 0 && extractingHarvesters < 1) {
+        if (harvesters > sources.length && extractors.length > 0 && extractingHarvesters < 1) {
             creep.memory.task = 'extractHarvest';
             creep.memory.sourceId = minerals[0].id;
             return;
