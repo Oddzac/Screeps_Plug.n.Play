@@ -45,7 +45,7 @@ var roleHarvester = {
             filter: s => s.structureType === STRUCTURE_EXTRACTOR});
         const harvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName);
         const extractingHarvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName && c.memory.task === 'extractHarvest');
-        const sources = creep.room.find(FIND_SOURCES);
+        const sources = creep.room.find(FIND_SOURCES).length;
         const sourceCount = sources.map(source => {
             // Check for hostiles within 10 tiles of the source
             const hostilesNearSource = source.pos.findInRange(FIND_HOSTILE_CREEPS, 10);
@@ -56,7 +56,7 @@ var roleHarvester = {
             };
         }).filter(source => source.isSafe); // Filter out sources that are not safe
     
-        if (harvesters > sources.length && extractors.length > 0 && extractingHarvesters < 1) {
+        if (harvesters > sources && extractors.length > 0 && extractingHarvesters < 1) {
             creep.memory.task = 'extractHarvest';
             creep.memory.sourceId = minerals[0].id;
             return;
