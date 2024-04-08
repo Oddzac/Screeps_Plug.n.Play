@@ -701,7 +701,7 @@ var memories = {
                 break;
 
             case 5:
-                if (rcl >= 6 && linksBuilt > 1) {
+                if (rcl >= 6) {
                     Memory.rooms[room.name].phase.Phase = 6;
                     console.log(`Room ${room.name} has advanced to Phase 6.`);
                     transitioned = true;
