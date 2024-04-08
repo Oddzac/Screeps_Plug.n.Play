@@ -20,8 +20,8 @@ calculateDesiredCounts: function(room) {
         let desiredCounts = {};
 
 
-    // Check the number of energy sources in the room
-    const energySources = room.find(FIND_SOURCES).length;
+        // Check the number of energy sources in the room
+        const energySources = room.find(FIND_SOURCES).length;
 
         // Adjust desired counts if there is only one energy source
         if (energySources === 1) {
@@ -84,7 +84,7 @@ calculateDesiredCounts: function(room) {
         }
 
         //World Domination!
-        if (scouted === false) {
+  /*      if (scouted === false) {
             // Begin Scouting
             return {
                 harvester: 2,
@@ -93,6 +93,7 @@ calculateDesiredCounts: function(room) {
                 upgrader: 1,
                 scout: 1
             };
+
         } else if (scouted === true && roomClaimsAvailable > 0) {                         
             // Scouting Complete & Can Claim
             return {
@@ -102,7 +103,7 @@ calculateDesiredCounts: function(room) {
                 upgrader: 1,
                 claimer: 1
             };
-        }
+        }*/
 
 
 
