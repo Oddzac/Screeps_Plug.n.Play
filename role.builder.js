@@ -84,7 +84,7 @@ var roleBuilder = {
         const awayTeamCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'awayTeam');
         const repairingBuildersCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'repairing');
     
-        if(towers.length < 4 && repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
+        if(towers.length < 2 && repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
             creep.say("🛠️");
             creep.memory.task = "repairing";
         } else if (awayTeamCount < 1 && spawnSites > 0) {
@@ -127,7 +127,7 @@ var roleBuilder = {
     performAway: function(creep) {
         // Define the target room for the away team
         const claimRooms = Object.keys(Memory.claimRooms).filter(roomName => Memory.claimRooms[roomName] === true);
-        const targetRoom = 'E23S18';
+        const targetRoom = 'E25S18';
         // Check if the creep is in the target room
         if (creep.room.name !== targetRoom) {
             // Not in target room, find and move towards the exit to target room
