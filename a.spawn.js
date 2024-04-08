@@ -87,6 +87,10 @@ calculateDesiredCounts: function(room) {
         if (scouted === false) {
             // Begin Scouting
             return {
+                harvester: 2,
+                hauler: 4,
+                builder: 2,
+                upgrader: 1,
                 scout: 1
             };
         } else if (scouted === true && roomClaimsAvailable > 0) {                         
