@@ -25,17 +25,86 @@ calculateDesiredCounts: function(room) {
 
         // Adjust desired counts if there is only one energy source
         if (energySources === 1) {
+            switch (phase) {
+                case 6:
+                    if (extractorBuilt > 0 && terminalBuilt < 1) {
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 3,
+                            builder: 1,
+                            upgrader: 1
+                        };
+                    } else if (extractorBuilt > 0 && terminalBuilt > 0) {
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 4,
+                            builder: 1,
+                            upgrader: 1
+                        };
+
+                    } else {
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 3,
+                            builder: 1,
+                            upgrader: 1
+                        };
+
+                    }
+                    break;
+
+                case 7:
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 4,
+                        builder: 1,
+                        upgrader: 1
+                    };
+                    break;
+
+                case 8:
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 4,
+                        builder: 1,
+                        upgrader: 1
+                    };
+                    break;
+
+                default:
+                    desiredCounts = {
+                        harvester: 1,
+                        hauler: 3,
+                        builder: 1,
+                        upgrader: 1
+                    };
+                    break;
+            }
+            return;
+        }
+
+        //World Domination!
+        if (scouted === false) {
+            // Begin Scouting
+            return {
+                scout: 1
+            };
+        } else if (scouted === true && roomClaimsAvailable > 0) {                         
+            // Scouting Complete & Can Claim
             return {
                 harvester: 2,
-                hauler: 3,
+                hauler: 4,
                 builder: 2,
-                upgrader: 1
+                upgrader: 1,
+                claimer: 1
             };
         }
 
+
+
         if (Memory.rooms[room.name].underAttack) {
     
-            const healersNeeded = Math.ceil(totalHostiles / 2); // 1 healer for every hostile
+            const healersNeeded = Math.ceil(totalHostiles / 2);
             const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
     
             return {
@@ -90,32 +159,13 @@ calculateDesiredCounts: function(room) {
                     
                     if (linksBuilt > 1) {
                         // Phase 5 post-links
-                        if (scouted === false) {
-                            // Begin Scouting
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 1,
-                                scout: 1
-                            };
-                        } else if (scouted === true && roomClaimsAvailable > 0) {                         
-                            // Scouting Complete & Can Claim
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 1,
-                                claimer: 1
-                            };
-                        } else {
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 3,
-                                upgrader: 1
-                            };
-                        }
+                        desiredCounts = {
+                            harvester: 2,
+                            hauler: 4,
+                            builder: 3,
+                            upgrader: 1
+                        };
+                    
 
                     } else {
                         desiredCounts = {
@@ -402,8 +452,8 @@ calculateDesiredCounts: function(room) {
             case 7:
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
+                    upgrader: ["work", "move", "move", "carry"],
+                    builder: ["work", "move", "move", "carry"],
                     hauler: ["carry", "move", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
@@ -417,7 +467,7 @@ calculateDesiredCounts: function(room) {
             // Additional phases handled by default
             default:
                 roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
+                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move"], // MAX HARVEST
                     upgrader: ["work", "move", "move", "carry"],
                     builder: ["work", "move", "move", "carry"],
                     hauler: ["carry", "move"],
