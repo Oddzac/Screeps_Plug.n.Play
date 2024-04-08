@@ -26,7 +26,7 @@ calculateDesiredCounts: function(room) {
         // Adjust desired counts if there is only one energy source
         if (energySources === 1) {
             return {
-                harvester: 1,
+                harvester: 2,
                 hauler: 2,
                 builder: 2,
                 upgrader: 1
