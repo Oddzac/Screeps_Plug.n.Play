@@ -346,3 +346,415 @@ adjustPrices: function(room) {
 };
 
 module.exports = terminals;
+
+
+/*
+var terminalManager = {
+
+    globalMarketManagement: function() {
+
+        this.updateMarketPrices();
+
+        this.handleGlobalTransactions();
+
+        this.updatePL();
+
+        this.cleanupOldOrders();
+
+        this.generateMarketSummary();
+
+    },
+
+ 
+
+    handleRoomTerminal: function(room) {
+
+        this.manageStorageThresholds(room);
+
+        this.adjustPrices(room);
+
+    },
+
+ 
+
+    manageStorageThresholds: function(room) {
+
+        const terminal = room.terminal;
+
+        if (!terminal || terminal.store[RESOURCE_ENERGY] < 1000) {
+
+            return;
+
+        }
+
+ 
+
+        let threshold;
+
+        for (const resourceType in terminal.store) {
+
+            threshold = resourceType === RESOURCE_ENERGY ? 10000 : 0;
+
+            if (terminal.store[resourceType] > threshold) {
+
+                this.prepareToSell(room, resourceType, terminal.store[resourceType] - threshold);
+
+            }
+
+        }
+
+    },
+
+ 
+
+    prepareToSell: function(room, resourceType, amount) {
+
+        let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY).sort((a, b) => b.price - a.price);
+
+        if (orders.length > 0) {
+
+            let marketPrice = orders[0].price;
+
+            if (marketPrice > Memory.marketData[resourceType].costBasis) {
+
+                let result = Game.market.deal(orders[0].id, amount, room.name);
+
+                if (result === OK) {
+
+                    this.registerSale(resourceType, amount, marketPrice);
+
+                }
+
+            }
+
+        }
+
+    },
+
+ 
+
+    registerSale: function(resourceType, amount, price) {
+
+        let creditsEarned = price * amount;
+
+        if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
+
+            Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+
+        }
+
+        Memory.marketData.marketSummary.soldQuantities[resourceType].quantity += amount;
+
+        Memory.marketData.marketSummary.soldQuantities[resourceType].creditsEarned += creditsEarned;
+
+ 
+
+        this.updatePL();
+
+        console.log(`Trade executed for ${resourceType}. Credits earned: ${creditsEarned}`);
+
+    },
+
+ 
+
+    adjustPrices: function(room) {
+
+        const terminal = room.terminal;
+
+        if (!terminal) {
+
+            console.log('No terminal in room');
+
+            return;
+
+        }
+
+ 
+
+        Object.keys(Memory.marketData).forEach(resourceType => {
+
+            if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
+
+ 
+
+            let sellOrders = Game.market.getAllOrders({resourceType: resourceType, type: ORDER_SELL});
+
+            sellOrders.sort((a, b) => a.price - b.price);
+
+            let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
+
+            let marketData = Memory.marketData[resourceType];
+
+            let costBasis = marketData.costBasis || 0;
+
+            let profitMargin = 0.01; // Adjust to set desired profit margin
+
+            let myInventory = terminal.store[resourceType] || 0;
+
+            let SURPLUS_THRESHOLD = 50; // Adjust as needed
+
+            let myPrice = costBasis * (1 + profitMargin);
+
+ 
+
+            if (myInventory > SURPLUS_THRESHOLD) {
+
+                let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: room.name});
+
+                if (existingOrder) {
+
+                    Game.market.changeOrderPrice(existingOrder.id, myPrice);
+
+                    let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
+
+                    if (amountToUpdate > 0) {
+
+                        Game.market.extendOrder(existingOrder.id, amountToUpdate);
+
+                    }
+
+                } else {
+
+                    let orderResult = Game.market.createOrder({
+
+                        type: ORDER_SELL,
+
+                        resourceType: resourceType,
+
+                        price: myPrice,
+
+                        totalAmount: myInventory - SURPLUS_THRESHOLD,
+
+                        roomName: room.name
+
+                    });
+
+                    if (typeof orderResult === "string") {
+
+                        Memory.marketData[resourceType].orders[orderResult] = {
+
+                            remainingAmount: myInventory - SURPLUS_THRESHOLD,
+
+                            price: myPrice
+
+                        };
+
+                    }
+
+                }
+
+                console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} in ${room.name}`);
+
+            }
+
+        });
+
+    },
+
+ 
+
+    updateMarketPrices: function() {
+
+        const resources = Object.keys(Memory.marketData);
+
+        const PRICE_HISTORY_LIMIT = 10;
+
+ 
+
+        resources.forEach(resource => {
+
+            let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL })
+
+                .filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
+
+ 
+
+            if (orders.length > 2) {
+
+                orders.sort((a, b) => a.price - b.price);
+
+                orders.splice(-2);
+
+                let averagePrice = orders.reduce((acc, order) => acc + order.price, 0) / orders.length;
+
+ 
+
+                let data = Memory.marketData[resource];
+
+                data.averagePrices.push(averagePrice);
+
+ 
+
+                if (data.averagePrices.length > PRICE_HISTORY_LIMIT) {
+
+                    data.averagePrices.shift();
+
+                }
+
+ 
+
+                data.avgPrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
+
+                data.lastUpdate = Game.time;
+
+            }
+
+        });
+
+    },
+
+ 
+
+handleGlobalTransactions: function() {
+
+    // Example for purchasing underpriced resources globally
+
+    const MAX_CREDIT_SPEND_RATIO = 0.01; // Adjust based on strategy
+
+    const DISCOUNT_THRESHOLD = 0.40; // Example: 40% below average price
+
+ 
+
+    const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
+
+ 
+
+    Object.keys(Memory.marketData).forEach(resourceType => {
+
+        const avgPrice = Memory.marketData[resourceType].avgPrice || 0;
+
+        let sellOrders = Game.market.getAllOrders({type: ORDER_SELL, resourceType: resourceType});
+
+        let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * (1 - DISCOUNT_THRESHOLD));
+
+ 
+
+        if (underpricedOrders.length > 0) {
+
+            underpricedOrders.sort((a, b) => a.price - b.price);
+
+            let orderToBuy = underpricedOrders[0];
+
+            let amountToBuy = Math.min(Math.floor(maxSpend / orderToBuy.price), orderToBuy.remainingAmount);
+
+ 
+
+            if (amountToBuy > 0) {
+
+                let result = Game.market.deal(orderToBuy.id, amountToBuy);
+
+                // Log transaction details
+
+                if (result === OK) {
+
+                    console.log(`Purchased ${amountToBuy} of ${resourceType} at ${orderToBuy.price} each.`);
+
+                }
+
+            }
+
+        }
+
+    });
+
+},
+
+ 
+
+    updatePL: function() {
+
+        const lastCredits = Memory.marketData.PL.lastCredits;
+
+        const currentCredits = Game.market.credits;
+
+        let PL = currentCredits - lastCredits;
+
+        Memory.marketData.PL.PL = PL;
+
+        console.log(`Updating PL: New PL = ${PL}`);
+
+    },
+
+ 
+
+    cleanupOldOrders: function() {
+
+        Object.keys(Memory.marketData).forEach(resourceType => {
+
+            if (Memory.marketData[resourceType].orders && typeof Memory.marketData[resourceType].orders === 'object') {
+
+                Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
+
+                    if (!Game.market.orders[orderId]) {
+
+                        delete Memory.marketData[resourceType].orders[orderId];
+
+                    }
+
+                });
+
+            }
+
+        });
+
+    },
+
+ 
+
+generateMarketSummary: function() {
+
+    let summary = "Market Summary:\n";
+
+    let overallPL = Memory.marketData.PL.PL || 0;
+
+    summary += `Overall P&L: ${overallPL}\n`;
+
+ 
+
+    // Summarize active orders
+
+    for (const orderId in Game.market.orders) {
+
+        const order = Game.market.orders[orderId];
+
+        if (order.active) {
+
+            summary += `Order ${orderId}: ${order.amount} x ${order.resourceType} @ ${order.price}\n`;
+
+        }
+
+    }
+
+ 
+
+    // Optionally, include details on resources bought or sold
+
+    if (Memory.marketData.marketSummary && Memory.marketData.marketSummary.soldQuantities) {
+
+        for (const resourceType in Memory.marketData.marketSummary.soldQuantities) {
+
+            const data = Memory.marketData.marketSummary.soldQuantities[resourceType];
+
+            summary += `Sold ${data.quantity} of ${resourceType}, earning ${data.creditsEarned} credits.\n`;
+
+        }
+
+    }
+
+ 
+
+    console.log(summary);
+
+    // Optionally send an email with the summary
+
+    // Game.notify(summary);
+
+},
+
+};
+
+ 
+
+module.exports = terminalManager;
+
+ */
