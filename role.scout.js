@@ -6,7 +6,7 @@ var roleScout = {
     run: function(creep) {
     // Directly set initialRoom if it's not already set
     if (!creep.memory.initialRoom) {
-        console.log('Directly setting initial room for:', creep.name);
+        console.log('Directly setting initial room for:', creep.memory.initialRoom);
         creep.memory.initialRoom = creep.room.name;
     }
 
@@ -17,13 +17,13 @@ var roleScout = {
 
     // Determine the next target room if necessary
     if (!creep.memory.targetRoom || creep.room.name === creep.memory.targetRoom) {
-        console.log('Scout MemInit for:', creep.name);
+        console.log('Scout MemInit for:', creep.memory.initialRoom);
         if (creep.room.name !== creep.memory.initialRoom) {
-            console.log('Setting Initial Room for:', creep.name);
+            console.log('Setting Initial Room for:', creep.memory.initialRoom);
             this.recordRoomInfo(creep);
             creep.memory.targetRoom = creep.memory.initialRoom;
         } else {
-            console.log('Scout Calling chooseNextRoom for:', creep.name);
+            console.log('Scout Calling chooseNextRoom for:', creep.memory.initialRoom);
             creep.memory.targetRoom = this.chooseNextRoom(creep);
         }
     }
@@ -34,7 +34,7 @@ var roleScout = {
         const exit = creep.pos.findClosestByRange(exitDir);
         creep.moveTo(exit);
     } else if (creep.room.name === creep.memory.targetRoom) {
-        console.log('Scout in target room:', creep.name);
+        console.log('Scout in target room:', creep.memory.initialRoom);
 
         // Attempt to move towards the controller if it's an unowned room
         const controller = creep.room.controller;
@@ -125,7 +125,7 @@ var roleScout = {
     recordRoomInfo: function(creep) {
         // Basic room info
         const roomInfo = {
-          name: creep.room.name ? creep.room.name : null,
+          name: creep.room.name,
           owner: creep.room.controller ? creep.room.controller.owner : null,
           //isHighway: this.isHighwayRoom(creep.room),
           sources: creep.room.find(FIND_SOURCES).map(source => ({
