@@ -125,7 +125,7 @@ var roleScout = {
     recordRoomInfo: function(creep) {
         // Basic room info
         const roomInfo = {
-          name: creep.room.name,
+          name: creep.room.name ? creep.room.name : null,
           owner: creep.room.controller ? creep.room.controller.owner : null,
           //isHighway: this.isHighwayRoom(creep.room),
           sources: creep.room.find(FIND_SOURCES).map(source => ({
