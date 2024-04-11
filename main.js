@@ -11,7 +11,7 @@ module.exports.loop = function() {
 
 
     //Globals
-    if (Game.time % 200 === 0) {
+    if (Game.time % 100 === 0) {
         terminals.globalMarketManagement();
     }
 
@@ -99,12 +99,14 @@ module.exports.loop = function() {
             if (Game.time % 10 === 0) {
                 //terminals.manageTerminal(room); 
                 //terminals.updatePL();  
+                
             }
 
             //Check P&L & Manage Buys
             if (Game.time % 50 === 0) {
                 //terminals.adjustPrices(room);
                 //terminals.purchaseUnderpricedResources(room);
+                terminals.handleRoomTerminal(room);
             }
 
             //Manage Sell Prices
