@@ -30,6 +30,7 @@ module.exports.loop = function() {
         // Short-Term Memory
         if (Game.time % 300 === 0) {
             memories.shortTerm();
+            terminals.handleRoomTerminal(room);
             
         }
 
@@ -106,12 +107,12 @@ module.exports.loop = function() {
             if (Game.time % 50 === 0) {
                 //terminals.adjustPrices(room);
                 //terminals.purchaseUnderpricedResources(room);
-                terminals.handleRoomTerminal(room);
+
             }
 
             //Manage Sell Prices
             if (Game.time % 1200 === 0) {
-                Memory.marketData.PL.lastCredits = Game.market.credits;
+                //Memory.marketData.PL.lastCredits = Game.market.credits;
                 
             }
 
