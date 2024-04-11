@@ -9,6 +9,12 @@ var movement = require('a.movement');
 
 module.exports.loop = function() {
 
+
+    //Globals
+    if (Game.time % 200 === 0) {
+        terminals.globalMarketManagement();
+    }
+
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
    
@@ -19,7 +25,6 @@ module.exports.loop = function() {
         // Market Awareness Memory
         if (Game.time % 200 === 0) {
             //terminals.updateMarketPrices();
-            terminals.globalMarketManagement();
         }
 
         // Short-Term Memory
