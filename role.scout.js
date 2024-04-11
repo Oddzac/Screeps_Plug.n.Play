@@ -37,23 +37,41 @@ var roleScout = {
         console.log('Scout in target room:', creep.memory.initialRoom);
 
         // Attempt to move towards the controller if it's an unowned room
-        const controller = creep.room.controller;
         if (controller && !controller.owner) {
-            // Only try to move towards the controller if not within 5 tiles
-            if (creep.pos.getRangeTo(controller) > 5) {
-                creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
-            } else {
-                // If within 5 tiles, set accessibleController flag to true
-                if (!Memory.scoutedRooms[creep.room.name]) {
-                    Memory.scoutedRooms[creep.room.name] = {}; // Ensure the room info object exists
-                }
-                Memory.scoutedRooms[creep.room.name].accessibleController = true;
-            }
-        }
-        // Call recordRoomInfo after attempting to move towards the controller
-        this.recordRoomInfo(creep);
+          // Initialize move attempt counter if not already set
+          if (creep.memory.moveAttempts === undefined) {
+              creep.memory.moveAttempts = 0;
+          }
+
+          let rangeToController = creep.pos.getRangeTo(controller);
+
+          // Only try to move towards the controller if not within 5 tiles
+          if (rangeToController > 5) {
+              let moveResult = creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
+              // Increment move attempts counter if move command was issued
+              if (moveResult === OK) {
+                  creep.memory.moveAttempts++;
+              }
+          } else {
+              // If within 5 tiles, set accessibleController flag to true
+              if (!Memory.scoutedRooms[creep.room.name]) {
+                  Memory.scoutedRooms[creep.room.name] = {};
+              }
+              Memory.scoutedRooms[creep.room.name].accessibleController = true;
+              // Reset move attempts counter
+              creep.memory.moveAttempts = 0;
+          }
+
+          // Consider the controller inaccessible if move attempts exceed a threshold (e.g., 50 attempts)
+          if (creep.memory.moveAttempts > 50) {
+              Memory.scoutedRooms[creep.room.name].accessibleController = false;
+              console.log('Controller in', creep.room.name, 'is deemed inaccessible.');
+              // Reset move attempts counter to prevent repeated logging
+              creep.memory.moveAttempts = 0;
+          }
+      }
     }
-},
+  },
 
     /*isHighwayRoom: function(room) {
       // Extract the horizontal and vertical components from the room name
