@@ -150,7 +150,7 @@ var memories = {
         if (!Memory.costMatrices) Memory.costMatrices = {};
         if (!Memory.rooms) Memory.rooms = {};
         if (!Memory.claimRooms) Memory.claimRooms = {};
-        if (!Memory.scoutedRooms) Memory.targetRooms = {};
+        if (!Memory.targetRooms) Memory.targetRooms = {};
         if (!Memory.scoutedRooms) Memory.scoutedRooms = {};
         if (!Memory.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
         if (!Memory.marketData) {
