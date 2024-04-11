@@ -17,6 +17,7 @@ calculateDesiredCounts: function(room) {
         const terminalBuilt = Memory.rooms[room.name].terminalBuilt;
         const scouted = Memory.rooms[room.name].scoutingComplete;
         const roomClaimsAvailable = Memory.roomClaimsAvailable;
+        const claimers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'claimer').length;
         let desiredCounts = {};
 
 
@@ -44,6 +45,17 @@ calculateDesiredCounts: function(room) {
 
                 harvester: 2, // Minimal sustaining number during an attack
                 hauler: 2, // Minimal sustaining number
+            };
+
+        } else if (scouted === false) {
+            // Begin Scouting
+            return {
+                scout: 1,
+            };
+        } else if (scouted === true && roomClaimsAvailable > 0 && claimers < 1) {                         
+            // Scouting Complete & Can Claim
+            desiredCounts = {
+                claimer: 1
             };
 
         } else {
@@ -87,44 +99,14 @@ calculateDesiredCounts: function(room) {
                     break;
 
                 case 5:
-                    
-                    if (linksBuilt > 1) {
-                        // Phase 5 post-links
-                        if (scouted === false) {
-                            // Begin Scouting
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 1,
-                                scout: 1
-                            };
-                        } else if (scouted === true && roomClaimsAvailable > 0) {                         
-                            // Scouting Complete & Can Claim
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 2,
-                                upgrader: 1,
-                                claimer: 1
-                            };
-                        } else {
-                            desiredCounts = {
-                                harvester: 2,
-                                hauler: 4,
-                                builder: 3,
-                                upgrader: 1
-                            };
-                        }
-
-                    } else {
-                        desiredCounts = {
-                            harvester: 2,
-                            hauler: 5,
-                            builder: 3,
-                            upgrader: 1
-                        };
-                    }
+                
+                    desiredCounts = {
+                        harvester: 2,
+                        hauler: 5,
+                        builder: 3,
+                        upgrader: 1
+                    };
+                
                     break;
 
                 case 6:
