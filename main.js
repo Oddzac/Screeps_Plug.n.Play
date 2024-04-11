@@ -18,7 +18,7 @@ module.exports.loop = function() {
 
         // Market Awareness Memory
         if (Game.time % 200 === 0) {
-            terminals.updateMarketPrices();
+            //terminals.updateMarketPrices();
         }
 
         // Short-Term Memory
@@ -91,14 +91,14 @@ module.exports.loop = function() {
 
             //Manage Buys
             if (Game.time % 10 === 0) {
-                terminals.manageTerminal(room); 
-                terminals.updatePL();  
+                //terminals.manageTerminal(room); 
+                //terminals.updatePL();  
             }
 
             //Check P&L & Manage Buys
             if (Game.time % 50 === 0) {
-                terminals.adjustPrices(room);
-                terminals.purchaseUnderpricedResources(room);
+                //terminals.adjustPrices(room);
+                //terminals.purchaseUnderpricedResources(room);
             }
 
             //Manage Sell Prices
