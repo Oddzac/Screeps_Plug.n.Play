@@ -18,6 +18,7 @@ calculateDesiredCounts: function(room) {
         const scouted = Memory.rooms[room.name].scoutingComplete;
         const roomClaimsAvailable = Memory.roomClaimsAvailable;
         const claimers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'claimer').length;
+        const scouts = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'scout').length;
         let desiredCounts = {};
 
 
@@ -47,7 +48,7 @@ calculateDesiredCounts: function(room) {
                 hauler: 2, // Minimal sustaining number
             };
 
-        } else if (scouted === false) {
+        } else if (scouted === false && scouts < 1) {
             // Begin Scouting
             return {
                 scout: 1,
