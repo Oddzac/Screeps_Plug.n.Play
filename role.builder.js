@@ -66,6 +66,8 @@ var roleBuilder = {
         const towers = creep.room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_TOWER }
         });
+        let roomsWithSpawnSites = []; // Array to hold names of rooms with spawn sites
+
         for (const roomName in Game.rooms) {
             let room = Game.rooms[roomName];
             
@@ -74,9 +76,14 @@ var roleBuilder = {
                 filter: {structureType: STRUCTURE_SPAWN}
             });
             
-            
-            // Add the count of spawn sites in the current room to the total
-            spawnSites += spawnSite.length;
+            // Check if there are spawn sites in the current room
+            if (spawnSite.length > 0) {
+                // Add the room name to the array
+                roomsWithSpawnSites.push(roomName);
+                
+                // Optionally, add to the count of spawn sites
+                spawnSites += spawnSite.length;
+            }
         }
 
 
@@ -90,6 +97,7 @@ var roleBuilder = {
         } else if (awayTeamCount < 1 && spawnSites > 0) {
             creep.say("🗺️");
             creep.memory.task = "awayTeam";
+            creep.memory.targetRoom = roomsWithSpawnSites[0]
             console.log(`${creep.name} assigned to away team`);
         } else if(constructionSites.length > 0) {
             creep.say("🚧");
@@ -124,10 +132,11 @@ var roleBuilder = {
         }
     },
 
+//DYNAMICALLY SET TARGET ROOM
     performAway: function(creep) {
         // Define the target room for the away team
         const claimRooms = Object.keys(Memory.claimRooms).filter(roomName => Memory.claimRooms[roomName] === true);
-        const targetRoom = 'E25S19';
+        const targetRoom = creep.memory.targetRoom; 
         // Check if the creep is in the target room
         if (creep.room.name !== targetRoom) {
             // Not in target room, find and move towards the exit to target room
