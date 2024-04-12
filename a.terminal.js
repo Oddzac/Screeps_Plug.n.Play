@@ -589,24 +589,33 @@ var marketManager = {
         let summary = "Market Summary:\n";
         let overallPL = Memory.marketData.PL.PL || 0;
         summary += `Overall P&L: ${overallPL}\n`;
-
+    
+        // Summarize active orders with cost basis information
         for (const orderId in Game.market.orders) {
             const order = Game.market.orders[orderId];
             if (order.active) {
-                summary += `Order ${orderId}: ${order.amount} x ${order.resourceType} @ ${order.price}\n`;
+                const costBasis = Memory.marketData[order.resourceType] ? Memory.marketData[order.resourceType].costBasis : 'N/A';
+                summary += `Order ${orderId}: ${order.amount} x ${order.resourceType} @ ${order.price} (Cost Basis: ${costBasis})\n`;
             }
         }
-
+    
+        // Summarize sold quantities and reset them after outputting
         if (Memory.marketData.marketSummary && Memory.marketData.marketSummary.soldQuantities) {
             for (const resourceType in Memory.marketData.marketSummary.soldQuantities) {
                 const data = Memory.marketData.marketSummary.soldQuantities[resourceType];
                 summary += `Sold ${data.quantity} of ${resourceType}, earning ${data.creditsEarned} credits.\n`;
+                // Reset sold quantities for each resource type
+                Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
             }
         }
-
+    
         console.log(summary);
         Game.notify(summary);
+    
+        // Optionally update the market summary in memory if other data needs to be reset or managed
+        Memory.marketData.marketSummary.lastRun = Game.time; // Update last run timestamp
     },
+    
 
 };
 
