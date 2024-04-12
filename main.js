@@ -15,7 +15,7 @@ module.exports.loop = function() {
     profiler.wrap(function() {
 
         //Globals
-        if (Game.time % 100 === 0) {
+        if (Game.time % 200 === 0) {
             terminals.globalMarketManagement();
         }
 
