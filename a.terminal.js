@@ -353,7 +353,8 @@ var marketManager = {
 
     globalMarketManagement: function() {
         this.updateMarketPrices();
-        this.handleGlobalTransactions();
+        this.purchaseUnderpricedResources();
+        //this.handleGlobalTransactions();
         this.updatePL();
         this.cleanupOldOrders();
         this.generateMarketSummary();
@@ -364,6 +365,66 @@ var marketManager = {
         this.adjustPrices(room);
     },
 
+
+
+    purchaseUnderpricedResources: function() {
+        let lastCredits = Memory.marketData.PL.lastCredits;
+        let limitSwitch = lastCredits * 0.01;
+    
+        if (Memory.marketData.PL.PL < limitSwitch) {
+            console.log(`PL: ${Memory.marketData.PL.PL} / ${limitSwitch} (no profit, skipping purchase.)`);
+            return;
+        }
+    
+        const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
+        const DISCOUNT_THRESHOLD = 0.40; // Listings must be at least 40% below average price
+        
+        const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
+        if (maxSpend < 0.01) {
+            console.log('Insufficient credits to consider purchases.');
+            return;
+        }
+    
+        Object.keys(Memory.marketData).forEach(resource => {
+            const resourceData = Memory.marketData[resource];
+            const avgPrice = resourceData.avgPrice;
+    
+            let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
+            let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * DISCOUNT_THRESHOLD);
+    
+            if (underpricedOrders.length > 0) {
+                underpricedOrders.sort((a, b) => a.price - b.price);
+                let orderToBuy = underpricedOrders[0];
+                
+                let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
+                let amountToBuy = Math.min(maxAmountCanBuy, orderToBuy.remainingAmount);
+    
+                if (amountToBuy > 0) {
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy);
+                    if(result === OK) {
+                        let totalCost = orderToBuy.price * amountToBuy;
+                        let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+                        let terminal = terminals.length > 0 ? terminals[0] : null; // Assume the first terminal for the example
+                        let currentQuantity = terminal ? terminal.store[resource] || 0 : 0; // Existing quantity before purchase
+    
+                        if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
+                            Memory.marketData[resource].costBasis = orderToBuy.price;
+                        } else {
+                            let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
+                            Memory.marketData[resource].costBasis = newCostBasis;
+                        }
+                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Current cost basis: ${Memory.marketData[resource].costBasis}`);
+                    } else {
+                        // Handle purchase failure
+                    }
+                }
+            }
+        });
+    
+        Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
+    },
+    
+    /*
     manageStorageThresholds: function(room) {
         const terminal = room.terminal;
         if (!terminal || terminal.store[RESOURCE_ENERGY] < 1000) {
@@ -379,6 +440,8 @@ var marketManager = {
             }
         }
     },
+    */
+
 
     prepareToSell: function(room, resourceType, amount) {
         let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY).sort((a, b) => b.price - a.price);
@@ -480,6 +543,8 @@ var marketManager = {
         });
     },
 
+
+    
     handleGlobalTransactions: function() {
         const maxSpend = Game.market.credits * 0.01;
         Object.keys(Memory.marketData).forEach(resourceType => {
