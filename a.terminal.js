@@ -353,16 +353,18 @@ var marketManager = {
 
     globalMarketManagement: function() {
         this.updateMarketPrices();
+        this.adjustPrices();
         this.purchaseUnderpricedResources();
         //this.handleGlobalTransactions();
         this.updatePL();
         this.cleanupOldOrders();
         this.generateMarketSummary();
+        
     },
 
     handleRoomTerminal: function(room) {
         this.manageStorageThresholds(room);
-        this.adjustPrices(room);
+
     },
 
 
