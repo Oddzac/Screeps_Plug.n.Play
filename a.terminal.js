@@ -424,7 +424,7 @@ var marketManager = {
         Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
     },
     
-    /*
+    
     manageStorageThresholds: function(room) {
         const terminal = room.terminal;
         if (!terminal || terminal.store[RESOURCE_ENERGY] < 1000) {
@@ -440,7 +440,7 @@ var marketManager = {
             }
         }
     },
-    */
+    
 
 
     prepareToSell: function(room, resourceType, amount) {
