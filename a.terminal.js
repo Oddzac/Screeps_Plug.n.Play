@@ -609,7 +609,9 @@ var marketManager = {
     generateMarketSummary: function() {
         let summary = "Market Summary:\n";
         let overallPL = Memory.marketData.PL.PL || 0;
+        let bucket = Game.cpu.bucket;
         summary += `Overall P&L: ${overallPL}\n`;
+        summary += `CPU Bucket: ${bucket}\n`;
     
         // Summarize active orders with cost basis information
         for (const orderId in Game.market.orders) {
