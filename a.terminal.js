@@ -468,57 +468,74 @@ var marketManager = {
         console.log(`Trade executed for ${resourceType}. Credits earned: ${creditsEarned}`);
     },
 
-    adjustPrices: function(room) {
-        const terminal = room.terminal;
-        if (!terminal) {
-            console.log('No terminal in room');
-            return;
-        }
-
-        Object.keys(Memory.marketData).forEach(resourceType => {
-            if (resourceType === RESOURCE_ENERGY) return; // Skip selling energy
-
-            let sellOrders = Game.market.getAllOrders({ resourceType: resourceType, type: ORDER_SELL });
-            sellOrders.sort((a, b) => a.price - b.price);
-            let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
-
-            let marketData = Memory.marketData[resourceType];
-            let costBasis = marketData.costBasis || 0;
-            let profitMargin = 0.01; // Adjust to set desired profit margin
-
-            let myInventory = terminal.store[resourceType] || 0;
-            let SURPLUS_THRESHOLD = 50; // Adjust as needed
-
-            let myPrice = costBasis * (1 + profitMargin);
-
-            if (myInventory > SURPLUS_THRESHOLD) {
-                let existingOrder = _.find(Game.market.orders, { type: ORDER_SELL, resourceType: resourceType, roomName: room.name });
-                if (existingOrder) {
-                    Game.market.changeOrderPrice(existingOrder.id, myPrice);
-                    let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
-
-                    if (amountToUpdate > 0) {
-                        Game.market.extendOrder(existingOrder.id, amountToUpdate);
-                    }
-                } else {
-                    let orderResult = Game.market.createOrder({
-                        type: ORDER_SELL,
-                        resourceType: resourceType,
-                        price: myPrice,
-                        totalAmount: myInventory - SURPLUS_THRESHOLD,
-                        roomName: room.name
-                    });
-                    if (typeof orderResult === "string") {
-                        Memory.marketData[resourceType].orders[orderResult] = {
-                            remainingAmount: myInventory - SURPLUS_THRESHOLD,
-                            price: myPrice
-                        };
-                    }
-                }
-                console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} in ${room.name}`);
+    adjustPrices: function() {
+        // Access all terminals across owned rooms
+        const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+    
+        terminals.forEach(terminal => {
+            if (!terminal) {
+                console.log('No terminal available in some rooms');
+                return; // Skip if no terminal is present
             }
+    
+            Object.keys(Memory.marketData).forEach(resourceType => {
+                if (resourceType === RESOURCE_ENERGY) return; // Continue to skip energy
+    
+                let sellOrders = Game.market.getAllOrders({ resourceType: resourceType, type: ORDER_SELL });
+                sellOrders.sort((a, b) => a.price - b.price);
+                let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
+    
+                let marketData = Memory.marketData[resourceType];
+                let costBasis = marketData.costBasis || 0;
+                let profitMargin = 0.01; // Desired profit margin
+                let significantlyLowerThreshold = 0.10; // Price must be at least 10% lower than the lowest sell price
+    
+                let myInventory = terminal.store[resourceType] || 0;
+                let SURPLUS_THRESHOLD = 50; // Inventory threshold above which to sell
+    
+                let myPrice;
+    
+                // Determine the price based on cost basis and market conditions
+                if (costBasis > 0 && lowestSellPrice != null && costBasis <= (lowestSellPrice * (1 - significantlyLowerThreshold))) {
+                    myPrice = lowestSellPrice - 0.0001; // Undercut the lowest price if significantly lower
+                } else if (costBasis > 0) {
+                    myPrice = costBasis * (1 + profitMargin); // Add a profit margin
+                } else if (costBasis === 0 && lowestSellPrice !== null) {
+                    myPrice = lowestSellPrice - 0.0001; // Undercut the lowest price slightly if no cost basis
+                } else {
+                    myPrice = 999; // Default high price to avoid accidental listing
+                }
+    
+                // Adjust the market orders based on current inventory
+                if (myInventory > SURPLUS_THRESHOLD) {
+                    let existingOrder = _.find(Game.market.orders, {type: ORDER_SELL, resourceType: resourceType, roomName: terminal.room.name});
+                    if (existingOrder) {
+                        Game.market.changeOrderPrice(existingOrder.id, myPrice);
+                        let amountToUpdate = myInventory - SURPLUS_THRESHOLD - existingOrder.remainingAmount;
+                        if (amountToUpdate > 0) {
+                            Game.market.extendOrder(existingOrder.id, amountToUpdate);
+                        }
+                    } else {
+                        let orderResult = Game.market.createOrder({
+                            type: ORDER_SELL,
+                            resourceType: resourceType,
+                            price: myPrice,
+                            totalAmount: myInventory - SURPLUS_THRESHOLD,
+                            roomName: terminal.room.name
+                        });
+                        if (typeof orderResult === "string") {
+                            Memory.marketData[resourceType].orders[orderResult] = {
+                                remainingAmount: myInventory - SURPLUS_THRESHOLD,
+                                price: myPrice
+                            };
+                        }
+                    }
+                    console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} globally in room ${terminal.room.name}`);
+                }
+            });
         });
     },
+    
 
     updateMarketPrices: function() {
         const resources = Object.keys(Memory.marketData);
@@ -544,7 +561,7 @@ var marketManager = {
     },
 
 
-    
+    /*
     handleGlobalTransactions: function() {
         const maxSpend = Game.market.credits * 0.01;
         Object.keys(Memory.marketData).forEach(resourceType => {
@@ -564,6 +581,8 @@ var marketManager = {
             }
         });
     },
+    */
+
 
     updatePL: function() {
         const lastCredits = Memory.marketData.PL.lastCredits;
