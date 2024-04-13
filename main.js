@@ -114,10 +114,7 @@ module.exports.loop = function() {
 
                 }
 
-                //Manage Sell Prices
-                if (Game.time % 1200 === 0) {
-                    //Memory.marketData.PL.lastCredits = Game.market.credits;
-                    
+
                 }
 
                 
