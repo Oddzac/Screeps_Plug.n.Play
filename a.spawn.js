@@ -221,7 +221,7 @@ calculateDesiredCounts: function(room) {
     
     // Handles spawning after need and energy are determined.
     spawnCreepWithRole: function(role, energyAvailable, phase, room) {
-        //console.log(`[spawnCreepWithRole] Attempting to spawn: ${role} with ${energyAvailable} energy`);
+        console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyAvailable} energy`);
         
         const body = this.getBodyPartsForRole(role, energyAvailable, phase);
     
