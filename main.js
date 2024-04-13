@@ -15,9 +15,9 @@ module.exports.loop = function() {
     //profiler.wrap(function() {
 
         //Globals
-        if (Game.time % 200 === 0) {
-            terminals.globalMarketManagement();
-        }
+        
+        terminals.globalMarketManagement();
+        
 
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
@@ -26,21 +26,18 @@ module.exports.loop = function() {
             memories.immediateMemory();
             terminals.cleanupOldOrders();
 
-            // Market Awareness Memory
+            // Room Terminal MGMT
             if (Game.time % 200 === 0) {
-                //terminals.updateMarketPrices();
+                terminals.handleRoomTerminal(room);
             }
 
             // Short-Term Memory
             if (Game.time % 300 === 0) {
                 memories.shortTerm();
-                terminals.handleRoomTerminal(room);
-                
             }
 
             // 1-hr Memory
             if (Game.time % 1200 === 0) {
-                //terminals.generateMarketSummary();
                 
             }
             
@@ -89,34 +86,6 @@ module.exports.loop = function() {
                         spawner.manageCreepSpawning(room);
                     }
                 }
-            }
-        
-            //Terminal Management
-
-            if (!room.terminal || room.terminal.cooldown > 0) {
-                //console.log('Terminal is busy or cooling down.');
-
-            } else if(room.terminal && room.controller && room.controller.my) {
-
-
-
-                //Manage Buys
-                if (Game.time % 10 === 0) {
-                    //terminals.manageTerminal(room); 
-                    //terminals.updatePL();  
-                    
-                }
-
-                //Check P&L & Manage Buys
-                if (Game.time % 50 === 0) {
-                    //terminals.adjustPrices(room);
-                    //terminals.purchaseUnderpricedResources(room);
-
-                }
-
-
-                
-                
             }
 
         
