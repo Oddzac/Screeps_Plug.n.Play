@@ -212,7 +212,7 @@ calculateDesiredCounts: function(room) {
         }
         
         if (nextSpawnRole) {
-            console.log(`${room} MS: ${nextSpawnRole}, EA ${energyAvailable}, E2U ${energyToUse}, Phase ${phase}`)
+           //console.log(`${room} MS: ${nextSpawnRole}, EA ${energyAvailable}, E2U ${energyToUse}, Phase ${phase}`)
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable.");
@@ -221,13 +221,13 @@ calculateDesiredCounts: function(room) {
     
     // Handles spawning after need and energy are determined.
     spawnCreepWithRole: function(role, energyToUse, phase, room) {
-        console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
+       //console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
         
         const body = this.getBodyPartsForRole(role, energyToUse, phase);
     
         if (!body) {
             // Log or handle the situation when not enough energy is available
-            console.log(`[spawnCreepWithRole] ${room} Waiting for more energy to spawn ${role}.`);
+           //console.log(`[spawnCreepWithRole] ${room} Waiting for more energy to spawn ${role}.`);
             return; // Exit the function early
         }
         
@@ -420,10 +420,10 @@ calculateDesiredCounts: function(room) {
     
         // Calculate the energy cost for the base blueprint
         const baseCost = roleBlueprints[role].reduce((total, part) => total + partsCost[part], 0);
-        console.log(`${role} :: ${baseCost}`);
+       //console.log(`${role} :: ${baseCost}`);
     
         if (energyToUse < baseCost) {
-            console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyToUse}`);
+           //console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyToUse}`);
             return null; // Not enough energy for even a base blueprint
         }
 
