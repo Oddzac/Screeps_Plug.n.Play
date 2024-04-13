@@ -227,7 +227,7 @@ calculateDesiredCounts: function(room) {
     
         if (!body) {
             // Log or handle the situation when not enough energy is available
-            //console.log(`[spawnCreepWithRole] Waiting for more energy to spawn ${role}.`);
+            console.log(`[spawnCreepWithRole] ${room} Waiting for more energy to spawn ${role}.`);
             return; // Exit the function early
         }
         
