@@ -115,8 +115,7 @@ module.exports.loop = function() {
                 }
 
 
-                }
-
+                
                 
             }
 
