@@ -48,11 +48,15 @@ var roleUpgrader = {
     },
 
     genPix: function(creep) {
-        const result = Game.creeps[creep.name].generatePixel();
-        if (result === OK) {
-            console.log('Pixel generated successfully!');
+        if (Game.cpu.bucket >= 5000) { // Ensure there is enough CPU in the bucket
+            const result = creep.generatePixel();
+            if (result === OK) {
+                console.log('Pixel generated successfully!');
+            } else {
+                console.log('Failed to generate pixel:', result);
+            }
         } else {
-            console.log('Failed to generate pixel:', result);
+            console.log('Not enough CPU in the bucket to generate a pixel.');
         }
     },
   
