@@ -444,7 +444,7 @@ calculateDesiredCounts: function(room) {
             // This function attempts to add each part from the blueprint to the body if there's enough energy.
         const addPartsInOrder = (blueprint) => {
             blueprint.forEach(part => {
-                if (energyUsed + partsCost[part] <= energyAvailable) {
+                if (energyUsed + partsCost[part] <= energyToUse) {
                     body.push(part);
                     energyUsed += partsCost[part];
                 }
@@ -455,7 +455,7 @@ calculateDesiredCounts: function(room) {
         addPartsInOrder(roleBlueprints[role]);
 
         // Additional passes: keep adding parts in the defined order of the blueprint while there's enough energy
-        while (energyUsed + Math.min(...roleBlueprints[role].map(part => partsCost[part])) <= energyAvailable) {
+        while (energyUsed + Math.min(...roleBlueprints[role].map(part => partsCost[part])) <= energyToUse) {
             addPartsInOrder(roleBlueprints[role]);
         }
 
