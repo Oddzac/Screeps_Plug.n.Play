@@ -46,7 +46,7 @@ var roleUpgrader = {
             movement.moveToWithCache(creep, creep.room.controller.pos);
         }
     },
-
+/*
     genPix: function() {
     if (Game.cpu.bucket >= 5000) { // Ensure there is enough CPU in the bucket
         const result = Game.generatePixel();
@@ -59,7 +59,7 @@ var roleUpgrader = {
         console.log('Not enough CPU in the bucket to generate a pixel.');
     }
 },
-  
+  */
 };
 
 module.exports = roleUpgrader;
