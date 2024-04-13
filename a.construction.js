@@ -1,3 +1,8 @@
+//TODO
+// MAINTAIN ROAD CONNECTIONS 
+// - EACH STRUCTURE TO EACH OTHER STRUCTURE
+
+
 var memories = require('a.memories');
 
 var construction = {
