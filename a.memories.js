@@ -356,7 +356,7 @@ var memories = {
                             return;
                         } else if (nextRole === 'harvester') {
                             Memory.rooms[room.name].spawnMode.mode = 'Harvester';
-                            Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                            Memory.rooms[room.name].spawnMode.energyToUse = 650;
                             return;
                         } else if (nextRole === 'claimer') {
                             //console.log('Spawn Mode: Claimer');
@@ -379,7 +379,7 @@ var memories = {
                             return;
                         } else if (nextRole === 'harvester') {
                             Memory.rooms[room.name].spawnMode.mode = 'Harvester';
-                            Memory.rooms[room.name].spawnMode.energyToUse = 600;
+                            Memory.rooms[room.name].spawnMode.energyToUse = 700;
                             return;
                         } else if (nextRole === 'claimer') {
                             //console.log('Spawn Mode: Claimer');

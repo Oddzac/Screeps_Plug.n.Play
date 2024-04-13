@@ -220,10 +220,10 @@ calculateDesiredCounts: function(room) {
     }, 
     
     // Handles spawning after need and energy are determined.
-    spawnCreepWithRole: function(role, energyAvailable, phase, room) {
-        console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyAvailable} energy`);
+    spawnCreepWithRole: function(role, energyToUse, phase, room) {
+        console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
         
-        const body = this.getBodyPartsForRole(role, energyAvailable, phase);
+        const body = this.getBodyPartsForRole(role, energyToUse, phase);
     
         if (!body) {
             // Log or handle the situation when not enough energy is available
@@ -286,7 +286,7 @@ calculateDesiredCounts: function(room) {
         }
     },
     
-    getBodyPartsForRole: function(role, energyAvailable, phase) {
+    getBodyPartsForRole: function(role, energyToUse, phase) {
         const partsCost = BODYPART_COST;
         let roleBlueprints;
     
@@ -307,7 +307,7 @@ calculateDesiredCounts: function(room) {
                 };
                 break;
             case 2:
-                if (energyAvailable >= 500) {
+                if (energyToUse >= 500) {
                     roleBlueprints = {
                         harvester: ["work", "work", "work", "work", "carry", "move"], // More efficient harvesting
                         upgrader: ["work", "move", "carry"],
@@ -337,7 +337,7 @@ calculateDesiredCounts: function(room) {
                 break;
             case 3:
                 
-                if (energyAvailable >= 600) {
+                if (energyToUse >= 600) {
                     
                     roleBlueprints = {
                         harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
@@ -370,7 +370,7 @@ calculateDesiredCounts: function(room) {
 
             case 6:
                 roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
+                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move"], 
                     upgrader: ["work", "move", "carry"],
                     builder: ["work", "move", "carry"],
                     hauler: ["carry", "move", "move"],
@@ -422,14 +422,14 @@ calculateDesiredCounts: function(room) {
         const baseCost = roleBlueprints[role].reduce((total, part) => total + partsCost[part], 0);
         console.log(`${role} :: ${baseCost}`);
     
-        if (energyAvailable < baseCost) {
-            console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyAvailable}`);
+        if (energyToUse < baseCost) {
+            console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyToUse}`);
             return null; // Not enough energy for even a base blueprint
         }
 
         // Build the base blueprint
         roleBlueprints[role].forEach(part => {
-            if (energyUsed + partsCost[part] <= energyAvailable) {
+            if (energyUsed + partsCost[part] <= energyToUse) {
                 body.push(part);
                 energyUsed += partsCost[part];
             }
@@ -440,9 +440,9 @@ calculateDesiredCounts: function(room) {
             const blueprint = roleBlueprints[role];
             let added = false;
     
-            for (let i = 0; i < blueprint.length && energyUsed < energyAvailable; i++) {
+            for (let i = 0; i < blueprint.length && energyUsed < energyToUse; i++) {
                 const part = blueprint[i];
-                if (energyUsed + partsCost[part] <= energyAvailable) {
+                if (energyUsed + partsCost[part] <= energyToUse) {
                     body.push(part);
                     energyUsed += partsCost[part];
                     added = true;
