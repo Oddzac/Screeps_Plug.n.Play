@@ -212,7 +212,7 @@ calculateDesiredCounts: function(room) {
         }
         
         if (nextSpawnRole) {
-            console.log(`${room} MS: ${nextSpawnRole}, E2U ${energyToUse}, Phase ${phase}`)
+            console.log(`${room} MS: ${nextSpawnRole}, EA ${energyAvailable}, E2U ${energyToUse}, Phase ${phase}`)
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable.");
@@ -337,7 +337,7 @@ calculateDesiredCounts: function(room) {
                 break;
             case 3:
                 
-            if (energyAvailable >= 600) {
+                if (energyAvailable >= 600) {
                     
                     roleBlueprints = {
                         harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
