@@ -420,9 +420,10 @@ calculateDesiredCounts: function(room) {
     
         // Calculate the energy cost for the base blueprint
         const baseCost = roleBlueprints[role].reduce((total, part) => total + partsCost[part], 0);
+        console.log(`${role} :: ${baseCost}`);
     
         if (energyAvailable < baseCost) {
-            //console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyAvailable}`);
+            console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyAvailable}`);
             return null; // Not enough energy for even a base blueprint
         }
 
