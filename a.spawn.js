@@ -275,8 +275,14 @@ calculateDesiredCounts: function(room) {
             const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
             const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
             const totalCreeps = Object.keys(Game.creeps).length;
+            // Count the body parts and prepare output format
+            const counts = _.countBy(body); // Count each type of body part
+            const formattedParts = Object.entries(counts)
+                .map(([part, count]) => `"${part}": ${count}`)
+                .join(", ");
+
             console.log(`Room: ${room.name} Total: ${creepsInRoom.length}`);
-            console.log(`[spawnCreepWithRole] Spawned ${role} with ${JSON.stringify(body)}`)
+            console.log(`[spawnCreepWithRole] Spawned ${role} with ${formattedParts}`);
             console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
             
             
