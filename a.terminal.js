@@ -514,7 +514,7 @@ var marketManager = {
                 } else if (costBasis > 0) {
                     myPrice = costBasis * (1 + profitMargin); // Add a profit margin
                 } else if (costBasis === 0 && lowestSellPrice !== null) {
-                    myPrice = lowestSellPrice - 0.0001; // Undercut the lowest price slightly if no cost basis
+                    myPrice = lowestSellPrice - 0.00001; // Undercut the lowest price slightly if no cost basis
                 } else {
                     myPrice = 999; // Default high price to avoid accidental listing
                 }

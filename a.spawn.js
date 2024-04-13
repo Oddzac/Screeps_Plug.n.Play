@@ -53,11 +53,11 @@ calculateDesiredCounts: function(room) {
             return {
                 scout: 1,
             };
-   /*     } else if (scouted === true && roomClaimsAvailable > 0 && claimers < 1) {                         
+        } else if (scouted === true && roomClaimsAvailable > 0 && claimers < 1 && phase > 3) {                         
             // Scouting Complete & Can Claim
             desiredCounts = {
                 claimer: 1
-            }; */
+            }; 
 
         } else {
 
@@ -315,7 +315,7 @@ calculateDesiredCounts: function(room) {
                     healer: ["move","heal"],
                     //Recon
                     scout: ["move"],
-                    claimer: ["claim", "move"],
+                    claimer: ["claim", "move", "work"],
                 };
                 break;
             case 2:
@@ -330,7 +330,7 @@ calculateDesiredCounts: function(room) {
                         healer: ["move","heal"],
                         //Recon
                         scout: ["move"],
-                        claimer: ["claim", "move"],
+                        claimer: ["claim", "move", "work"],
                     }
                 } else {
                     roleBlueprints = {
@@ -343,7 +343,7 @@ calculateDesiredCounts: function(room) {
                         healer: ["move","heal"],
                         //Recon
                         scout: ["move"],
-                        claimer: ["claim", "move"],
+                        claimer: ["claim", "move", "work"],
                     };
                 }
                 break;
@@ -361,7 +361,7 @@ calculateDesiredCounts: function(room) {
                         healer: ["move","heal"],
                         //Recon
                         scout: ["move"],
-                        claimer: ["claim", "move"],
+                        claimer: ["claim", "move", "work"],
                     };
                     
                 } else {
@@ -375,7 +375,7 @@ calculateDesiredCounts: function(room) {
                         healer: ["move","heal"],
                         //Recon
                         scout: ["move"],
-                        claimer: ["claim", "move"],
+                        claimer: ["claim", "move", "work"],
                     };
                 }
                 break;
@@ -391,7 +391,7 @@ calculateDesiredCounts: function(room) {
                     healer: ["move","heal"],
                     //Recon
                     scout: ["move"],
-                    claimer: ["claim", "move"],
+                    claimer: ["claim", "move", "work"],
                 };
                 break;
 
@@ -406,7 +406,7 @@ calculateDesiredCounts: function(room) {
                     healer: ["move","heal"],
                     //Recon
                     scout: ["move"],
-                    claimer: ["claim", "move"],
+                    claimer: ["claim", "move", "work"],
                 };
                 break;
 
@@ -422,7 +422,7 @@ calculateDesiredCounts: function(room) {
                     healer: ["move","heal"],
                     //Recon
                     scout: ["move"],
-                    claimer: ["claim", "move"],
+                    claimer: ["claim", "move", "work"],
                 };
                 break;
         }

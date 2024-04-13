@@ -476,7 +476,7 @@ var memories = {
                     } else if (nextRole === 'claimer') {
                         //console.log('Spawn Mode: Claimer');
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        Memory.rooms[room.name].spawnMode.energyToUse = 750;
                         return;
                     } else {
                         //Begin Efficiency Cap
@@ -499,7 +499,7 @@ var memories = {
                     } else if (nextRole === 'claimer') {
                         //console.log('Spawn Mode: Claimer');
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        Memory.rooms[room.name].spawnMode.energyToUse = 750;
                         return;
                     } else {
                         // Lower Cap to 75%
@@ -522,7 +522,7 @@ var memories = {
                         return;
                     } else if (nextRole === 'claimer') {
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        Memory.rooms[room.name].spawnMode.energyToUse = 750;
                         return;
                     } else {
                         // Lower Cap to 50%
@@ -543,7 +543,7 @@ var memories = {
                         return;
                     } else if (nextRole === 'claimer') {
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        Memory.rooms[room.name].spawnMode.energyToUse = 750;
                         return;
                     } else {
                         // Lower Cap to 50%
@@ -565,7 +565,7 @@ var memories = {
                         return;
                     } else if (nextRole === 'claimer') {
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        Memory.rooms[room.name].spawnMode.energyToUse = 750;
                         return;
                     } else {
                         // Lower Cap to 50%
@@ -588,7 +588,7 @@ var memories = {
                     } else if (nextRole === 'claimer') {
                         //console.log('Spawn Mode: Claimer');
                         Memory.rooms[room.name].spawnMode.mode = 'Claimer';
-                        Memory.rooms[room.name].spawnMode.energyToUse = 700;
+                        Memory.rooms[room.name].spawnMode.energyToUse = 750;
                         return;
                     } else {
                         // Default Cap: 75%
@@ -619,8 +619,6 @@ var memories = {
             Memory.rooms[room.name].constructionEnergyRequired = totalEnergyRequired;
             
             console.log(`Checking ${room.name}`);
-            //console.log('Path caches reset...');
-            //delete Memory.rooms[room.name].pathCache;
             console.log('Checking phase...');
             this.updateRoomPhase(room);
         });
