@@ -16,34 +16,47 @@ module.exports.loop = function() {
 
         //Globals
         
+        memories.immediateMemory();
+        terminals.cleanupOldOrders();
         terminals.globalMarketManagement();
         
+        
+        // Short-Term Memory (30min)
+        if (Game.time % 600 === 0) {
+            memories.shortTerm();
+        }
+        // Med-Term (1hr)
+        if (Game.time % 1200 === 0) {
+    
+        }
+        // Long-Term Memory (5hr)
+        if (Game.time % 6000 === 0) {
+            memories.longTerm();
+        }
 
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
     
             // Memory Cleanup
-            memories.immediateMemory();
-            terminals.cleanupOldOrders();
 
             // Room Terminal MGMT
             if (Game.time % 200 === 0) {
                 terminals.handleRoomTerminal(room);
             }
 
-            // Short-Term Memory
-            if (Game.time % 300 === 0) {
-                memories.shortTerm();
+            // Short-Term (30min)
+            if (Game.time % 600 === 0) {
+
             }
 
-            // 1-hr Memory
+            // Med-Term (1hr)
             if (Game.time % 1200 === 0) {
                 
             }
             
-            // Long-Term Memory
-            if (Game.time % 5000 === 0) {
-                memories.longTerm();
+            // Long-Term Memory (5hr)
+            if (Game.time % 6000 === 0) {
+
             }
 
             // Count the number of harvesters and haulers specifically in this room
