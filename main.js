@@ -10,9 +10,9 @@ var movement = require('a.movement');
 const profiler = require('screeps-profiler');
 
 // This line monkey patches the global prototypes.
-profiler.enable();
+//profiler.enable();
 module.exports.loop = function() {
-    profiler.wrap(function() {
+    //profiler.wrap(function() {
 
         //Globals
         if (Game.time % 200 === 0) {
@@ -157,8 +157,8 @@ module.exports.loop = function() {
                 linker.manageLinks(room);
             }
             
-        }
-    });
+        //}
+    }//);
 
 }
 
