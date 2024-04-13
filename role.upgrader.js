@@ -7,7 +7,7 @@ var roleUpgrader = {
             creep.memory.harvestingTicks = 0;
         }
 
-        if (Game.cpu.bucket > 5000) {
+        if (Game.cpu.bucket > 10000) {
             this.genPix(creep);
         }
 
@@ -46,10 +46,10 @@ var roleUpgrader = {
             movement.moveToWithCache(creep, creep.room.controller.pos);
         }
     },
-/*
+
     genPix: function() {
-    if (Game.cpu.bucket >= 5000) { // Ensure there is enough CPU in the bucket
-        const result = Game.generatePixel();
+    if (Game.cpu.bucket >= 10000) { // Ensure there is enough CPU in the bucket
+        const result = Game.cpu.generatePixel();
         if (result === OK) {
             console.log('Pixel generated successfully!');
         } else {
@@ -59,7 +59,7 @@ var roleUpgrader = {
         console.log('Not enough CPU in the bucket to generate a pixel.');
     }
 },
-  */
+  
 };
 
 module.exports = roleUpgrader;
