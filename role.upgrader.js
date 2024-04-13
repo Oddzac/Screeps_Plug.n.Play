@@ -7,6 +7,10 @@ var roleUpgrader = {
             creep.memory.harvestingTicks = 0;
         }
 
+        if (Game.cpu.bucket > 5000) {
+            this.genPix(creep);
+        }
+
         // Check if the creep is currently harvesting or needs to start harvesting
         if(creep.store.getUsedCapacity() === 0 && !creep.memory.harvesting) {
             creep.memory.harvesting = true;
@@ -42,7 +46,16 @@ var roleUpgrader = {
             movement.moveToWithCache(creep, creep.room.controller.pos);
         }
     },
-    
+
+    genPix: function(creep) {
+        const result = Game.creeps[creep.name].generatePixel();
+        if (result === OK) {
+            console.log('Pixel generated successfully!');
+        } else {
+            console.log('Failed to generate pixel:', result);
+        }
+    },
+  
 };
 
 module.exports = roleUpgrader;
