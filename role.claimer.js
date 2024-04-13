@@ -1,73 +1,53 @@
 var roleClaimer = {
     run: function(creep) {
-        // Initialize Memory.claimRooms if it doesn't exist
         if (!Memory.claimRooms) Memory.claimRooms = {};
 
-        // Set the target room if not already set
         if (!creep.memory.targetRoom) {
-            const targetRoomName = Object.keys(Memory.claimRooms)[0]; // Get the first room name
+            const targetRoomName = Object.keys(Memory.claimRooms)[0];
             if (targetRoomName) {
                 creep.memory.targetRoom = targetRoomName;
             } else {
                 console.log(`[${creep.name}] No target room available.`);
-                return; // Exit if no rooms to claim
+                return;
             }
         }
 
-        // Move towards the target room if not already there
         if (creep.room.name !== creep.memory.targetRoom) {
             const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
             const exit = creep.pos.findClosestByRange(exitDir);
             creep.moveTo(exit, {visualizePathStyle: {stroke: '#ffffff'}});
             console.log(`[${creep.name}] Heading to target room: ${creep.memory.targetRoom}`);
         } else {
-            // Once in the target room
             console.log(`[${creep.name}] ROOM REACHED`);
             const controller = creep.room.controller;
-            const path = creep.pos.findPathTo(controller);
 
-            // Check the path for walls
-            const walls = path.filter(step => {
-                const pos = new RoomPosition(step.x, step.y, creep.room.name);
-                const structures = pos.lookFor(LOOK_STRUCTURES);
-                return structures.some(s => s.structureType === STRUCTURE_WALL);
+            const path = PathFinder.search(creep.pos, { pos: controller.pos, range: 1 }, {
+                plainCost: 2,
+                swampCost: 10,
+                roomCallback: function(roomName) {
+                    let room = Game.rooms[roomName];
+                    let costs = new PathFinder.CostMatrix;
+
+                    room.find(FIND_STRUCTURES).forEach(function(struct) {
+                        if (struct.structureType === STRUCTURE_WALL) {
+                            costs.set(struct.pos.x, struct.pos.y, 255); // Treat walls as walkable
+                        }
+                    });
+
+                    return costs;
+                }
             });
 
-            if (walls.length > 0) {
-                // Move to the first wall if not in range to dismantle
-                const wall = walls[0];
-                const pos = new RoomPosition(wall.x, wall.y, creep.room.name);
-                const wallStructure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_WALL);
-                if (creep.dismantle(wallStructure) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(pos, {
-                        visualizePathStyle: { stroke: '#ff0000' },
-                        ignoreDestructibleStructures: false
-                    });
-                }
-            } else {
-                // No walls blocking the path, proceed to claim or reserve controller
-                if (creep.claimController(controller) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(controller, {
-                        visualizePathStyle: { stroke: '#ffaa00' },
-                        ignoreCreeps: true,
-                        ignoreDestructibleStructures: false
-                    });
-                } else if (claimResult == ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
-                    // If unable to claim due to GCL or room limit, try to reserve instead
-                    const reserveResult = creep.reserveController(controller);
-                    if (reserveResult == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(controller, {
-                            visualizePathStyle: { stroke: '#ffaa00' },
-                            ignoreCreeps: true,
-                            ignoreDestructibleStructures: false
-                        });
-                    } else if (reserveResult == ERR_INVALID_TARGET) {
-                        creep.suicide();
-                    } else if (reserveResult != OK) {
-                        console.log(`[${creep.name}] RESERVING ERROR: ${reserveResult}`);
+            const nextPos = path.path[0];
+            if (nextPos) {
+                const look = creep.room.lookAt(nextPos.x, nextPos.y);
+                const wall = look.find(l => l.type === 'structure' && l.structure.structureType === STRUCTURE_WALL);
+                if (wall) {
+                    if (creep.dismantle(wall.structure) === ERR_NOT_IN_RANGE) {
+                        creep.moveTo(wall.structure, {visualizePathStyle: {stroke: '#ff0000'}});
                     }
-                } else if (claimResult != OK) {
-                    console.log(`[${creep.name}] CLAIMING ERROR: ${claimResult}`);
+                } else {
+                    creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}, ignoreCreeps: true});
                 }
             }
         }
@@ -75,7 +55,6 @@ var roleClaimer = {
 };
 
 module.exports = roleClaimer;
-
 
 
 
