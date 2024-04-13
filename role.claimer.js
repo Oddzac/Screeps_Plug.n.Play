@@ -25,16 +25,16 @@ var roleClaimer = {
             const controller = creep.room.controller;
             const path = creep.pos.findPathTo(controller);
 
-            // Check if the path is blocked by walls
-            const walls = path.filter(pos => {
-                const structure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_WALL);
-                return structure !== undefined;
+            const walls = path.filter(step => {
+                const pos = new RoomPosition(step.x, step.y, creep.room.name);
+                const structures = pos.lookFor(LOOK_STRUCTURES);
+                return structures.some(s => s.structureType === STRUCTURE_WALL);
             });
 
             if (walls.length > 0) {
-                // There are walls blocking the path, move to the wall and dismantle it
                 const wall = walls[0];
-                const wallStructure = creep.room.lookForAt(LOOK_STRUCTURES, wall.x, wall.y).find(s => s.structureType === STRUCTURE_WALL);
+                const pos = new RoomPosition(wall.x, wall.y, creep.room.name);
+                const wallStructure = pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_WALL);
                 if (creep.dismantle(wallStructure) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(wallStructure, {visualizePathStyle: {stroke: '#ff0000'}});
                 }
