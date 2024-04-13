@@ -352,13 +352,24 @@ module.exports = terminals;
 var marketManager = {
 
     globalMarketManagement: function() {
-        this.updateMarketPrices();
-        this.adjustPrices();
-        this.purchaseUnderpricedResources();
-        //this.handleGlobalTransactions();
-        this.updatePL();
-        this.cleanupOldOrders();
-        this.generateMarketSummary();
+
+        if (Game.time % 50 === 0) {
+            this.updateMarketPrices();
+            this.updatePL();
+            this.purchaseUnderpricedResources();
+        }
+
+        //10 Minutes
+        if (Game.time % 201 === 0) {
+            this.adjustPrices();
+
+        }
+
+        //Hourly
+        if (Game.time % 1200 === 0) {
+            this.generateMarketSummary();
+        }
+        
         
     },
 
