@@ -7,7 +7,7 @@ var roleUpgrader = {
             creep.memory.harvestingTicks = 0;
         }
 
-        if (Game.cpu.bucket > 10000) {
+        if (Game.cpu.bucket === 10000) {
             this.genPix(creep);
         }
 
