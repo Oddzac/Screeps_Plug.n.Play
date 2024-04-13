@@ -231,7 +231,7 @@ calculateDesiredCounts: function(room) {
             return; // Exit the function early
         }
         
-        const name = `${role}_${Game.time}`;
+        const name = `${room}_${role}_${Game.time}`;
        
         // Find spawns in the specified room
         const spawns = Game.rooms[room.name].find(FIND_MY_SPAWNS);
