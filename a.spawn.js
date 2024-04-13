@@ -212,6 +212,7 @@ calculateDesiredCounts: function(room) {
         }
         
         if (nextSpawnRole) {
+            console.log(`${room} MS: ${nextSpawnRole}, E2U ${energyToUse}, Phase ${phase}`)
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable.");
