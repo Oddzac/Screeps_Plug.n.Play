@@ -209,7 +209,7 @@ connectSpawnToPOIs: function(room) {
                 swampCost: 10,
                 roomCallback: function(roomName) {
                     let costs = new PathFinder.CostMatrix();
-                    Game.rooms[roomName].find(FIND_STRUCTURES).forEach(function(struct) {
+                    Game.rooms[room.name].find(FIND_STRUCTURES).forEach(function(struct) {
                         if (struct.structureType === STRUCTURE_ROAD) {
                             costs.set(struct.pos.x, struct.pos.y, 1);
                         } else if (struct.structureType !== STRUCTURE_CONTAINER &&
