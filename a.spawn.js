@@ -53,11 +53,11 @@ calculateDesiredCounts: function(room) {
             return {
                 scout: 1,
             };
-        } else if (scouted === true && roomClaimsAvailable > 0 && claimers < 1 && phase > 3) {                         
+        /*} else if (scouted === true && roomClaimsAvailable > 0 && claimers < 1 && phase > 3) {                         
             // Scouting Complete & Can Claim
             desiredCounts = {
                 claimer: 1
-            };
+            };*/
 
         } else {
 
