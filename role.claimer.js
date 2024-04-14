@@ -51,7 +51,7 @@ var roleClaimer = {
                     const claimResult = creep.claimController(controller);
                     console.log(`Claim Result: ${claimResult}`);
                     if (claimResult == ERR_NOT_IN_RANGE) {
-                        if (creep.pos.getRangeTo(controller) > 1) {
+                        if (creep.pos.getRangeTo(controller) > 2) {
                             // Move to the controller if not in range
                             creep.moveByPath(path.path);
                         } else {
