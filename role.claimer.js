@@ -25,7 +25,7 @@ var roleClaimer = {
                 plainCost: 2,
                 swampCost: 10,
                 roomCallback: function(roomName) {
-                    let room = creep.room.name;
+                    let room = creep.room;
                     let costs = new PathFinder.CostMatrix;
 
                     room.find(FIND_STRUCTURES).forEach(function(struct) {
