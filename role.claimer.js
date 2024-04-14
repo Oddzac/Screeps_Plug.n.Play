@@ -51,8 +51,14 @@ var roleClaimer = {
                     const claimResult = creep.claimController(controller);
                     console.log(`Claim Result: ${claimResult}`);
                     if (claimResult == ERR_NOT_IN_RANGE) {
-                        // Move to the controller if not in range
-                        creep.moveByPath(path.path);
+                        if (creep.pos.getRangeTo(controller) > 1) {
+                            // Move to the controller if not in range
+                            creep.moveByPath(path.path);
+                        } else {
+                            creep.moveTo(controller);
+                        
+                        }
+
                     } else if (claimResult == ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
                         // If unable to claim due to GCL or room limit, try to reserve instead
                         const reserveResult = creep.reserveController(controller);
