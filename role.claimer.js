@@ -44,6 +44,19 @@ var roleClaimer = {
                 if (claimResult == ERR_NOT_IN_RANGE) {
                     creep.moveTo(controller);
                     console.log('Claiming...')
+                } else if (claimResult === OK) {
+                    console.log(`[${creep.name}] Controller claimed successfully.`);
+                    // Attempt to destroy the old spawn after claiming the controller
+                    const spawns = creep.room.find(FIND_HOSTILE_SPAWNS);
+                    if (spawns.length > 0) {
+                        const targetSpawn = spawns[0]; // assuming we target the first found hostile spawn
+                        if (creep.dismantle(targetSpawn) === ERR_NOT_IN_RANGE) {
+                            creep.moveTo(targetSpawn, {visualizePathStyle: {stroke: '#ff0000'}});
+                            console.log(`[${creep.name}] Moving to dismantle hostile spawn.`);
+                        } else {
+                            console.log(`[${creep.name}] Dismantling hostile spawn.`);
+                        }
+                    }
                 } else if (claimResult === ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
                     // If unable to claim due to GCL or room limit, try to reserve instead
                     const reserveResult = creep.reserveController(controller);
