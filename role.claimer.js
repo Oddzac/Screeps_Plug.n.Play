@@ -20,40 +20,45 @@ var roleClaimer = {
         } else {
             console.log(`[${creep.name}] ROOM REACHED`);
             const controller = creep.room.controller;
-
             const path = PathFinder.search(creep.pos, { pos: controller.pos, range: 1 }, {
                 plainCost: 2,
-                swampCost: 2,
+                swampCost: 10,
                 roomCallback: function(roomName) {
-                    let room = creep.room;
+                    let room = Game.rooms[roomName];
                     let costs = new PathFinder.CostMatrix;
 
                     room.find(FIND_STRUCTURES).forEach(function(struct) {
                         if (struct.structureType === STRUCTURE_WALL) {
-                            costs.set(struct.pos.x, struct.pos.y, 0); // Treat walls as walkable
+                            // Set high cost to walls unless you want to move through them
+                            costs.set(struct.pos.x, struct.pos.y, 255);
                         }
                     });
 
                     return costs;
                 }
-            });
+            }).path;
 
-            const nextPos = path.path[0];
-            if (nextPos) {
+            if (path.length > 0) {
+                const nextPos = path[0];
                 const look = creep.room.lookAt(nextPos.x, nextPos.y);
                 const wall = look.find(l => l.type === 'structure' && l.structure.structureType === STRUCTURE_WALL);
+
                 if (wall) {
+                    // Attempt to dismantle the wall if it's the next step in the path
                     if (creep.dismantle(wall.structure) === ERR_NOT_IN_RANGE) {
                         creep.moveTo(wall.structure, {visualizePathStyle: {stroke: '#ff0000'}});
                     }
                 } else {
+                    // Move by the path if there's no wall at the next position
                     creep.moveByPath(path);
-                    //creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}, ignoreWalls: true});
                 }
+            } else {
+                // Handle no path found or end of path
+                creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
             }
         }
     }
-};
+}
 
 module.exports = roleClaimer;
 
