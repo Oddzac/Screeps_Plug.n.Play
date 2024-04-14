@@ -23,14 +23,14 @@ var roleClaimer = {
 
             const path = PathFinder.search(creep.pos, { pos: controller.pos, range: 1 }, {
                 plainCost: 2,
-                swampCost: 2,
+                swampCost: 10,
                 roomCallback: function(roomName) {
                     let room = creep.room;
                     let costs = new PathFinder.CostMatrix;
 
                     room.find(FIND_STRUCTURES).forEach(function(struct) {
                         if (struct.structureType === STRUCTURE_WALL) {
-                            costs.set(struct.pos.x, struct.pos.y, 0); // Treat walls as walkable
+                            costs.set(struct.pos.x, struct.pos.y, 5); // Treat walls as walkable
                         }
                     });
 
