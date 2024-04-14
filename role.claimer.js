@@ -47,8 +47,24 @@ var roleClaimer = {
                         creep.moveTo(wall.structure, {visualizePathStyle: {stroke: '#ff0000'}});
                     }
                 } else {
-                    creep.moveByPath(path.path);
-                    //creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}, ignoreWalls: true});
+                    // Attempt to claim the controller
+                    const claimResult = creep.claimController(controller);
+                    if (claimResult == ERR_NOT_IN_RANGE) {
+                        // Move to the controller if not in range
+                        creep.moveByPath(path.path);
+                    } else if (claimResult == ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
+                        // If unable to claim due to GCL or room limit, try to reserve instead
+                        const reserveResult = creep.reserveController(controller);
+                        if (reserveResult == ERR_NOT_IN_RANGE) {
+                            creep.moveByPath(path.path);
+                        } else if (reserveResult == ERR_INVALID_TARGET) {
+                            creep.suicide();
+                        } else if (reserveResult != OK) {
+                            console.log(`[${creep.name}] RESERVING ERROR: ${reserveResult}`);
+                        }
+                    } else if (claimResult != OK) {
+                        console.log(`[${creep.name}] CLAIMING ERROR: ${claimResult}`);
+                    }
                 }
             }
         }
