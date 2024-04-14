@@ -78,7 +78,13 @@ var memories = {
         this.memInit();
         this.spawnMode();
 
-        
+        const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
+        const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
+        // Update claims available
+        if (roomsAvailableToClaim != Memory.roomClaimsAvailable) {
+            console.log('Updating available claims...');
+            Memory.roomClaimsAvailable = roomsAvailableToClaim;
+        }
         
         //Dearly departed, we are gathered here today... (clear creep names)
         for (var name in Memory.creeps) {
@@ -604,12 +610,6 @@ var memories = {
 
     
     shortTerm: function() {
-
-        const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
-        const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
-        // Update claims available
-        console.log('Updating available claims...');
-        Memory.roomClaimsAvailable = roomsAvailableToClaim;
         // Refresh Construction Energy Reqs / Room Phase
         Object.values(Game.rooms).forEach(room => {
             const constructionSites = _.filter(Game.constructionSites, site => site.my);
