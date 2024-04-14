@@ -47,7 +47,7 @@ var roleClaimer = {
                         creep.moveTo(wall.structure, {visualizePathStyle: {stroke: '#ff0000'}});
                     }
                 } else {
-                    creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}, ignoreCreeps: true});
+                    creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}, ignoreWalls: true});
                 }
             }
         }
