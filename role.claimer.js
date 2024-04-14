@@ -20,48 +20,36 @@ var roleClaimer = {
         } else {
             console.log(`[${creep.name}] ROOM REACHED`);
             const controller = creep.room.controller;
+
             const path = PathFinder.search(creep.pos, { pos: controller.pos, range: 1 }, {
                 plainCost: 2,
-                swampCost: 10,
+                swampCost: 2,
                 roomCallback: function(roomName) {
-                    let room = Game.rooms[roomName];
+                    let room = creep.room;
                     let costs = new PathFinder.CostMatrix;
 
                     room.find(FIND_STRUCTURES).forEach(function(struct) {
                         if (struct.structureType === STRUCTURE_WALL) {
-                            // Set walls as walkable with a small cost
-                            costs.set(struct.pos.x, struct.pos.y, 1);
+                            costs.set(struct.pos.x, struct.pos.y, 0); // Treat walls as walkable
                         }
                     });
 
                     return costs;
                 }
-            }).path;
+            });
 
-            if (path.length > 0) {
-                const nextPos = path[0];
-                creep.moveTo(nextPos, {visualizePathStyle: {stroke: '#ffffff'}}); // Move to next position in path
-
-                // Check for walls in adjacent positions
-                const adjacentPositions = [
-                    {x: creep.pos.x + 1, y: creep.pos.y},
-                    {x: creep.pos.x - 1, y: creep.pos.y},
-                    {x: creep.pos.x, y: creep.pos.y + 1},
-                    {x: creep.pos.x, y: creep.pos.y - 1}
-                ];
-
-                adjacentPositions.forEach(pos => {
-                    const structures = creep.room.lookForAt(LOOK_STRUCTURES, pos.x, pos.y);
-                    const wall = structures.find(s => s.structureType === STRUCTURE_WALL);
-                    if (wall) {
-                        if (creep.dismantle(wall) === ERR_NOT_IN_RANGE) {
-                            creep.moveTo(wall, {visualizePathStyle: {stroke: '#ff0000'}});
-                        }
+            const nextPos = path.path[0];
+            if (nextPos) {
+                const look = creep.room.lookAt(nextPos.x, nextPos.y);
+                const wall = look.find(l => l.type === 'structure' && l.structure.structureType === STRUCTURE_WALL);
+                if (wall) {
+                    if (creep.dismantle(wall.structure) === ERR_NOT_IN_RANGE) {
+                        creep.moveTo(wall.structure, {visualizePathStyle: {stroke: '#ff0000'}});
                     }
-                });
-            } else {
-                // If there's no path or at the end of the path, move to the controller directly
-                creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}});
+                } else {
+                    creep.moveByPath(path.path);
+                    //creep.moveTo(controller, {visualizePathStyle: {stroke: '#ffaa00'}, ignoreWalls: true});
+                }
             }
         }
     }
