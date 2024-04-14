@@ -39,6 +39,12 @@ var roleClaimer = {
             });
 
             const nextPos = path.path[0];
+            if (creep.pos.getRangeTo(controller) <= 2) {
+                const claimResult = creep.claimController(controller);
+                creep.moveTo(controller);
+                console.log('Claiming...')
+            }
+            
             if (nextPos) {
                 const look = creep.room.lookAt(nextPos.x, nextPos.y);
                 const wall = look.find(l => l.type === 'structure' && l.structure.structureType === STRUCTURE_WALL);
@@ -55,8 +61,8 @@ var roleClaimer = {
                             // Move to the controller if not in range
                             creep.moveByPath(path.path);
                         } else {
-                            creep.moveTo(controller);
-                            console.log('Claiming...')
+                            
+                            
                         }
 
                     } else if (claimResult == ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
