@@ -56,7 +56,7 @@ var roleClaimer = {
                             creep.moveByPath(path.path);
                         } else {
                             creep.moveTo(controller);
-                        
+                            console.log('Claiming...')
                         }
 
                     } else if (claimResult == ERR_GCL_NOT_ENOUGH || claimResult == ERR_FULL) {
