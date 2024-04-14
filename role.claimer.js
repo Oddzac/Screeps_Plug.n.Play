@@ -24,6 +24,7 @@ var roleClaimer = {
             const path = PathFinder.search(creep.pos, { pos: controller.pos, range: 1 }, {
                 plainCost: 2,
                 swampCost: 2,
+                wallCost: 255,
                 roomCallback: function(roomName) {
                     let room = creep.room;
                     let costs = new PathFinder.CostMatrix;
