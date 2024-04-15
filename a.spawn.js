@@ -76,7 +76,7 @@ calculateDesiredCounts: function(room) {
                     // Phase 2
                     desiredCounts = {
                         harvester: 2,
-                        hauler: 2,
+                        hauler: 3,
                         upgrader: 1,
                         builder: 4,
                         
