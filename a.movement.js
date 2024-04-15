@@ -2,7 +2,7 @@
 // IMPLEMENT MATRIX 
 // - UNOWNED WALLS MORE PASSABLE THAN NATURAL WALLS
 
-var movement = {
+/*var movement = {
     moveToWithCache: function(creep, target, range = 1) {
         const targetPos = (target instanceof RoomPosition) ? target : target.pos;
         if (!targetPos) return;
@@ -77,11 +77,11 @@ var movement = {
     },
 };
 
-module.exports = movement;
+module.exports = movement;*/
 
 ////////////////////
 
-/*var movement = {
+var movement = {
 
 // PATH CACHING AND MOVEMENT
 //
@@ -184,4 +184,4 @@ module.exports = movement;
 
 };
 
-module.exports = movement*/
+module.exports = movement
