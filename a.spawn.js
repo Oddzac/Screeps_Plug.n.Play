@@ -67,8 +67,9 @@ calculateDesiredCounts: function(room) {
                     desiredCounts = {
                         harvester: 4,
                         hauler: 3,
+                        upgrader: 1,
                         builder: 4,
-                        upgrader: 1
+                        
                     };
                     break;
                 case 2:
@@ -76,8 +77,9 @@ calculateDesiredCounts: function(room) {
                     desiredCounts = {
                         harvester: 3,
                         hauler: 3,
+                        upgrader: 1,
                         builder: 4,
-                        upgrader: 1
+                        
                     };
                     break;
                 case 3:
@@ -85,8 +87,9 @@ calculateDesiredCounts: function(room) {
                     desiredCounts = {
                         harvester: 2, // Adjusted for Max Harvesters
                         hauler: 4,
+                        upgrader: 2,
                         builder: 3,
-                        upgrader: 2
+                        
                     };
                     break;
                 case 4:
@@ -94,8 +97,9 @@ calculateDesiredCounts: function(room) {
                     desiredCounts = {
                         harvester: 2,
                         hauler: 5,
+                        upgrader: 2,
                         builder: 2,
-                        upgrader: 2
+                        
                     };
                     break;
 
@@ -104,8 +108,9 @@ calculateDesiredCounts: function(room) {
                     desiredCounts = {
                         harvester: 2,
                         hauler: 5,
+                        upgrader: 1,
                         builder: 3,
-                        upgrader: 1
+                        
                     };
                 
                     break;
@@ -116,23 +121,26 @@ calculateDesiredCounts: function(room) {
                         desiredCounts = {
                             harvester: 3,
                             hauler: 3,
+                            upgrader: 1,
                             builder: 2,
-                            upgrader: 1
+                            
                         };
                     } else if (extractorBuilt > 0 && terminalBuilt > 0) {
                         desiredCounts = {
                             harvester: 3,
                             hauler: 4,
+                            upgrader: 1,
                             builder: 3,
-                            upgrader: 1
+                            
                         };
 
                     } else {
                         desiredCounts = {
                             harvester: 2,
                             hauler: 3,
+                            upgrader: 1,
                             builder: 3,
-                            upgrader: 1
+                            
                         };
 
                     }
@@ -144,16 +152,18 @@ calculateDesiredCounts: function(room) {
                         desiredCounts = {
                             harvester: 3,
                             hauler: 5,
+                            upgrader: 1,
                             builder: 2,
-                            upgrader: 1
+                            
                         };
 
                     } else {
                         desiredCounts = {
                             harvester: 2,
                             hauler: 4,
+                            upgrader: 1,
                             builder: 3,
-                            upgrader: 1
+                            
                         };
 
                     }
@@ -163,8 +173,9 @@ calculateDesiredCounts: function(room) {
                     desiredCounts = {
                         harvester: 3,
                         hauler: 5,
+                        upgrader: 1,
                         builder: 2,
-                        upgrader: 1
+                        
                     };
                     break;
             }
