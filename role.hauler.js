@@ -368,7 +368,7 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            this.waitNear(creep);
+            // Path blocked. Sit tight.
 
         }
     },
