@@ -4,99 +4,12 @@
 
 
 
-var movement = {
-    moveToWithCache: function(creep, target, range = 1) {
-        const targetPos = (target instanceof RoomPosition) ? target : target.pos;
-        if (!targetPos) return;
 
-        this.findCachedPath(creep, { pos: targetPos, range: range });
-    },
-
-    cleanupOldPaths: function(roomName) {
-        const pathCache = Memory.rooms[roomName].pathCache;
-        if (!pathCache) return;
-
-        const pathKeys = Object.keys(pathCache);
-        for (const pathKey of pathKeys) {
-            if (pathCache[pathKey].time + 50 < Game.time) {
-                delete pathCache[pathKey];
-            }
-        }
-    },
-
-    findCachedPath: function(creep, target, defaultRange = 1) {
-        const targetPos = target.pos || target;
-        const effectiveRange = target.range !== undefined ? target.range : defaultRange;
-        const pathKey = `${creep.pos.roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
-        const roomName = creep.room.name;
-
-        if (!Memory.rooms[roomName].pathCache) Memory.rooms[roomName].pathCache = {};
-
-        this.cleanupOldPaths(roomName);
-
-        let path = Memory.rooms[roomName].pathCache[pathKey] ? Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path) : null;
-        if (path && Memory.rooms[roomName].pathCache[pathKey].time + 100 > Game.time) {
-            const moveResult = creep.moveByPath(path);
-            if (moveResult !== OK) {
-                // Use cost matrix when path is blocked
-                const costMatrix = this.getCostMatrix(roomName);
-                path = creep.pos.findPathTo(targetPos, {range: effectiveRange, costMatrix: costMatrix});
-                Memory.rooms[roomName].pathCache[pathKey] = { path: Room.serializePath(path), time: Game.time };
-                creep.moveByPath(path);
-            }
-        } else {
-            // Ignore creeps initially for pathfinding
-            path = creep.pos.findPathTo(targetPos, {range: effectiveRange, ignoreCreeps: true});
-            const serializedPath = Room.serializePath(path);
-            Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
-            const moveResult = creep.moveByPath(path);
-            if (moveResult !== OK) {
-                // Recheck with cost matrix if move initially fails
-                const costMatrix = this.getCostMatrix(roomName);
-                path = creep.pos.findPathTo(targetPos, {range: effectiveRange, costMatrix: costMatrix});
-                Memory.rooms[roomName].pathCache[pathKey] = { path: Room.serializePath(path), time: Game.time };
-                creep.moveByPath(path);
-            }
-        }
-    },
-
-    getCostMatrix: function(roomName) {
-        if (!Memory.costMatrices) Memory.costMatrices = {};
-        if (Memory.costMatrices[roomName] && Memory.costMatrices[roomName].time + 10000 > Game.time) {
-            return PathFinder.CostMatrix.deserialize(Memory.costMatrices[roomName].matrix);
-        } else {
-            const room = Game.rooms[roomName];
-            let costs = new PathFinder.CostMatrix();
-
-            if (room) {
-                room.find(FIND_STRUCTURES).forEach(function(struct) {
-                    if (struct.structureType === STRUCTURE_ROAD) {
-                        costs.set(struct.pos.x, struct.pos.y, 1);
-                    } else if (struct.structureType !== STRUCTURE_CONTAINER &&
-                               (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
-                        costs.set(struct.pos.x, struct.pos.y, 0xff);
-                    }
-                });
-                room.find(FIND_CREEPS).forEach(function(creep) {
-                    costs.set(creep.pos.x, creep.pos.y, 10); // Slightly increase cost for squares with creeps
-                });
-            }
-
-            Memory.costMatrices[roomName] = {
-                matrix: costs.serialize(),
-                time: Game.time
-            };
-            return costs;
-        }
-    },
-};
-
-module.exports = movement;
 
 ///////////////////////
 
 
-/*var movement = {
+var movement = {
     moveToWithCache: function(creep, target, range = 1) {
         const targetPos = (target instanceof RoomPosition) ? target : target.pos;
         if (!targetPos) return;
@@ -171,7 +84,7 @@ module.exports = movement;
     },
 };
 
-module.exports = movement;*/
+module.exports = movement;
 
 ////////////////////
 
