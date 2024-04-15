@@ -92,7 +92,7 @@ var roleHarvester = {
     
 
 passEnergy: function(creep) {
-    let targets = creep.pos.findInRange(FIND_STRUCTURES, 2, {
+    let targets = creep.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: (structure) => {
             return [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER].includes(structure.structureType);
         }
