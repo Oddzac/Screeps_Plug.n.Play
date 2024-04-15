@@ -368,7 +368,9 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            // Path blocked. Sit tight.
+            const spawns = creep.room.find(FIND_MY_SPAWNS);
+            const spawn = spawns[0];
+            movement.moveToWithCache(creep, spawn);
 
         }
     },
