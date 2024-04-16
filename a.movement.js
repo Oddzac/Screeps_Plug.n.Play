@@ -128,16 +128,12 @@ var movement = {
 
     // Main Pathfinding Call
     moveToWithCache: function(creep, target, range = 0) {
-
-        // Remember your roots
+        // Initialize home room if not already set
         if (!creep.memory.home) {
-            // Try to parse the room name from the creep's name
             const nameParts = creep.name.split('_');
             if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
-                // Validate if the room exists in the game
                 creep.memory.home = nameParts[0];
             } else {
-                // Fallback to the current room if parsing fails or room is not accessible
                 creep.memory.home = creep.room.name;
             }
         }
@@ -148,11 +144,20 @@ var movement = {
             return;
         }
 
+        // Determine the target position
         const targetPos = (target instanceof RoomPosition) ? target : target.pos;
         if (!targetPos) {
+            console.log('Invalid target position');
             return;
         }
 
+        // If target room is different from home and no range is provided, assume target is in home room
+        if (!('roomName' in targetPos) || targetPos.roomName !== homeRoom.name) {
+            targetPos.roomName = homeRoom.name;
+            console.log('Target assumed to be in home room:', homeRoom.name);
+        }
+
+        // Proceed to find or use cached path
         this.findCachedPath(creep, { pos: targetPos, range: range });
     },
 
@@ -170,12 +175,15 @@ var movement = {
 
     // Method for creep movement using cached paths
     findCachedPath: function(creep, target, defaultRange = 1) {
+        // Implementation adjusted for clarity and caching in home room
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
-        const pathKey = `${creep.pos.roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
-        const roomName = creep.room.name;
-    
-        if (!Memory.rooms[roomName].pathCache) Memory.rooms[roomName].pathCache = {};
+        const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
+
+        const roomName = creep.memory.home; // Use home room for path caching
+        if (!Memory.rooms[roomName].pathCache) {
+            Memory.rooms[roomName].pathCache = {};
+        }
 
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
     
