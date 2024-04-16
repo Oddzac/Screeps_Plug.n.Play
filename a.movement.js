@@ -152,7 +152,7 @@ var movement = {
         }
 
         // If target room is different from home and no range is provided, assume target is in home room
-        if (!('roomName' in targetPos) || targetPos.roomName !== homeRoom.name) {
+        if (!('roomName' in targetPos)/* || targetPos.roomName !== homeRoom.name*/) {
             targetPos.roomName = homeRoom.name;
             console.log(`${creep} holding target room: ${homeRoom.name}`);
         }
