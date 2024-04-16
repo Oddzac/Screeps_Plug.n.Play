@@ -4,25 +4,9 @@
 
 
 /*
-if (!creep.memory.home) {
-            // Try to parse the room name from the creep's name
-            const nameParts = creep.name.split('_');
-            if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
-                // Validate if the room exists in the game
-                creep.memory.home = nameParts[0];
-            } else {
-                // Fallback to the current room if parsing fails or room is not accessible
-                creep.memory.home = creep.room.name;
-            }
-        }
-        
-        const homeRoom = Game.rooms[creep.memory.home];
-        if (!homeRoom) {
-            console.log('Home room not accessible:', creep.memory.home);
-            return;
-        }
 
-        
+
+
 
 
 /*
@@ -141,8 +125,29 @@ var movement = {
 
 
 
+
     // Main Pathfinding Call
     moveToWithCache: function(creep, target, range = 0) {
+
+        // Remember your roots
+        if (!creep.memory.home) {
+            // Try to parse the room name from the creep's name
+            const nameParts = creep.name.split('_');
+            if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
+                // Validate if the room exists in the game
+                creep.memory.home = nameParts[0];
+            } else {
+                // Fallback to the current room if parsing fails or room is not accessible
+                creep.memory.home = creep.room.name;
+            }
+        }
+
+        const homeRoom = Game.rooms[creep.memory.home];
+        if (!homeRoom) {
+            console.log('Home room not accessible:', creep.memory.home);
+            return;
+        }
+
         const targetPos = (target instanceof RoomPosition) ? target : target.pos;
         if (!targetPos) {
             return;
