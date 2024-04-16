@@ -9,6 +9,10 @@ var movement = require('a.movement'); // Movement functions
 var roleHauler = {
     run: function(creep) {
 
+        if (!creep.memory.home) {
+            creep.memory.home = creep.room.name;
+        }
+
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
 
@@ -368,8 +372,8 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            const spawns = creep.room.find(FIND_MY_SPAWNS);
-            const spawn = spawns[0];
+            const home = creep.memory.home
+            const spawns = creep.home.find(FIND_MY_SPAWNS).spawns[0];
             movement.moveToWithCache(creep, spawn);
 
         }
