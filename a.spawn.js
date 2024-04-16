@@ -212,7 +212,8 @@ calculateDesiredCounts: function(room) {
         }
         // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
-        memories.spawnMode(room, nextRole);
+
+        memories.spawnMode(room, nextSpawnRole);
 
         // Determine spawn mode and adjust energyToUse based on this mode
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
