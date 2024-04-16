@@ -68,7 +68,7 @@ var roleAttacker = require('role.attacker');
 var roleHealer = require('role.healer');
 var roleClaimer = require('role.claimer');
 var roleScout = require('role.scout');
-var spawner = require('a.spawn');
+//var spawner = require('a.spawn');
 var movement = require('a.movement');
 
 var memories = {
@@ -229,11 +229,11 @@ var memories = {
     },
     
     // Manage memory governing spawn behavior
-    spawnMode: function(room) {
+    spawnMode: function(room, nextRole) {
         const phase = Memory.rooms[room.name].phase.Phase;
         const energyCapacity = room.energyCapacityAvailable;
         const energyAvailable = room.energyAvailable;
-        const nextRole = Memory.rooms[room.name].nextSpawnRole;
+        //const nextRole = Memory.rooms[room.name].nextSpawnRole;
         const energySources = room.find(FIND_SOURCES).length;
 
 
