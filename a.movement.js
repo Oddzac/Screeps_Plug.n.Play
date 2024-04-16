@@ -18,9 +18,10 @@ var movement = {
     },
 
     cleanupOldPaths: function(roomName) {
-        const pathCache = Memory.rooms[roomName]?.pathCache;
-        if (!pathCache) return;
+        // Use traditional checks instead of optional chaining
+        if (!Memory.rooms[roomName] || !Memory.rooms[roomName].pathCache) return;
 
+        const pathCache = Memory.rooms[roomName].pathCache;
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
             if (pathCache[pathKey].time + 50 < Game.time) {
@@ -28,6 +29,7 @@ var movement = {
             }
         }
     },
+
 
     // Method for creep movement using cached paths
     findCachedPath: function(creep, target, roomName, defaultRange = 1) {
