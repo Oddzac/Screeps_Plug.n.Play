@@ -1,6 +1,7 @@
 //TODO
 // Logic to periodically spawn scouts to track changes (possibly in main instead?)
 // If phase > 7 && Spawn1 busy, try Spawn2
+var memories = require('a.memories');
 
 var spawner = {
 
@@ -8,18 +9,16 @@ var spawner = {
 
 // Phase-based spawning counts
 calculateDesiredCounts: function(room) {
-        const phase = Memory.rooms[room.name].phase.Phase;
-        //const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room.name).length;
-        const totalEnergyRequired = Memory.rooms[room.name].constructionEnergyRequired;
-        const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-        const linksBuilt = Memory.rooms[room.name].linksBuilt;
-        const extractorBuilt = Memory.rooms[room.name].extractorBuilt;
-        const terminalBuilt = Memory.rooms[room.name].terminalBuilt;
-        const scouted = Memory.rooms[room.name].scoutingComplete;
-        const roomClaimsAvailable = Memory.roomClaimsAvailable;
-        const claimers = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_claimer")).length;
-        const scouts = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_scout")).length;
-        let desiredCounts = {};
+    const phase = Memory.rooms[room.name].phase.Phase;
+    const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
+    const linksBuilt = Memory.rooms[room.name].linksBuilt;
+    const extractorBuilt = Memory.rooms[room.name].extractorBuilt;
+    const terminalBuilt = Memory.rooms[room.name].terminalBuilt;
+    const scouted = Memory.rooms[room.name].scoutingComplete;
+    const roomClaimsAvailable = Memory.roomClaimsAvailable;
+    const claimers = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_claimer")).length;
+    const scouts = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_scout")).length;
+    let desiredCounts = {};
 
 
     // Check the number of energy sources in the room
@@ -213,6 +212,7 @@ calculateDesiredCounts: function(room) {
         }
         // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
+        memories.spawnMode(room, nextRole);
 
         // Determine spawn mode and adjust energyToUse based on this mode
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
