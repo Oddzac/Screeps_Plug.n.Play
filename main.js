@@ -61,8 +61,8 @@ module.exports.loop = function() {
             }
 
             // Count the number of harvesters and haulers specifically in this room
-            const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester' && creep.room.name === roomName);
-            const haulers = _.filter(Game.creeps, (creep) => creep.memory.role === 'hauler' && creep.room.name === roomName);
+            const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester' && creep.memory.home === roomName);
+            const haulers = _.filter(Game.creeps, (creep) => creep.memory.role === 'hauler' && creep.memory.home === roomName);
             // Check the number of energy sources in the room
             const energySources = room.find(FIND_SOURCES).length;
             // Find available spawns in the room
