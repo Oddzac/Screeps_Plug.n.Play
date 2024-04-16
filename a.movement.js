@@ -188,6 +188,40 @@ var movement = {
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
     
         // Check if the path is cached and still valid
+        if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 50 > Game.time) {
+            // Deserialize the path before using it
+            const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
+            const moveResult = creep.moveByPath(path);
+            if (moveResult !== OK) {
+                // Clear the cache if the path is invalid and find a new path immediately
+                delete Memory.rooms[roomName].pathCache[pathKey];
+            }
+        } else {
+            const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
+            // Serialize the new path for caching
+            const serializedPath = Room.serializePath(newPath);
+            Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
+            const moveResult = creep.moveByPath(newPath);
+            if (moveResult !== OK) {
+
+            }
+        }
+    },
+
+
+    /*
+      // Method for creep movement using cached paths
+    findCachedPath: function(creep, target, defaultRange = 1) {
+        const targetPos = target.pos || target; 
+        const effectiveRange = target.range !== undefined ? target.range : defaultRange;
+        const pathKey = `${creep.pos.roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
+        const roomName = creep.room.name;
+    
+        if (!Memory.rooms[roomName].pathCache) Memory.rooms[roomName].pathCache = {};
+
+        this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
+    
+        // Check if the path is cached and still valid
         if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 100 > Game.time) {
             // Deserialize the path before using it
             const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
@@ -207,6 +241,7 @@ var movement = {
             }
         }
     },
+    */
     
     // Optional: Method to generate and cache room cost matrices for more efficient pathfinding
     getCostMatrix: function(roomName) {
