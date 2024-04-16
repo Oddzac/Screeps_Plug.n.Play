@@ -3,7 +3,7 @@
 // - UNOWNED WALLS MORE PASSABLE THAN NATURAL WALLS
 
 
-
+/*
 var movement = {
     // Main Pathfinding Call
     moveToWithCache: function(creep, target, range = 0, specifiedRoomName = null) {
@@ -96,7 +96,7 @@ var movement = {
     }
 };
 
-module.exports = movement;
+module.exports = movement;*/
 
 
 
@@ -106,7 +106,7 @@ module.exports = movement;
 
 
 //////////////////////////////
-/*
+
 var movement = {
 
 // PATH CACHING AND MOVEMENT
@@ -214,4 +214,4 @@ var movement = {
 
 };
 
-module.exports = movement */
+module.exports = movement 
