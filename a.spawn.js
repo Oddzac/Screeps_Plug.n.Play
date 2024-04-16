@@ -197,7 +197,7 @@ calculateDesiredCounts: function(room) {
         
     
         const desiredCounts = this.calculateDesiredCounts(room);
-        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.room.name === room.name), (creep) => creep.memory.role);
+        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.memory.home === room.name), (creep) => creep.memory.role);
         
     
         let nextSpawnRole = null;
