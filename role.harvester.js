@@ -8,23 +8,6 @@ var movement = require('a.movement');
 var roleHarvester = {
     run: function(creep) {
 
-        if (!creep.memory.home) {
-            // Try to parse the room name from the creep's name
-            const nameParts = creep.name.split('_');
-            if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
-                // Validate if the room exists in the game
-                creep.memory.home = nameParts[0];
-            } else {
-                // Fallback to the current room if parsing fails or room is not accessible
-                creep.memory.home = creep.room.name;
-            }
-        }
-        
-        const homeRoom = Game.rooms[creep.memory.home];
-        if (!homeRoom) {
-            console.log('Home room not accessible:', creep.memory.home);
-            return;
-        }
         
         if (!creep.memory.sourceId) {
             this.assignSource(creep);
@@ -36,7 +19,7 @@ var roleHarvester = {
         if (creep.store.getFreeCapacity() > 0) {
             if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
                 // Move towards the source if not in range.
-                movement.moveToWithCache(creep, source, 1, homeRoom);
+                movement.moveToWithCache(creep, source);
                 creep.say('⛏️');
             }
         } else {
@@ -100,7 +83,7 @@ var roleHarvester = {
             // Attempt to transfer each resource type the creep is carrying
             for(const resourceType in creep.store) {
                 if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, target, 1, homeRoom);
+                    movement.moveToWithCache(creep, target);
                     creep.say('📥');
                     break; // Exit after attempting to transfer the first found resource
                 }
@@ -124,7 +107,7 @@ passEnergy: function(creep) {
             for(const resourceType in creep.store) {
                 let transferResult = creep.transfer(target, resourceType);
                 if(transferResult == ERR_NOT_IN_RANGE) {
-                    movement.moveToWithCache(creep, target, 1, homeRoom);
+                    movement.moveToWithCache(creep, target);
                     creep.say('📦');
                     return; // Exit after the first attempt to move/transfer
                 } else if(transferResult == OK) {

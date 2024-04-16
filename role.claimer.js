@@ -78,7 +78,7 @@ var roleClaimer = {
                 const wall = look.find(l => l.type === 'structure' && l.structure.structureType === STRUCTURE_WALL);
                 if (wall) {
                     if (creep.dismantle(wall.structure) === ERR_NOT_IN_RANGE) {
-                        creep.moveTo(wall.structure, {visualizePathStyle: {stroke: '#ff0000'}});
+                        creep.moveTo(wall.structure);
                     }
                 } else {
                     // Attempt to claim the controller
