@@ -241,6 +241,12 @@ var memories = {
             const energySources = room.find(FIND_SOURCES).length;
 
 
+            if (nextRole === null) {
+                Memory.rooms[room.name].spawnMode.mode = 'Null';
+                Memory.rooms[room.name].spawnMode.energyToUse = 0;
+                return;
+            }
+
             if (energySources === 1) {
 
                 switch (phase) {
