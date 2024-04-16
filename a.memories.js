@@ -248,7 +248,7 @@ var memories = {
             switch (phase) {
                 case 1:
                     //Energy Cap: 300
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -262,7 +262,7 @@ var memories = {
 
                 case 2:
                     //Energy Cap: 550
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -284,7 +284,7 @@ var memories = {
 
                 case 3:
                     //Energy Cap: 800
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -311,7 +311,7 @@ var memories = {
 
                 case 4:
                     //Energy Cap: 1300
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -334,7 +334,7 @@ var memories = {
 
                 case 5:
                     //Energy Cap: 1300
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -357,7 +357,7 @@ var memories = {
 
                 case 6:
                     //Energy Cap: 1300
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -380,7 +380,7 @@ var memories = {
 
                 case 7:
                     //Energy Cap: 1300
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -403,7 +403,7 @@ var memories = {
 
                 default:
                     //Energy Cap: 1300
-                    if (Memory.rooms[roomName].underAttack) {
+                    if (Memory.rooms[room.name].underAttack) {
                         //Respond to hostile presence
                         Memory.rooms[room.name].spawnMode.mode = 'Defense';
                         Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -432,7 +432,7 @@ var memories = {
         switch (phase) {
             case 1:
                 //Energy Cap: 300
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -446,7 +446,7 @@ var memories = {
             
             case 2:
                 //Energy Cap: 550
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -468,7 +468,7 @@ var memories = {
 
             case 3:
                 //Energy Cap: 800
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -495,7 +495,7 @@ var memories = {
 
             case 4:
                 //Energy Cap: 1300
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -519,7 +519,7 @@ var memories = {
             case 5:
                 //console.log(`Phase ${phase} // Next Role: ${nextRole}`)
                 //Energy Cap: 1800
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -540,7 +540,7 @@ var memories = {
                 break;
 
             case 6:
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -561,7 +561,7 @@ var memories = {
             break;
 
             case 7:
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
@@ -584,7 +584,7 @@ var memories = {
                 
             default:
                 console.log('Spawn Mode: Default case');
-                if (Memory.rooms[roomName].underAttack) {
+                if (Memory.rooms[room.name].underAttack) {
                     //Respond to hostile presence
                     Memory.rooms[room.name].spawnMode.mode = 'Defense';
                     Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
