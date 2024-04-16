@@ -4,41 +4,41 @@
 
 
 
-
-
-///////////////////////
-
-
-/*var movement = {
-    moveToWithCache: function(creep, target, range = 1) {
+var movement = {
+    // Main Pathfinding Call
+    moveToWithCache: function(creep, target, range = 0, specifiedRoomName = null) {
         const targetPos = (target instanceof RoomPosition) ? target : target.pos;
-        if (!targetPos) return;
+        if (!targetPos) {
+            return;
+        }
 
-        this.findCachedPath(creep, { pos: targetPos, range: range });
+        // Use the specified room name if provided, otherwise default to the target position's room
+        const roomName = specifiedRoomName || targetPos.roomName;
+        this.findCachedPath(creep, { pos: targetPos, range: range }, roomName);
     },
 
     cleanupOldPaths: function(roomName) {
-        const pathCache = Memory.rooms[roomName].pathCache;
+        const pathCache = Memory.rooms[roomName]?.pathCache;
         if (!pathCache) return;
 
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
             if (pathCache[pathKey].time + 50 < Game.time) {
-                delete pathCache[pathKey];
+                delete pathCache[pathKey]; // Delete paths older than 100 ticks
             }
         }
     },
 
-    findCachedPath: function(creep, target, defaultRange = 1) {
-        const targetPos = target.pos || target; 
+    // Method for creep movement using cached paths
+    findCachedPath: function(creep, target, roomName, defaultRange = 1) {
+        const targetPos = target.pos || target;
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
         const pathKey = `${creep.pos.roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
-        const roomName = creep.room.name;
-    
-        if (!Memory.rooms[roomName].pathCache) Memory.rooms[roomName].pathCache = {};
 
-        this.cleanupOldPaths(roomName);
-    
+        if (!Memory.rooms[roomName]) Memory.rooms[roomName] = { pathCache: {} };
+        this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
+
+        // Check if the path is cached and still valid
         if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 100 > Game.time) {
             const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
             const moveResult = creep.moveByPath(path);
@@ -46,13 +46,26 @@
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange, ignoreCreeps: true});
+            const newPath = PathFinder.search(
+                creep.pos, { pos: targetPos, range: effectiveRange },
+                {
+                    roomCallback: () => this.getCostMatrix(roomName),
+                    plainCost: 2,
+                    swampCost: 10,
+                    maxRooms: 1
+                }
+            ).path;
+
             const serializedPath = Room.serializePath(newPath);
             Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
+            if (moveResult !== OK) {
+                // Handle cases where path movement fails
+            }
         }
     },
 
+    // Method to generate and cache room cost matrices for more efficient pathfinding
     getCostMatrix: function(roomName) {
         if (!Memory.costMatrices) Memory.costMatrices = {};
         if (Memory.costMatrices[roomName] && Memory.costMatrices[roomName].time + 10000 > Game.time) {
@@ -70,9 +83,6 @@
                         costs.set(struct.pos.x, struct.pos.y, 0xff);
                     }
                 });
-                room.find(FIND_CREEPS).forEach(function(creep) {
-                    costs.set(creep.pos.x, creep.pos.y, 10); // Slightly increase cost for squares with creeps
-                });
             }
 
             Memory.costMatrices[roomName] = {
@@ -81,13 +91,20 @@
             };
             return costs;
         }
-    },
+    }
 };
 
-module.exports = movement;*/
+module.exports = movement;
 
-////////////////////
 
+
+
+
+
+
+
+//////////////////////////////
+/*
 var movement = {
 
 // PATH CACHING AND MOVEMENT
@@ -95,6 +112,10 @@ var movement = {
 //
 //
 //
+
+
+
+
 
     // Main Pathfinding Call
     moveToWithCache: function(creep, target, range = 0) {
@@ -191,4 +212,4 @@ var movement = {
 
 };
 
-module.exports = movement
+module.exports = movement */
