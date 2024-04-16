@@ -37,6 +37,7 @@ module.exports.loop = function() {
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
     
+            memories.spawnMode(room);
             // Memory Cleanup
 
             // Room Terminal MGMT
