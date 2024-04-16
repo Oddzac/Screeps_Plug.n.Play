@@ -9,9 +9,7 @@ var movement = require('a.movement'); // Movement functions
 var roleHauler = {
     run: function(creep) {
 
-        if (!creep.memory.home) {
-            creep.memory.home = creep.room.name;
-        }
+
 
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
@@ -372,8 +370,32 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            const home = creep.memory.home;
-            const spawns = creep.home.find(FIND_MY_SPAWNS).spawns[0];
+            if (!creep.memory.home) {
+                // Try to parse the room name from the creep's name
+                const nameParts = creep.name.split('_');
+                if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
+                    // Validate if the room exists in the game
+                    creep.memory.home = nameParts[0];
+                } else {
+                    // Fallback to the current room if parsing fails or room is not accessible
+                    creep.memory.home = creep.room.name;
+                }
+            }
+            
+            const homeRoom = Game.rooms[creep.memory.home];
+            if (!homeRoom) {
+                console.log('Home room not accessible:', creep.memory.home);
+                return;
+            }
+            
+            // Retrieve spawns in the home room
+            const spawns = homeRoom.find(FIND_MY_SPAWNS);
+            if (spawns.length === 0) {
+                console.log('No spawns found in home room:', creep.memory.home);
+                return;
+            }
+            
+            const spawn = spawns[0]; // Get the first spawn
             movement.moveToWithCache(creep, spawn);
 
         }
