@@ -372,7 +372,7 @@ var roleHauler = {
         if (target) {
             this.transferResources(creep, target);
         } else {
-            const home = creep.memory.home
+            const home = creep.memory.home;
             const spawns = creep.home.find(FIND_MY_SPAWNS).spawns[0];
             movement.moveToWithCache(creep, spawn);
 
