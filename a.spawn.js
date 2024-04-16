@@ -65,7 +65,7 @@ calculateDesiredCounts: function(room) {
                 case 1:
                     // Phase 1
                     desiredCounts = {
-                        harvester: 4,
+                        harvester: 2,
                         hauler: 3,
                         upgrader: 1,
                         builder: 4,
@@ -85,7 +85,7 @@ calculateDesiredCounts: function(room) {
                 case 3:
                     // Phase 3
                     desiredCounts = {
-                        harvester: 2, // Adjusted for Max Harvesters
+                        harvester: 2, 
                         hauler: 4,
                         upgrader: 2,
                         builder: 3,
@@ -197,7 +197,8 @@ calculateDesiredCounts: function(room) {
         
     
         const desiredCounts = this.calculateDesiredCounts(room);
-        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.room.name === room.name), (creep) => creep.memory.role);
+        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.name.startsWith(room.name)), (creep) => creep.memory.role);
+        
     
         let nextSpawnRole = null;
     
