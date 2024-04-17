@@ -91,7 +91,7 @@ var roleBuilder = {
         const awayTeamCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'awayTeam');
         const repairingBuildersCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'repairing');
     
-        if(towers.length < 2 && repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
+        if(repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
             creep.say("🛠️");
             creep.memory.task = "repairing";
         } else if (awayTeamCount < 1 && spawnSites > 0) {
