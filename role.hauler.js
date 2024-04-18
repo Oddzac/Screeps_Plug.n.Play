@@ -456,12 +456,11 @@ var roleHauler = {
     
         // If no container or link is assigned, wait near the room's spawn or at room center
         if (!waitLocation) {
-            const spawn = creep.room.find(FIND_MY_SPAWNS)[0]; // Get the first spawn in the room
+            const storage = creep.room.storage;
             if (spawn) {
-                waitLocation = spawn.pos;
+                waitLocation = storage.pos;
             } else {
-                // Default to room center if no spawn is found
-                waitLocation = new RoomPosition(25, 25, creep.room.name);
+                
             }
         }
     
