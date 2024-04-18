@@ -254,7 +254,7 @@ var roleHauler = {
                     }
                 }
                 // Check if a surplus mineral was found, if not and energy is surplus, proceed with energy
-                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
+                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 10000) {
                     // If there's not enough surplus energy, do not proceed to withdraw
                     this.waitNear(creep); // Wait if conditions are not met
                     return; // Exit the function
