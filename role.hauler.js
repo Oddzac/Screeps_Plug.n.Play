@@ -457,7 +457,7 @@ var roleHauler = {
         // If no container or link is assigned, wait near the room's spawn or at room center
         if (!waitLocation) {
             const storage = creep.room.storage;
-            if (spawn) {
+            if (storage) {
                 waitLocation = storage.pos;
             } else {
                 
