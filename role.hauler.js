@@ -454,19 +454,29 @@ var roleHauler = {
             }
         }
     
-        // If no container or link is assigned, wait near the room's spawn or at room center
-        if (!waitLocation) {
-            const storage = creep.room.storage;
-            if (storage) {
-                waitLocation = storage.pos;
+ // Use room storage as a fallback wait location
+    if (!waitLocation) {
+        const storage = creep.room.storage;
+        if (storage) {
+            waitLocation = storage.pos;
+        } else {
+            // Fallback to the room controller if no storage is available
+            if (creep.room.controller) {
+                waitLocation = creep.room.controller.pos;
             } else {
-                
+                // Last resort: use a central room position or predefined safe location
+                waitLocation = new RoomPosition(25, 25, creep.room.name); // Middle of the room
             }
         }
-    
+    }
+
+    if (waitLocation) {
         movement.moveToWithCache(creep, waitLocation);
         creep.say('⌛');
-    },
+    } else {
+        console.log(`No valid waitLocation found for creep ${creep.name} in room ${creep.room.name}`);
+    }
+},
     
 };
 
