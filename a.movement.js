@@ -23,8 +23,7 @@ var movement = {
         this.findCachedPath(creep, { pos: targetPos, range: range }, roomName);
     },
 
-    cleanupOldPaths: function(roomName) {
-        // Use traditional checks instead of optional chaining
+    cleanupOldPaths: function(roomName) {
         if (!Memory.rooms[roomName] || !Memory.rooms[roomName].pathCache) return;
 
         const pathCache = Memory.rooms[roomName].pathCache;
@@ -145,11 +144,11 @@ var movement = {
         }
 
         // Determine the target position
-        const targetPos = (target instanceof RoomPosition) ? target : target.pos;
-        if (!targetPos) {
-            console.log('Invalid target position');
-            return;
-        }
+    const targetPos = (target instanceof RoomPosition) ? target : target.pos;
+    if (!targetPos) {
+        console.log('Invalid or undefined target position for:', target);
+        return;
+    }
 
         // If target room is different from home and no range is provided, assume target is in home room
         if (!('roomName' in targetPos) || targetPos.roomName !== homeRoom.name) {
