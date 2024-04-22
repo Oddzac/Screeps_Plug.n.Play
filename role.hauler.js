@@ -237,14 +237,19 @@ var roleHauler = {
     moveToAndCollect: function(creep, target) {
         let actionResult;
     
+        // If room storage does not exist, prevent collecting non-energy resources
+        if (!creep.room.storage && target instanceof Resource && target.resourceType !== RESOURCE_ENERGY) {
+            console.log('Storage not available. Skipping non-energy resource collection for', creep.name);
+            return; // Exit the function to avoid collecting non-energy resources
+        }
+    
         if (creep.memory.task === 'spawnHauler') {
             // target = room storage
             actionResult = creep.withdraw(target, RESOURCE_ENERGY);
-
         } else if (creep.memory.task === 'terminalHauler') {
             let resourceType = RESOURCE_ENERGY; // Default to energy
             let totalMinerals = _.sum(creep.room.storage.store) - creep.room.storage.store[RESOURCE_ENERGY]; // Calculate total minerals in storage
-        
+            
             if (totalMinerals > 0) {
                 // If there are minerals, find one to withdraw with quantity greater than 1000
                 for(const resource in creep.room.storage.store) {
@@ -254,22 +259,22 @@ var roleHauler = {
                     }
                 }
                 // Check if a surplus mineral was found, if not and energy is surplus, proceed with energy
-                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 10000) {
+                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
                     // If there's not enough surplus energy, do not proceed to withdraw
                     this.waitNear(creep); // Wait if conditions are not met
                     return; // Exit the function
                 }
-            } else if (creep.room.storage.store[RESOURCE_ENERGY] <= 1000) {
+            } else if (creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
                 // If there's not enough energy, do not proceed to withdraw
                 this.waitNear(creep); // Wait if conditions are not met
                 return; // Exit the function
             }
             // Proceed to withdraw the selected surplus resource
             actionResult = creep.withdraw(target, resourceType);
-
+    
         } else if (target instanceof Resource) {
             actionResult = creep.pickup(target);
-
+    
         } else if (target.store) {
             // Withdraw the most abundant resource for post-storage, or energy for pre-storage
             let resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b, RESOURCE_ENERGY);
@@ -284,8 +289,8 @@ var roleHauler = {
             this.waitNear(creep); // Hold tight. Conditions may change
             //this.assignCollectionTask(creep); // Re-evaluate collection task
         }
-
     },
+    
 
     deliverResources: function(creep) {
 
