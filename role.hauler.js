@@ -333,43 +333,48 @@ var roleHauler = {
 
 
             default:
-                // Check if storage is built and has free capacity
-                if (storageBuilt && creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                    target = creep.room.storage;
-                } else {
-                    // Check for spawns, extensions, and towers with free capacity
-                    targets = creep.room.find(FIND_MY_STRUCTURES, {
-                        filter: structure => (
-                            (structure.structureType === STRUCTURE_SPAWN || 
-                            structure.structureType === STRUCTURE_EXTENSION ||
-                            structure.structureType === STRUCTURE_TOWER) &&
-                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                        )
-                    });
+    // Check if storage is built and has free capacity
+    if (storageBuilt && creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+        target = creep.room.storage;
+    } else {
+        // Check for spawns, extensions, and towers with free capacity
+        targets = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: structure => (
+                (structure.structureType === STRUCTURE_SPAWN || 
+                structure.structureType === STRUCTURE_EXTENSION ||
+                structure.structureType === STRUCTURE_TOWER) &&
+                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            )
+        }).map(structure => ({
+            structure: structure,
+            priority: this.getDeliveryPriority(structure)
+        }));
 
-                    // If spawns, extensions, and towers are full or not present, find containers
-                        // When looking for containers, exclude the assigned container
-                    if (targets.length === 0) {
-                        const assignedContainerId = creep.memory.containerId;
-                        let containers = creep.room.find(FIND_STRUCTURES, {
-                            filter: (structure) => {
-                                return structure.structureType === STRUCTURE_CONTAINER &&
-                                    structure.id !== assignedContainerId &&
-                                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-                            }
-                        });
-
-                        // Find the container closest to the room's controller
-                        if (containers.length > 0) {
-                            let controller = creep.room.controller;
-                            target = controller ? controller.pos.findClosestByPath(containers) : null;
-                        }
-                    } else {
-                        // If there are spawns, extensions, or towers with free capacity, use the closest one
-                        target = creep.pos.findClosestByPath(targets);
-                    }
+        // Sort targets by priority (lower number means higher priority) and then by distance
+        if (targets.length > 0) {
+            targets.sort((a, b) => a.priority - b.priority || 
+                creep.pos.getRangeTo(a.structure) - creep.pos.getRangeTo(b.structure));
+            target = targets[0].structure;
+        } else {
+            // If spawns, extensions, and towers are full or not present, find containers
+            // When looking for containers, exclude the assigned container
+            const assignedContainerId = creep.memory.containerId;
+            let containers = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return structure.structureType === STRUCTURE_CONTAINER &&
+                        structure.id !== assignedContainerId &&
+                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                 }
-                break;
+            });
+
+            // Find the container closest to the room's controller
+            if (containers.length > 0) {
+                let controller = creep.room.controller;
+                target = controller ? controller.pos.findClosestByPath(containers) : null;
+            }
+        }
+    }
+    break;
         }
     
         if (target) {
