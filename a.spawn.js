@@ -97,7 +97,7 @@ calculateDesiredCounts: function(room) {
                         harvester: 2,
                         hauler: 5,
                         upgrader: 2,
-                        builder: 2,
+                        builder: 3,
                         
                     };
                     break;
