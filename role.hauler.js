@@ -230,7 +230,7 @@ var roleHauler = {
             this.moveToAndCollect(creep, target);
         } else {
             //No targets available
-            this.waitNear(creep);
+            //this.waitNear(creep);
         }
     },
 
@@ -303,8 +303,8 @@ var roleHauler = {
                 // Prioritize spawns and extensions first, then towers, by their need for energy.
                 targets = creep.room.find(FIND_MY_STRUCTURES, {
                     filter: (structure) => {
-                        return (structure.structureType === STRUCTURE_SPAWN ||
-                                structure.structureType === STRUCTURE_EXTENSION) &&
+                        return (structure.structureType === STRUCTURE_EXTENSION ||
+                                structure.structureType === STRUCTURE_SPAWN) &&
                                 structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                     }
                 });
