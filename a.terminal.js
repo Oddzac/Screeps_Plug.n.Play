@@ -560,19 +560,18 @@ var marketManager = {
             orders.sort((a, b) => a.price - b.price);
 
             // Determine weights based on price gaps
-            const weights = [];
-            let totalWeight = 0;
-            for (let i = 0; i < orders.length; i++) {
-                let weight = 1;
-                if (i > 0 && (orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
-                    // Apply a higher weight if the price jump to the previous order is more than 10%
-                    weight *= 2;
+            const weights = new Array(orders.length).fill(1); // Start with a base weight of 1 for all orders
+            for (let i = 1; i < orders.length; i++) {
+                if ((orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
+                    // Reduce weight by half if the price jump from the previous order is more than 10%
+                    weights[i] = weights[i - 1] * 0.5;
+                } else {
+                    weights[i] = weights[i - 1]; // Maintain the same weight as the previous order if there's no significant gap
                 }
-                weights[i] = weight;
-                totalWeight += weight;
             }
 
             // Calculate weighted average
+            let totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
             let weightedSum = orders.reduce((acc, order, index) => acc + order.price * weights[index], 0);
             let weightedAverage = weightedSum / totalWeight;
 
