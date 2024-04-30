@@ -37,10 +37,10 @@ var roleAttacker = {
             if (creep.pos.getRangeTo(target) > 3) {
                 // Too far, move closer but maintain distance
                movement.moveToWithCache(creep, target);
-            } else if (creep.pos.getRangeTo(target) < 2) {
+            /*} else if (creep.pos.getRangeTo(target) < 2) {
                 // Too close, kite away
                 const fleePath = PathFinder.search(creep.pos, {flee: true, range: 3, ...creep.memory.pathFindingOptions}).path;
-                movement.moveByPath(fleePath);
+                movement.moveByPath(fleePath);*/
             } else {
                 // Optimal range, attack
                 if (creep.rangedAttack(target) !== OK) {
