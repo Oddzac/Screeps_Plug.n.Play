@@ -166,7 +166,7 @@ var roleBuilder = {
     },
     
     performRepair: function(creep) {
-        let priorities = [STRUCTURE_TOWER, STRUCTURE_CONTAINER, STRUCTURE_ROAD, STRUCTURE_EXTENSION];
+        let priorities = [STRUCTURE_TOWER, STRUCTURE_CONTAINER, STRUCTURE_EXTENSION];
         let priorityRepairTarget = creep.room.find(FIND_STRUCTURES, {
             filter: (structure) => priorities.includes(structure.structureType) && structure.hits < structure.hitsMax
         }).sort((a, b) => (b.hitsMax - b.hits) - (a.hitsMax - a.hits))[0]; // Prioritize by most damaged
