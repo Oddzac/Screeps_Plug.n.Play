@@ -169,7 +169,7 @@ var roleBuilder = {
         let priorities = [STRUCTURE_TOWER, STRUCTURE_SPAWN,STRUCTURE_EXTENSION, STRUCTURE_STORAGE];
         let priorityRepairTarget = creep.room.find(FIND_STRUCTURES, {
             filter: (structure) => priorities.includes(structure.structureType) && structure.hits < structure.hitsMax
-        }).sort((a, b) => (b.hitsMax - b.hits) - (a.hitsMax - a.hits))[0]; // Prioritize by most damaged
+        }).sort((a, b) => (b.hits / b.hitsMax) - (a.hits / a.hitsMax))[0]; // Prioritize by most damaged
     
         if (priorityRepairTarget) {
             if (creep.repair(priorityRepairTarget) === ERR_NOT_IN_RANGE) {
