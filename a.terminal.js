@@ -562,8 +562,8 @@ var marketManager = {
                 // Determine weights based on price gaps
                 const weights = new Array(orders.length).fill(1); // Start with a base weight of 1 for all orders
                 for (let i = 1; i < orders.length; i++) {
-                    if ((orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.2)) {
-                        // Reduce weight by 75% if the price jump from the previous order is more than 20%
+                    if ((orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
+                        // Reduce weight by 75% if the price jump from the previous order is more than 10%
                         weights[i] = weights[i - 1] * 0.25;
                     } else {
                         weights[i] = weights[i - 1]; // Maintain the same weight as the previous order if there's no significant gap
