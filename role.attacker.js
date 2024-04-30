@@ -31,7 +31,7 @@ var roleAttacker = {
         const target = prioritizedTargets.length > 0 ? prioritizedTargets[0] : null;
         const hostilesNearby = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3); // Check for hostiles within 3 tiles for mass attack
     
-        if (hostilesNearby.length > 1 && creep.rangedMassAttack() === OK) {
+        if (hostilesNearby.length > 2 && creep.rangedMassAttack() === OK) {
             creep.say('💥');
         } else if (target) {
             if (creep.pos.getRangeTo(target) > 3) {
