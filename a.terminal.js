@@ -550,28 +550,44 @@ var marketManager = {
     },
     
 
-    updateMarketPrices: function() {
-        const resources = Object.keys(Memory.marketData);
-        resources.forEach(resource => {
-            let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL })
-                .filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
-            if (orders.length > 2) {
-                orders.sort((a, b) => a.price - b.price);
-                orders.splice(-2);
-                let averagePrice = orders.reduce((acc, order) => acc + order.price, 0) / orders.length;
+ updateMarketPrices: function() {
+    const resources = Object.keys(Memory.marketData);
+    resources.forEach(resource => {
+        let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL })
+            .filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
 
-                let data = Memory.marketData[resource];
-                data.averagePrices.push(averagePrice);
+        if (orders.length > 2) {
+            orders.sort((a, b) => a.price - b.price);
 
-                if (data.averagePrices.length > 10) {
-                    data.averagePrices.shift();
+            // Determine weights based on price gaps
+            const weights = [];
+            let totalWeight = 0;
+            for (let i = 0; i < orders.length; i++) {
+                let weight = 1;
+                if (i > 0 && (orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
+                    // Apply a higher weight if the price jump to the previous order is more than 10%
+                    weight *= 2;
                 }
-
-                data.avgPrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
-                data.lastUpdate = Game.time;
+                weights[i] = weight;
+                totalWeight += weight;
             }
-        });
-    },
+
+            // Calculate weighted average
+            let weightedSum = orders.reduce((acc, order, index) => acc + order.price * weights[index], 0);
+            let weightedAverage = weightedSum / totalWeight;
+
+            let data = Memory.marketData[resource];
+            data.averagePrices.push(weightedAverage);
+
+            if (data.averagePrices.length > 10) {
+                data.averagePrices.shift();
+            }
+
+            data.avgPrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
+            data.lastUpdate = Game.time;
+        }
+    });
+},
 
 
     /*
