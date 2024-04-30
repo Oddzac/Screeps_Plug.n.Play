@@ -564,7 +564,7 @@ var marketManager = {
                 for (let i = 1; i < orders.length; i++) {
                     if ((orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
                         // Reduce weight by 75% if the price jump from the previous order is more than 10%
-                        weights[i] = weights[i - 1] * 0.25;
+                        weights[i] = weights[i - 1] * 0.40;
                     } else {
                         weights[i] = weights[i - 1]; // Maintain the same weight as the previous order if there's no significant gap
                     }
