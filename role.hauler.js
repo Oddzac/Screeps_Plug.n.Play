@@ -464,26 +464,27 @@ var roleHauler = {
             }
         }
     
- // Use room storage as a fallback wait location
+    // Use room storage as a fallback wait location
     if (!waitLocation) {
 
         let home = creep.memory.home;  // Retrieve the home room name stored in memory
         let depotFlagName = `${home} - DEPOT`; // Construct the flag's name by appending 'Depot'
-let depotFlag = Game.flags[depotFlagName];  // Get the flag object
+        let depotFlag = Game.flags[depotFlagName];  // Get the flag object
 
-if (depotFlag) {
-    waitLocation = depotFlag.pos;
-} else {
-        const storage = creep.room.storage;
-        if (storage) {
-            waitLocation = storage.pos;
+        if (depotFlag) {
+            waitLocation = depotFlag.pos;
         } else {
-            // Fallback to the room controller if no storage is available
-            if (creep.room.controller) {
-                waitLocation = creep.room.controller.pos;
+            const storage = creep.room.storage;
+            if (storage) {
+                waitLocation = storage.pos;
             } else {
-                // Last resort: use a central room position or predefined safe location
-                waitLocation = new RoomPosition(25, 25, creep.room.name); // Middle of the room
+                // Fallback to the room controller if no storage is available
+                if (creep.room.controller) {
+                    waitLocation = creep.room.controller.pos;
+                } else {
+                    // Last resort: use a central room position or predefined safe location
+                    waitLocation = new RoomPosition(25, 25, creep.room.name); // Middle of the room
+                }
             }
         }
     }
