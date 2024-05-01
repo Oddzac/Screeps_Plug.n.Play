@@ -382,7 +382,7 @@ var marketManager = {
 
     purchaseUnderpricedResources: function() {
         let lastCredits = Memory.marketData.PL.lastCredits;
-        let limitSwitch = lastCredits * 0.01;
+        let limitSwitch = lastCredits * 0.001;
     
         if (Memory.marketData.PL.PL < limitSwitch) {
             console.log(`PL: ${Memory.marketData.PL.PL} / ${limitSwitch} (no profit, skipping purchase.)`);
