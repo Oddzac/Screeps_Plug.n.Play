@@ -230,7 +230,7 @@ var roleHauler = {
             this.moveToAndCollect(creep, target);
         } else {
             //No targets available
-            this.waitNear(creep);
+            //this.waitNear(creep);
         }
     },
 
