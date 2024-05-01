@@ -466,6 +466,14 @@ var roleHauler = {
     
  // Use room storage as a fallback wait location
     if (!waitLocation) {
+
+        let home = creep.memory.home;  // Retrieve the home room name stored in memory
+        let depotFlagName = `${home} - DEPOT`; // Construct the flag's name by appending 'Depot'
+let depotFlag = Game.flags[depotFlagName];  // Get the flag object
+
+if (depotFlag) {
+    waitLocation = depotFlag.pos;
+} else {
         const storage = creep.room.storage;
         if (storage) {
             waitLocation = storage.pos;
