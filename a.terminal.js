@@ -34,7 +34,7 @@ var marketManager = {
 
 
     purchaseUnderpricedResources: function() {
-        let lastCredits = Memory.marketData.PL.lastCredits;
+        let lastCredits = Memory.marketData.PL.lastCredits; //Get last recorded credits
         let limitSwitch = lastCredits * 0.001;
     
         if (Memory.marketData.PL.PL < limitSwitch) {
@@ -43,7 +43,7 @@ var marketManager = {
         }
     
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
-        const DISCOUNT_THRESHOLD = 0.60; // Listings must be at least 40% below average price
+        const DISCOUNT_THRESHOLD = 0.40; // Listings must be at least 40% below average price
         
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
         if (maxSpend < 0.01) {
@@ -56,7 +56,7 @@ var marketManager = {
             const avgPrice = resourceData.avgPrice;
     
             let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
-            let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * DISCOUNT_THRESHOLD);
+            let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * (1 - DISCOUNT_THRESHOLD));
     
             if (underpricedOrders.length > 0) {
                 underpricedOrders.sort((a, b) => a.price - b.price);
