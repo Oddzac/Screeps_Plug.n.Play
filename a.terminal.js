@@ -553,6 +553,31 @@ var marketManager = {
     updateMarketPrices: function() {
         const resources = Object.keys(Memory.marketData);
         resources.forEach(resource => {
+
+// Fetch the market history for the resource
+    const history = Game.market.getHistory(resource);
+
+    // Check if there is history data available
+    if (history.length > 0) {
+        const latestRecord = history[history.length - 1];
+        const latestAvgPrice = latestRecord.avgPrice;
+
+        // Update Memory with the latest average price
+        Memory.marketData[resource].avgPrice = latestAvgPrice;
+        Memory.marketData[resource].lastUpdate = Game.time;
+    } else {
+        console.log('No history available for', resource);
+        // Optionally handle resources with no history data, e.g., by keeping the old avgPrice or setting a default
+    }
+
+    // Use the updated or existing avgPrice
+    const avgPrice = Memory.marketData[resource].avgPrice;
+    console.log(resource, 'average price:', avgPrice);
+});
+
+
+
+/*
             let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL })
                 .filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
     
@@ -585,7 +610,7 @@ var marketManager = {
                 data.avgPrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
                 data.lastUpdate = Game.time;
             }
-        });
+        });*/
     },
 
 
