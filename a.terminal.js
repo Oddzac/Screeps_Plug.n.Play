@@ -87,7 +87,7 @@ var marketManager = {
                     }
                 } while (amountToBuy > 0);
                 if (amountToBuy > 0) {
-                    console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
+                    console.log(`[PurchaseResource] ${masterTerminal.room.name} Attempting to purchase ${amountToBuy} of ${resource}`);
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, masterTerminal.id);
                     if(result === OK) {
                         console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
