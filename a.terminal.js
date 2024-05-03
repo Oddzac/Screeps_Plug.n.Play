@@ -73,34 +73,24 @@ var marketManager = {
                 let orderToBuy = underpricedOrders[0];
                 
                 let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
-                let amountToBuy = Math.min(maxAmountCanBuy, orderToBuy.remainingAmount);
-
+                let energyCost = Game.market.calcTransactionCost(maxAmountCanBuy, MASTER_TERMINAL.room.name, orderToBuy.roomName);
+                let availableEnergy = MASTER_TERMINAL.store[RESOURCE_ENERGY] - 10000; // Keep some energy reserve
+                let maxAmountByEnergy = Math.floor(availableEnergy / energyCost);
+                let amountToBuy = Math.min(maxAmountCanBuy, maxAmountByEnergy, orderToBuy.remainingAmount);
                 if (amountToBuy > 0) {
-
-                console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy, MASTER_TERMINAL);
+                    console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy, MASTER_TERMINAL.id);
                     if(result === OK) {
                         let totalCost = orderToBuy.price * amountToBuy;
-                        let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
-                        let terminal = terminals.length > 0 ? terminals[0] : null; // Assume the first terminal for the example
-                        let currentQuantity = terminal ? terminal.store[resource] || 0 : 0; // Existing quantity before purchase
-    
-                        if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
-                            Memory.marketData[resource].costBasis = orderToBuy.price;
-                        } else {
-                            let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
-                            Memory.marketData[resource].costBasis = newCostBasis;
-                        }
-                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Current cost basis: ${Memory.marketData[resource].costBasis}`);
+                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${totalCost}`);
                     } else {
-                        // Handle purchase failure
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
                     }
                 }
             }
         });
     
-        Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
+        //Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
     },
     
     
