@@ -87,12 +87,17 @@ var marketManager = {
                     }
                 } while (amountToBuy > 0);
                 if (amountToBuy > 0) {
-                    console.log(`[PurchaseResource] ${masterTerminal.room.name} Attempting to purchase ${amountToBuy} of ${resource}`);
+                   if (!orderToBuy || !Game.market.getOrderById(orderToBuy.id)) {
+                       console.log(`[Error] The order ID ${orderToBuy.id} is not valid or the order has been removed.`);
+                      return;
+                   } 
+                  console.log(`[PurchaseResource] ${masterTerminal.room.name} Attempting to purchase ${amountToBuy} of ${resource}`);
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, masterTerminal.id);
                     if(result === OK) {
                         console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
+return;
                     }
                 } else {
                     console.log(`[PurchaseResource] Not enough energy or credits to purchase any of ${resource}`);
