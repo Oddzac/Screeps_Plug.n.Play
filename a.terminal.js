@@ -1,3 +1,8 @@
+//TODO
+// Game.market.calcTransactionCost to determine if transaction possible
+// Set cap via transaction cost for amountToBuy limiter
+// Define "master" terminal and terminal.send all energy from children.
+
 var marketManager = {
 
     globalMarketManagement: function() {
