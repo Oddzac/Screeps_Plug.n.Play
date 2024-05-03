@@ -21,6 +21,7 @@ var marketManager = {
         //Hourly
         if (Game.time % 1200 === 0) {
             this.generateMarketSummary();
+            this.consolidateEnergy();
         }
 
 
@@ -298,6 +299,35 @@ var marketManager = {
                         delete Memory.marketData[resourceType].orders[orderId];
                     }
                 });
+            }
+        });
+    },
+
+    consolidateEnergy: function() {
+        const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+        if (terminals.length === 0) {
+            console.log('No terminals available.');
+            return;
+        }
+        const masterTerminal = terminals[0];        
+
+        terminals.forEach(terminal => {
+            if (terminal.id === masterTerminal.id) {
+                return; // Skip the master terminal itself
+            }
+            const energyToSend = terminal.store[RESOURCE_ENERGY]; // Amount of energy to send if conditions are met
+            if (energyToSend > 0) {
+                const amount = terminal.store[RESOURCE_ENERGY]; // Calculate excess energy
+                const cost = Game.market.calcTransactionCost(amount, terminal.room.name, masterTerminal.room.name);
+                const availableToSend = amount - cost;
+                if (availableToSend > 0) { // Check if there is enough energy for sending and the cost
+                    const result = terminal.send(RESOURCE_ENERGY, availableToSend, masterTerminal.room.name);
+                    if (result === OK) {
+                        console.log(`Sent ${amount} energy from ${terminal.room.name} to ${masterTerminal.room.name}`);
+                    } else {
+                        console.log(`Failed to send energy from ${terminal.room.name}: ${result}`);
+                    }
+                }
             }
         });
     },
