@@ -49,7 +49,7 @@ var marketManager = {
         }
 
         const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
-        const MASTER_TERMINAL = terminals[0];
+        const masterTerminal = terminals[0];
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
         const DISCOUNT_THRESHOLD = 0.40; // Listings must be at least 40% below average price
         
@@ -78,9 +78,9 @@ var marketManager = {
                 let transactionCost, totalCost;
                 // Adjust amountToBuy based on available energy for transport
                 do {
-                    transactionCost = Game.market.calcTransactionCost(amountToBuy, MASTER_TERMINAL.room.name, orderToBuy.roomName);
+                    transactionCost = Game.market.calcTransactionCost(amountToBuy, masterTerminal.room.name, orderToBuy.roomName);
                     totalCost = orderToBuy.price * amountToBuy + transactionCost;
-                    if (totalCost > maxSpend || transactionCost > MASTER_TERMINAL.store[RESOURCE_ENERGY]) {
+                    if (totalCost > maxSpend || transactionCost > masterTerminal.store[RESOURCE_ENERGY]) {
                         amountToBuy--;  // Decrease the amount to buy if over limits
                     } else {
                         break; // If within budget, proceed
@@ -88,7 +88,7 @@ var marketManager = {
                 } while (amountToBuy > 0);
                 if (amountToBuy > 0) {
                     console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy, MASTER_TERMINAL.id);
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy, masterTerminal.id);
                     if(result === OK) {
                         console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
                     } else {
