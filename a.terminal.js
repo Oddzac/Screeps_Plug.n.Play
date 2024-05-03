@@ -71,7 +71,6 @@ var marketManager = {
                 console.log(`[PurchaseResource] Resource: ${resource} - Orders under ${maxPriceToPay}: ${underpricedOrders.length}`);
                 underpricedOrders.sort((a, b) => a.price - b.price);
                 let orderToBuy = underpricedOrders[0];
-                console.log(`[PurchaseResource] Lowest Price: ${orderToBuy.price}`);
                 
                 // Calculate maximum amount we can buy based on credits
                 let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
