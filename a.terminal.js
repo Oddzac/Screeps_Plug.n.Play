@@ -70,7 +70,7 @@ var marketManager = {
                 if (amountToBuy > 0) {
 
                 console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy, "E24S18");
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy);
                     if(result === OK) {
                         let totalCost = orderToBuy.price * amountToBuy;
                         let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
