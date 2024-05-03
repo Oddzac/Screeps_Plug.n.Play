@@ -86,7 +86,7 @@ var marketManager = {
                         console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Current cost basis: ${Memory.marketData[resource].costBasis}`);
                     } else {
                         // Handle purchase failure
-                        console.log(`[PurchaseResource] Purchase failed...`);
+                        console.log(`[PurchaseResource] Purchase failed... ${result}`);
                     }
                 }
             }
