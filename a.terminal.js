@@ -105,9 +105,11 @@ var marketManager = {
                         } else {
                             let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
                             Memory.marketData[resource].costBasis = newCostBasis;
+
+                            console.log(`[PurchaseResource] New Cost Basis for ${resource}: ${newCostBasis}`);
                         }
                         console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
-                        console.log(`[PurchaseResource] New Cost Basis: ${newCostBasis}`);
+                        
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
                         return;
