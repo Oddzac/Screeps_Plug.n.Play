@@ -70,7 +70,7 @@ var marketManager = {
                 if (amountToBuy > 0) {
 
                 console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy);
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy, "E23S18");
                     if(result === OK) {
                         let totalCost = orderToBuy.price * amountToBuy;
                         let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
@@ -92,7 +92,7 @@ var marketManager = {
             }
         });
     
-        //Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
+        Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
     },
     
     
