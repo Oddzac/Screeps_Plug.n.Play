@@ -10,6 +10,7 @@ var marketManager = {
         if (Game.time % 50 === 0) {
             this.updatePL();
             this.purchaseUnderpricedResources();
+            this.consolidateEnergy();
         }
 
         //10 Minutes
