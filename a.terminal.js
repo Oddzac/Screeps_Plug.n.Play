@@ -89,23 +89,24 @@ var marketManager = {
                 if (amountToBuy > 0) {
                    if (!orderToBuy || !Game.market.getOrderById(orderToBuy.id)) {
                        console.log(`[Error] The order ID ${orderToBuy.id} is not valid or the order has been removed.`);
-                      return;
+                       return;
                    } 
-                  console.log(`[PurchaseResource] ${masterTerminal.room.name} Attempting to purchase ${amountToBuy} of ${resource}`);
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy, masterTerminal.room.name);
-                    if(result === OK) {
-                       let totalCost = orderToBuy.price * amountToBuy;
-                       let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
-                       let terminal = terminals.length > 0 ? terminals[0] : null; // Assume the first terminal for the example
-                       let currentQuantity = terminal ? terminal.store[resource] || 0 : 0; // Existing quantity before purchase
+                   console.log(`[PurchaseResource] ${masterTerminal.room.name} Attempting to purchase ${amountToBuy} of ${resource}`);
+                   let result = Game.market.deal(orderToBuy.id, amountToBuy, masterTerminal.room.name);
+                   if(result === OK) {
+                        let totalCost = orderToBuy.price * amountToBuy;
+                        let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+                        let terminal = terminals.length > 0 ? terminals[0] : null;
+                        let currentQuantity = terminal ? terminal.store[resource] || 0 : 0; // Existing quantity before purchase
 
-                       if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
+                        if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
                             Memory.marketData[resource].costBasis = orderToBuy.price;
-                       } else {
+                        } else {
                             let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
                             Memory.marketData[resource].costBasis = newCostBasis;
-                       }
-                       console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
+                        }
+                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
+                        console.log(`[PurchaseResource] New Cost Basis: ${newCostBasis}`);
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
 return;
