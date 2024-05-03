@@ -59,8 +59,8 @@ var marketManager = {
             let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
             let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * (1 - DISCOUNT_THRESHOLD));
     
-            console.log(`[PurchaseResource] Resource: ${resource} - Orders under ${maxPriceToPay}: ${underpricedOrders.length}`);
             if (underpricedOrders.length > 0) {
+                console.log(`[PurchaseResource] Resource: ${resource} - Orders under ${maxPriceToPay}: ${underpricedOrders.length}`);
                 underpricedOrders.sort((a, b) => a.price - b.price);
                 let orderToBuy = underpricedOrders[0];
                 
