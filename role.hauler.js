@@ -259,12 +259,12 @@ var roleHauler = {
                     }
                 }
                 // Check if a surplus mineral was found, if not and energy is surplus, proceed with energy
-                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
+                if (resourceType === RESOURCE_ENERGY && creep.room.storage.store[RESOURCE_ENERGY] <= 1000) {
                     // If there's not enough surplus energy, do not proceed to withdraw
                     this.waitNear(creep); // Wait if conditions are not met
                     return; // Exit the function
                 }
-            } else if (creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
+            } else if (creep.room.storage.store[RESOURCE_ENERGY] <= 1000) {
                 // If there's not enough energy, do not proceed to withdraw
                 this.waitNear(creep); // Wait if conditions are not met
                 return; // Exit the function
@@ -461,6 +461,11 @@ var roleHauler = {
             const link = Game.getObjectById(creep.memory.linkId);
             if (link) {
                 waitLocation = link.pos;
+            }
+        } else if (creep.memory.task === "spawnHauler" || creep.memory.task === "terminalHauler") {
+            const storage = creep.room.storage;
+            if (storage) {
+                waitLocation = storage.pos;
             }
         }
     
