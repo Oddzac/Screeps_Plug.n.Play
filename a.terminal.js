@@ -238,6 +238,9 @@ var marketManager = {
         const resources = Object.keys(Memory.marketData);
         resources.forEach(resource => {
 
+
+/* Listed Average 
+
     // Fetch the market history for the resource
     const history = Game.market.getHistory(resource);
 
@@ -259,9 +262,9 @@ var marketManager = {
     console.log(resource, 'average price:', avgPrice);
 });
 
+*/
 
 
-/*
             let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL })
                 .filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
     
@@ -294,7 +297,7 @@ var marketManager = {
                 data.avgPrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
                 data.lastUpdate = Game.time;
             }
-        });*/
+        });
     },
 
 
