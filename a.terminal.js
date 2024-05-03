@@ -54,18 +54,22 @@ var marketManager = {
         Object.keys(Memory.marketData).forEach(resource => {
             const resourceData = Memory.marketData[resource];
             const avgPrice = resourceData.avgPrice;
+            const maxPriceToPay = avgPrice * (1 - DISCOUNT_THRESHOLD);
     
             let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
             let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * (1 - DISCOUNT_THRESHOLD));
     
+            console.log(`[PurchaseResource] Resource: ${resource} - Orders under ${maxPriceToPay}: ${underpricedOrders.length}`);
             if (underpricedOrders.length > 0) {
                 underpricedOrders.sort((a, b) => a.price - b.price);
                 let orderToBuy = underpricedOrders[0];
                 
                 let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
                 let amountToBuy = Math.min(maxAmountCanBuy, orderToBuy.remainingAmount);
-    
+
                 if (amountToBuy > 0) {
+
+                console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
                     let result = Game.market.deal(orderToBuy.id, amountToBuy);
                     if(result === OK) {
                         let totalCost = orderToBuy.price * amountToBuy;
@@ -79,9 +83,10 @@ var marketManager = {
                             let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
                             Memory.marketData[resource].costBasis = newCostBasis;
                         }
-                        console.log(`Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Current cost basis: ${Memory.marketData[resource].costBasis}`);
+                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Current cost basis: ${Memory.marketData[resource].costBasis}`);
                     } else {
                         // Handle purchase failure
+                        console.log(`[PurchaseResource] Purchase failed...`);
                     }
                 }
             }
@@ -267,27 +272,7 @@ var marketManager = {
     },
 
 
-    /*
-    handleGlobalTransactions: function() {
-        const maxSpend = Game.market.credits * 0.01;
-        Object.keys(Memory.marketData).forEach(resourceType => {
-            const avgPrice = Memory.marketData[resourceType].avgPrice || 0;
-            let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resourceType });
-            let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * 0.6);
-            if (underpricedOrders.length > 0) {
-                underpricedOrders.sort((a, b) => a.price - b.price);
-                let orderToBuy = underpricedOrders[0];
-                let amountToBuy = Math.min(Math.floor(maxSpend / orderToBuy.price), orderToBuy.remainingAmount);
-                if (amountToBuy > 0) {
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy);
-                    if (result === OK) {
-                        console.log(`Purchased ${amountToBuy} of ${resourceType} at ${orderToBuy.price} each.`);
-                    }
-                }
-            }
-        });
-    },
-    */
+
 
 
     updatePL: function() {
@@ -321,9 +306,11 @@ var marketManager = {
         if (Memory.marketData.marketSummary && Memory.marketData.marketSummary.soldQuantities) {
             for (const resourceType in Memory.marketData.marketSummary.soldQuantities) {
                 const data = Memory.marketData.marketSummary.soldQuantities[resourceType];
-                summary += `Sold ${data.quantity} of ${resourceType}, earning ${data.creditsEarned} credits.\n`;
-                // Reset sold quantities for each resource type
-                Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+                if (data.quantity > 0) {
+                    summary += `Sold ${data.quantity} of ${resourceType}, earning ${data.creditsEarned} credits.\n`;
+                    // Reset sold quantities for each resource type
+                    Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
+                }
             }
         }
     
