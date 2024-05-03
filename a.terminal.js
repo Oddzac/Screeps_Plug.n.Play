@@ -7,6 +7,7 @@ var marketManager = {
     globalMarketManagement: function() {
 
         if (Game.time % 50 === 0) {
+            this.updateMarketPrices();
             this.updatePL();
             this.purchaseUnderpricedResources();
         }
@@ -26,7 +27,7 @@ var marketManager = {
 
         //Daily
         if (Game.time % 28800 === 0) {
-            this.updateMarketPrices();
+            
         }
         
     },
