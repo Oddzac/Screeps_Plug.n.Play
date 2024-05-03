@@ -109,7 +109,7 @@ var marketManager = {
                         console.log(`[PurchaseResource] New Cost Basis: ${newCostBasis}`);
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
-return;
+                        return;
                     }
                 } else {
                     console.log(`[PurchaseResource] Not enough energy or credits to purchase any of ${resource}`);
