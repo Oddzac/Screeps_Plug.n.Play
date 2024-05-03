@@ -94,7 +94,18 @@ var marketManager = {
                   console.log(`[PurchaseResource] ${masterTerminal.room.name} Attempting to purchase ${amountToBuy} of ${resource}`);
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, masterTerminal.room.name);
                     if(result === OK) {
-                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
+                       let totalCost = orderToBuy.price * amountToBuy;
+                       let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+                       let terminal = terminals.length > 0 ? terminals[0] : null; // Assume the first terminal for the example
+                       let currentQuantity = terminal ? terminal.store[resource] || 0 : 0; // Existing quantity before purchase
+
+                       if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
+                            Memory.marketData[resource].costBasis = orderToBuy.price;
+                       } else {
+                            let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
+                            Memory.marketData[resource].costBasis = newCostBasis;
+                       }
+                       console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
 return;
