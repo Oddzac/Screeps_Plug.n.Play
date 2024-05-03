@@ -73,22 +73,30 @@ var marketManager = {
                 let orderToBuy = underpricedOrders[0];
                 console.log(`[PurchaseResource] Lowest Price: ${orderToBuy.price}`);
                 
+                // Calculate maximum amount we can buy based on credits
                 let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
-                let energyCost = Game.market.calcTransactionCost(maxAmountCanBuy, MASTER_TERMINAL.room.name, orderToBuy.roomName);
-                let availableEnergy = MASTER_TERMINAL.store[RESOURCE_ENERGY] - 1000; // Keep some energy reserve
-                let maxAmountByEnergy = Math.floor(availableEnergy / energyCost);
-                let amountToBuy = Math.min(maxAmountCanBuy, maxAmountByEnergy, orderToBuy.remainingAmount);
-                console.log(`[PurchaseResource] Amount to Buy: ${amountToBuy}`); 
-
+                let amountToBuy = maxAmountCanBuy;
+                let transactionCost, totalCost;
+                // Adjust amountToBuy based on available energy for transport
+                do {
+                    transactionCost = Game.market.calcTransactionCost(amountToBuy, MASTER_TERMINAL.room.name, orderToBuy.roomName);
+                    totalCost = orderToBuy.price * amountToBuy + transactionCost;
+                    if (totalCost > maxSpend || transactionCost > MASTER_TERMINAL.store[RESOURCE_ENERGY]) {
+                        amountToBuy--;  // Decrease the amount to buy if over limits
+                    } else {
+                        break; // If within budget, proceed
+                    }
+                } while (amountToBuy > 0);
                 if (amountToBuy > 0) {
                     console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, MASTER_TERMINAL.id);
                     if(result === OK) {
-                        let totalCost = orderToBuy.price * amountToBuy;
-                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${totalCost}`);
+                        console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
                     }
+                } else {
+                    console.log(`[PurchaseResource] Not enough energy or credits to purchase any of ${resource}`);
                 }
             }
         });
