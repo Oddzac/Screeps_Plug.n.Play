@@ -133,8 +133,9 @@ var marketManager = {
         Memory.marketData.marketSummary.soldQuantities[resourceType].quantity += amount;
         Memory.marketData.marketSummary.soldQuantities[resourceType].creditsEarned += creditsEarned;
 
-        this.updatePL();
+        
         console.log(`Trade executed for ${resourceType}. Credits earned: ${creditsEarned}`);
+        this.updatePL();
     },
 
     adjustPrices: function() {
