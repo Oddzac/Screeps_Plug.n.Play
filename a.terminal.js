@@ -71,12 +71,15 @@ var marketManager = {
                 console.log(`[PurchaseResource] Resource: ${resource} - Orders under ${maxPriceToPay}: ${underpricedOrders.length}`);
                 underpricedOrders.sort((a, b) => a.price - b.price);
                 let orderToBuy = underpricedOrders[0];
+                console.log(`[PurchaseResource] Lowest Price: ${orderToBuy.price}`);
                 
                 let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
                 let energyCost = Game.market.calcTransactionCost(maxAmountCanBuy, MASTER_TERMINAL.room.name, orderToBuy.roomName);
-                let availableEnergy = MASTER_TERMINAL.store[RESOURCE_ENERGY] - 10000; // Keep some energy reserve
+                let availableEnergy = MASTER_TERMINAL.store[RESOURCE_ENERGY] - 1000; // Keep some energy reserve
                 let maxAmountByEnergy = Math.floor(availableEnergy / energyCost);
                 let amountToBuy = Math.min(maxAmountCanBuy, maxAmountByEnergy, orderToBuy.remainingAmount);
+
+
                 if (amountToBuy > 0) {
                     console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
                     let result = Game.market.deal(orderToBuy.id, amountToBuy, MASTER_TERMINAL.id);
