@@ -39,6 +39,7 @@ var marketManager = {
 
 
     purchaseUnderpricedResources: function() {
+
         let lastCredits = Memory.marketData.PL.lastCredits; //Get last recorded credits
         let limitSwitch = lastCredits * 0.001;
     
@@ -46,7 +47,8 @@ var marketManager = {
             console.log(`PL: ${Memory.marketData.PL.PL} / ${limitSwitch} (Below Profit Threshold)`);
             return;
         }
-    
+        
+        const MASTER_TERMINAL = "E24S18";
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
         const DISCOUNT_THRESHOLD = 0.40; // Listings must be at least 40% below average price
         
@@ -75,7 +77,7 @@ var marketManager = {
                 if (amountToBuy > 0) {
 
                 console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
-                    let result = Game.market.deal(orderToBuy.id, amountToBuy, "E23S18");
+                    let result = Game.market.deal(orderToBuy.id, amountToBuy, MASTER_TERMINAL);
                     if(result === OK) {
                         let totalCost = orderToBuy.price * amountToBuy;
                         let terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
