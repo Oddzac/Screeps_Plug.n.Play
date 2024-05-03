@@ -78,7 +78,7 @@ var marketManager = {
                 let availableEnergy = MASTER_TERMINAL.store[RESOURCE_ENERGY] - 1000; // Keep some energy reserve
                 let maxAmountByEnergy = Math.floor(availableEnergy / energyCost);
                 let amountToBuy = Math.min(maxAmountCanBuy, maxAmountByEnergy, orderToBuy.remainingAmount);
-
+                console.log(`[PurchaseResource] Amount to Buy: ${amountToBuy}`); 
 
                 if (amountToBuy > 0) {
                     console.log(`[PurchaseResource] Attempting to purchase ${amountToBuy} of ${resource}`);
