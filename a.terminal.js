@@ -1,7 +1,6 @@
 //TODO
 // Game.market.calcTransactionCost to determine if transaction possible
 // Set cap via transaction cost for amountToBuy limiter
-// Define "master" terminal and terminal.send all energy from children.
 
 var marketManager = {
 
@@ -48,8 +47,9 @@ var marketManager = {
             console.log(`PL: ${Memory.marketData.PL.PL} / ${limitSwitch} (Below Profit Threshold)`);
             return;
         }
-        
-        const MASTER_TERMINAL = "E24S18";
+
+        const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+        const MASTER_TERMINAL = terminals[0];
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
         const DISCOUNT_THRESHOLD = 0.40; // Listings must be at least 40% below average price
         
