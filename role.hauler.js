@@ -432,6 +432,27 @@ var roleHauler = {
                 creep.say('🚚');
                 return; // Exit the loop since we need to move closer
             } else if (result === OK) {
+                if (creep.memory.task === 'terminalHauler') {
+                    // Ensure we account for actual transferred amount
+                    let transferredAmount = Math.min(creep.carry[resourceType], target.store.getFreeCapacity(resourceType));
+                
+                    if (!Memory.marketData[resourceType]) {
+                        Memory.marketData[resourceType] = { costBasis: 0, storedAmount: 0 };
+                    }
+                
+                    let marketData = Memory.marketData[resourceType];
+                    let currentStored = target.store[resourceType] || 0;
+                    let newTotal = currentStored + transferredAmount;
+
+                    if (newTotal > 0) {
+                        marketData.costBasis = (marketData.costBasis * marketData.storedAmount) / newTotal;
+                    }
+                
+                    marketData.storedAmount = newTotal;
+
+                    console.log(`Updated cost basis for ${resourceType} to ${marketData.costBasis} after depositing ${depositedAmount}.`);
+                }
+
                 // If the transfer was successful
                 if (creep.store.getUsedCapacity() === 0) {
                     // Set the creep to start collecting again
@@ -462,7 +483,7 @@ var roleHauler = {
             if (link) {
                 waitLocation = link.pos;
             }
-        } else if (creep.memory.task === "spawnHauler" || creep.memory.task === "terminalHauler") {
+        } else if (creep.memory.task === 'spawnHauler' || creep.memory.task === 'terminalHauler') {
             const storage = creep.room.storage;
             if (storage) {
                 waitLocation = storage.pos;
