@@ -120,7 +120,7 @@ var marketManager = {
             }
         });
     
-        //Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
+        Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
     },
     
     
