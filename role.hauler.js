@@ -450,7 +450,7 @@ var roleHauler = {
                 
                     marketData.storedAmount = newTotal;
 
-                    console.log(`Updated cost basis for ${resourceType} to ${marketData.costBasis} after depositing ${depositedAmount}.`);
+                    console.log(`Updated cost basis for ${resourceType} to ${marketData.costBasis} after depositing ${transferredAmount}.`);
                 }
 
                 // If the transfer was successful
