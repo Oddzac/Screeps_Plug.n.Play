@@ -445,7 +445,7 @@ var roleHauler = {
                     let newTotal = currentStored + transferredAmount;
 
                     if (newTotal > 0) {
-                        marketData.costBasis = (marketData.costBasis * marketData.storedAmount) / newTotal;
+                        marketData.costBasis = ((marketData.costBasis + 0.01) * marketData.storedAmount) / newTotal;
                     }
                 
                     marketData.storedAmount = newTotal;
