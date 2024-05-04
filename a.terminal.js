@@ -52,7 +52,7 @@ var marketManager = {
         const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
         const masterTerminal = terminals[0];
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
-        const DISCOUNT_THRESHOLD = 0.20; // Listings must be at least 60% below average price
+        const DISCOUNT_THRESHOLD = 0.30; // Listings must be at least 30% below average price
         
         const maxSpend = Game.market.credits * MAX_CREDIT_SPEND_RATIO;
         if (maxSpend < 0.01) {
