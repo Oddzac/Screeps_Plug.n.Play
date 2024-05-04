@@ -7,13 +7,13 @@ var marketManager = {
     globalMarketManagement: function() {
 
         if (Game.time % 50 === 0) {
-            this.updateMarketPrices();
             this.updatePL();
             this.purchaseUnderpricedResources();
         }
 
         //10 Minutes
         if (Game.time % 201 === 0) {
+            this.updateMarketPrices();
             this.adjustPrices();
 
         }
