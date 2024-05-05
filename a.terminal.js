@@ -109,9 +109,12 @@ var marketManager = {
                             console.log(`[PurchaseResource] New Cost Basis for ${resource}: ${newCostBasis}`);
                         }
                         console.log(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
+                        Game.notify(`[PurchaseResource] Purchased ${amountToBuy} ${resource} for ${orderToBuy.price} credits each. Total cost: ${orderToBuy.price * amountToBuy}`);
+
 
                         let newQuantity = masterTerminal.store[resource] || 0;
                         console.log(`[PurchaseResource] Current quantity of ${resource} in ${masterTerminal.room.name}: ${newQuantity}`);
+                        Game.notify(`[PurchaseResource] Current quantity of ${resource} in ${masterTerminal.room.name}: ${newQuantity}`);
                         
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
