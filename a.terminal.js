@@ -185,7 +185,7 @@ var marketManager = {
             }
     
             Object.keys(Memory.marketData).forEach(resourceType => {
-                if (resourceType === RESOURCE_ENERGY) return; // Continue to skip energy
+              //  if (resourceType === RESOURCE_ENERGY) return; // Continue to skip energy
     
                 let sellOrders = Game.market.getAllOrders({ resourceType: resourceType, type: ORDER_SELL });
                 sellOrders.sort((a, b) => a.price - b.price);
