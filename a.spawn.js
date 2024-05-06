@@ -34,7 +34,7 @@ calculateDesiredCounts: function(room) {
             };
         }
 
-        if (Memory.rooms[room.name].underAttack) {
+        /*if (Memory.rooms[room.name].underAttack) {
     
             const healersNeeded = Math.ceil(totalHostiles / 2); // 1 healer for every hostile
             const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
@@ -47,7 +47,7 @@ calculateDesiredCounts: function(room) {
                 hauler: 2, // Minimal sustaining number
             };
 
-        } else if (scouted === false && scouts < 1) {
+        } else*/ if (scouted === false && scouts < 1) {
             //Begin Scouting
             return {
                 scout: 1,
