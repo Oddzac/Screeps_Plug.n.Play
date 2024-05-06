@@ -186,8 +186,8 @@ var movement = {
         if (!Memory.rooms[roomName].pathCache) {
             Memory.rooms[roomName].pathCache = {};
         }
-        //const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
-        const pathKey = `${roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
+        const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
+        //const pathKey = `${roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
 
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
     
@@ -202,9 +202,9 @@ var movement = {
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
         } else {
-            //const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
+            const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
 
-            const newPath = PathFinder.search(
+            /*const newPath = PathFinder.search(
                 creep.pos, { pos: targetPos, range: effectiveRange },
                 {
                     roomCallback: () => this.getCostMatrix(roomName),
@@ -212,7 +212,7 @@ var movement = {
                     swampCost: 10,
                     maxRooms: 1
                 }
-            ).path;
+            ).path;*/
 
             console.log(`PF PATH: ${JSON.stringify(newPath)}`);
 
