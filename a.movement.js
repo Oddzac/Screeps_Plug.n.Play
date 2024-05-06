@@ -207,7 +207,7 @@ var movement = {
                     swampCost: 10,
                     maxRooms: 1
                 }
-            );
+            ).path;
 
 
             // Serialize the new path for caching
