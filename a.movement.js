@@ -129,6 +129,8 @@ var movement = {
     // Main Pathfinding Call
     moveToWithCache: function(creep, target, range = 0) {
         // Initialize home room if not already set
+        console.log(`[MTWC] ${creep}, Target: ${target}`);
+        
         if (!creep.memory.home) {
             const nameParts = creep.name.split('_');
             if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
