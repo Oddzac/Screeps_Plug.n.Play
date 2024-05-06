@@ -7,7 +7,7 @@
 
 
 
-
+/*
 
 
 var movement = {
@@ -107,7 +107,7 @@ module.exports = movement;
 
 
 
-/*
+*/
 
 
 
@@ -204,7 +204,7 @@ var movement = {
         } else {
             const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
 
-            const newPath = PathFinder.search(
+            /*const newPath = PathFinder.search(
                 creep.pos, { pos: targetPos, range: effectiveRange },
                 {
                     roomCallback: () => this.getCostMatrix(roomName),
@@ -212,7 +212,7 @@ var movement = {
                     swampCost: 10,
                     maxRooms: 1
                 }
-            ).path;
+            ).path;*/
 
             //console.log(`PF PATH: ${JSON.stringify(newPath)}`);
 
@@ -227,7 +227,7 @@ var movement = {
         }
     },
 
-
+/*
     
       // Method for creep movement using cached paths
     findCachedPath: function(creep, target, defaultRange = 1) {
@@ -260,7 +260,7 @@ var movement = {
             }
         }
     },
-    
+ */   
     
     // Optional: Method to generate and cache room cost matrices for more efficient pathfinding
     getCostMatrix: function(roomName) {
@@ -303,4 +303,4 @@ var movement = {
 
 };
 
-module.exports = movement */
+module.exports = movement 
