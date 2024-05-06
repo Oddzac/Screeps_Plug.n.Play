@@ -178,7 +178,7 @@ calculateDesiredCounts: function(room) {
                     };
                     break;
             }
-        }
+        
         //console.log(`${totalEnergyRequired}`);
         //console.log(`${JSON.stringify(desiredCounts)}`);
         Memory.rooms[room.name].desiredCounts = desiredCounts;
