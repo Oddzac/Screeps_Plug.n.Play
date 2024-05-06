@@ -175,15 +175,16 @@ var movement = {
 
     // Method for creep movement using cached paths
     findCachedPath: function(creep, target, defaultRange = 1) {
-        // Implementation adjusted for clarity and caching in home room
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
-        const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
+        
 
         const roomName = creep.memory.home; // Use home room for path caching
         if (!Memory.rooms[roomName].pathCache) {
             Memory.rooms[roomName].pathCache = {};
         }
+        //const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
+        const pathKey = `${roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
 
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
     
@@ -198,9 +199,9 @@ var movement = {
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
+            //const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
 
-            /*const newPath = PathFinder.search(
+            const newPath = PathFinder.search(
                 creep.pos, { pos: targetPos, range: effectiveRange },
                 {
                     roomCallback: () => this.getCostMatrix(roomName),
@@ -208,7 +209,7 @@ var movement = {
                     swampCost: 10,
                     maxRooms: 1
                 }
-            ).path;*/
+            ).path;
 
             //console.log(`PF PATH: ${newPath}`);
 
