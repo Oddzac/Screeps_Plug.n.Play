@@ -507,9 +507,6 @@ var roleHauler = {
                 // Fallback to the room controller if no storage is available
                 if (creep.room.controller) {
                     waitLocation = creep.room.controller.pos;
-                } else {
-                    // Last resort: use a central room position or predefined safe location
-                    waitLocation = new RoomPosition(25, 25, creep.room.name); // Middle of the room
                 }
             }
         }
