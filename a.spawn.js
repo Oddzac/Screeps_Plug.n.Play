@@ -47,7 +47,7 @@ calculateDesiredCounts: function(room) {
                 hauler: 2, // Minimal sustaining number
             };
 
-        } else*/ if (scouted === false && scouts < 1) {
+        } else if (scouted === false && scouts < 1) {
             //Begin Scouting
             return {
                 scout: 1,
@@ -56,7 +56,7 @@ calculateDesiredCounts: function(room) {
             // Scouting Complete & Can Claim
             desiredCounts = {
                 claimer: 1
-            };
+            };*/
 
         } else {
 
