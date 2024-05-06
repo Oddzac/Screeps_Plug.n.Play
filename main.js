@@ -77,11 +77,11 @@ module.exports.loop = function() {
 
                 // Handle Spawning if there is only one energy source
                 if (energySources === 1) {
-                    if (harvesters.length < 1 && haulers.length < 2) {
+                    if (harvesters.length < 1) {
                     // Spawn a harvester if there are less than 1
                     availableSpawn.spawnCreep([MOVE, CARRY, WORK], `Harvester_${Game.time}`, {memory: {role: 'harvester', room: roomName}}); 
                     } else if (haulers.length < 2) {
-                        // Spawn a hauler if there are less than... additional logic needed since limit is 1
+                        // Spawn a hauler if there are less than...
                         availableSpawn.spawnCreep([CARRY, MOVE, MOVE], `Hauler_${Game.time}`, {memory: {role: 'hauler', room: roomName}});
                     } else {
                         // If the minimum numbers of harvesters and haulers are met, manage other creep spawning as needed
@@ -89,7 +89,7 @@ module.exports.loop = function() {
                     }
 
                 } else {
-                    if (harvesters.length < 1 && haulers.length < 2) {
+                    if (harvesters.length < 1) {
                         // Spawn a harvester if there are less than 1
                         availableSpawn.spawnCreep([MOVE, CARRY, WORK], `Harvester_${Game.time}`, {memory: {role: 'harvester', room: roomName}}); 
                     }  else if (haulers.length < 3) {
