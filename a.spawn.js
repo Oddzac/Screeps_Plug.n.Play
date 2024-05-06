@@ -56,9 +56,9 @@ calculateDesiredCounts: function(room) {
             // Scouting Complete & Can Claim
             desiredCounts = {
                 claimer: 1
-            };*/
+            };
 
-        } else {
+        } else {*/
 
             switch (phase) {
                 case 1:
