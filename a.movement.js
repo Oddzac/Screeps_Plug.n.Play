@@ -129,7 +129,7 @@ var movement = {
     // Main Pathfinding Call
     moveToWithCache: function(creep, target, range = 0) {
         // Initialize home room if not already set
-        console.log(`[MTWC] ${creep}, Target: ${target}`);
+        //console.log(`[MTWC] ${creep}, Target: ${target}`);
 
         if (!creep.memory.home) {
             const nameParts = creep.name.split('_');
@@ -180,7 +180,7 @@ var movement = {
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
         console.log(`[FCP] ${creep}, Target: ${targetPos}`);
-        
+
 
         const roomName = creep.memory.home; // Use home room for path caching
         if (!Memory.rooms[roomName].pathCache) {
