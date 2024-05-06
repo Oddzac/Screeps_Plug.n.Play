@@ -198,7 +198,7 @@ var movement = {
             }
         } else {
             //const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
-            
+
             const newPath = PathFinder.search(
                 creep.pos, { pos: targetPos, range: effectiveRange },
                 {
@@ -207,7 +207,7 @@ var movement = {
                     swampCost: 10,
                     maxRooms: 1
                 }
-            ).path;
+            );
 
 
             // Serialize the new path for caching
