@@ -130,7 +130,7 @@ var movement = {
     moveToWithCache: function(creep, target, range = 0) {
         // Initialize home room if not already set
         console.log(`[MTWC] ${creep}, Target: ${target}`);
-        
+
         if (!creep.memory.home) {
             const nameParts = creep.name.split('_');
             if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
@@ -179,6 +179,7 @@ var movement = {
     findCachedPath: function(creep, target, defaultRange = 1) {
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
+        console.log(`[FCP] ${creep}, Target: ${targetPos}`);
         
 
         const roomName = creep.memory.home; // Use home room for path caching
