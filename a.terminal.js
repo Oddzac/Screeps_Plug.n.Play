@@ -185,7 +185,9 @@ var marketManager = {
             }
     
             Object.keys(Memory.marketData).forEach(resourceType => {
-              //  if (resourceType === RESOURCE_ENERGY) return; // Continue to skip energy
+
+                let myInventory = terminal.store[resourceType] || 0;
+                if (resourceType === RESOURCE_ENERGY && myInventory < 10000) return; // Skip energy
     
                 let sellOrders = Game.market.getAllOrders({ resourceType: resourceType, type: ORDER_SELL });
                 sellOrders.sort((a, b) => a.price - b.price);
@@ -196,7 +198,7 @@ var marketManager = {
                 let profitMargin = 0.01; // Desired profit margin
                 let significantlyLowerThreshold = 0.10; // Price must be at least 10% lower than the lowest sell price
     
-                let myInventory = terminal.store[resourceType] || 0;
+
                 let SURPLUS_THRESHOLD = 50; // Inventory threshold above which to sell
     
                 let myPrice;
