@@ -191,7 +191,7 @@ var movement = {
         if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 50 > Game.time) {
             // Deserialize the path before using it
             const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
-            console.log(`Desrialized Path: ${path}`);
+            //console.log(`Desrialized Path: ${path}`);
             const moveResult = creep.moveByPath(path);
             if (moveResult !== OK) {
                 // Clear the cache if the path is invalid and find a new path immediately
@@ -210,11 +210,11 @@ var movement = {
                 }
             ).path;*/
 
-            console.log(`PF PATH: ${newPath}`);
+            //console.log(`PF PATH: ${newPath}`);
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
-            console.log(`Serialized Path: ${serializedPath}`);
+            //console.log(`Serialized Path: ${serializedPath}`);
             Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
             if (moveResult !== OK) {
