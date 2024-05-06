@@ -169,7 +169,7 @@ var movement = {
 
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
-            if (pathCache[pathKey].time + 1 < Game.time) {
+            if (pathCache[pathKey].time + 5 < Game.time) {
                 delete pathCache[pathKey]; // Delete paths older than 100 ticks
             }
         }
@@ -179,7 +179,7 @@ var movement = {
     findCachedPath: function(creep, target, defaultRange = 1) {
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
-        console.log(`[FCP] ${creep}, Target: ${targetPos}`);
+        //console.log(`[FCP] ${creep}, Target: ${targetPos}`);
 
 
         const roomName = creep.memory.home; // Use home room for path caching
@@ -214,7 +214,7 @@ var movement = {
                 }
             ).path;*/
 
-            console.log(`PF PATH: ${JSON.stringify(newPath)}`);
+            //console.log(`PF PATH: ${JSON.stringify(newPath)}`);
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
