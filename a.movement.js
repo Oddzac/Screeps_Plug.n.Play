@@ -3,7 +3,7 @@
 // - UNOWNED WALLS MORE PASSABLE THAN NATURAL WALLS
 
 
-/*
+
 
 
 
@@ -102,12 +102,12 @@ var movement = {
     }
 };
 
-module.exports = movement;*/
+module.exports = movement;
 
 
 
 
-
+/*
 
 
 
@@ -303,4 +303,4 @@ var movement = {
 
 };
 
-module.exports = movement 
+module.exports = movement */
