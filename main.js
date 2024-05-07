@@ -247,7 +247,7 @@ global.Refresh = function() {
 }
 
 global.Rebuild = function(roomName) {
-    construction.connectExtensionsToStorage(room);
+    construction.connectExtensionsToStorage(roomName);
 }
 
 global.RACS = function() {
