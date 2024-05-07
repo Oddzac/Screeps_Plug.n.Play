@@ -95,52 +95,54 @@ var construction = {
 //
 //    
 connectExtensionsToStorage: function(room) {
-    // Ensure memory initialization for construction progress tracking
-    if (!Memory.rooms[room.name].constructionProgress) {
-        Memory.rooms[room.name].constructionProgress = { extensionsToStorageCompleted: false, allExtensionsConnected: false, currentExtensionIndex: 0, currentPathIndex: 0 };
+    const room = Game.rooms[roomName];
+    if (!room) {
+        console.log('Connect: room not found');
+        return;
     }
-    if (Memory.rooms[room.name].constructionProgress.extensionsToStorageCompleted) return; // Skip if already completed
+
+    const storagePos = room.storage ? room.storage.pos : null;
+    if (!storagePos) {
+        console.log('Connect: Storage not found in the room.');
+        return;
+    }
 
     const extensions = room.find(FIND_MY_STRUCTURES, {
         filter: { structureType: STRUCTURE_EXTENSION }
     });
 
-    const storage = room.storage;
-
-    if (!storage) {
-        console.log(`No storage found in room ${room.name}`);
+    if (extensions.length === 0) {
+        console.log('Connect: No extensions found in the room.');
         return;
     }
 
-    const startIndex = Memory.rooms[room.name].constructionProgress.currentExtensionIndex || 0;
-
-    for (let i = startIndex; i < extensions.length; i++) {
+    for (let i = 0; i < extensions.length; i++) {
         const extension = extensions[i];
-        const path = PathFinder.search(extension.pos, { pos: storage.pos, range: 1 }, {
-            roomCallback: (roomName) => this.pathCostMatrix(roomName)
-        }).path;
+        const path = PathFinder.search(storagePos, { pos: extension.pos, range: 1 }, {
+            plainCost: 2,
+            swampCost: 10,
+            roomCallback: function(roomName) {
+                let room = Game.rooms[roomName];
+                if (!room) return;
+                let costs = new PathFinder.CostMatrix;
 
-        let pathIndex = Memory.rooms[room.name].constructionProgress.currentPathIndex || 0;
-        for (; pathIndex < path.length; pathIndex++) {
-            const pos = path[pathIndex];
-            const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
-            if (result === ERR_FULL) {
-                // Save progress and exit
-                Memory.rooms[room.name].constructionProgress.currentExtensionIndex = i;
-                Memory.rooms[room.name].constructionProgress.currentPathIndex = pathIndex;
-                return; // Early return due to site limit
-            } else if (result !== OK) {
-                console.log(`Failed to create road at (${pos.x},${pos.y}) in room ${room.name}, result: ${result}`);
-            }
+                room.find(FIND_STRUCTURES).forEach(function(struct) {
+                    if (struct.structureType === STRUCTURE_ROAD) {
+                        costs.set(struct.pos.x, struct.pos.y, 1);
+                    } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                               (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
+                        costs.set(struct.pos.x, struct.pos.y, 0xff);
+                    }
+                });
+                return costs;
+            },
+        });
+
+        for (let j = 0; j < path.path.length; j++) {
+            const pos = path.path[j];
+            room.createConstructionSite(pos, STRUCTURE_ROAD);
         }
-        // Reset path index for the next extension
-        Memory.rooms[room.name].constructionProgress.currentPathIndex = 0;
     }
-
-    // Mark the task as completed if all extensions have been connected to storage
-    Memory.rooms[room.name].constructionProgress.extensionsToStorageCompleted = true;
-    Memory.rooms[room.name].constructionProgress.currentExtensionIndex = 0; // Reset for future operations
-    Memory.rooms[room.name].constructionProgress.currentPathIndex = 0; // Reset for future operations
 },
 
 
