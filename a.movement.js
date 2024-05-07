@@ -98,7 +98,7 @@ var movement = {
         // Check if the path is cached and still valid
         if (pathCache[pathKey] && pathCache[pathKey].time + 50 > Game.time) {
             // Deserialize the path before using it
-            const path = pathCache[pathKey]);
+            const path = pathCache[pathKey].path);
 
 
 
