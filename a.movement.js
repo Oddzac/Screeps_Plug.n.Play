@@ -164,12 +164,14 @@ var movement = {
         const pathCache = Memory.pathCache;
         const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
 
-        this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
+        this.cleanupOldPaths(roomName); // Clean up old paths before trying to find
     
         // Check if the path is cached and still valid
         if (pathCache[pathKey] && pathCache[pathKey].time + 50 > Game.time) {
             // Deserialize the path before using it
             const path = Room.deserializePath(pathCache[pathKey].path);
+
+
 
             //HANDLE CREEP IN PATH
 
@@ -202,23 +204,47 @@ var movement = {
             //}
 
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {
-                range: effectiveRange,
-                //REMOVE COMMENT AFTER TRAFFIC
-                //ignoreCreeps: true,
-                });
+//            const newPath = creep.pos.findPathTo(targetPos, {
+//                range: effectiveRange,
+//                //REMOVE COMMENT AFTER TRAFFIC
+//                //ignoreCreeps: true,
+//                });
 
 
-            //Potential Shift to PF for CPU
-            /*const newPath = PathFinder.search(
-                creep.pos, { pos: targetPos, range: effectiveRange },
-                {
-                    roomCallback: () => this.getCostMatrix(roomName),
+                const newPath = Pathfinder.search(creep.pos, targetPos, {
                     plainCost: 2,
                     swampCost: 10,
-                    maxRooms: 1
-                }
-            ).path;*/
+    
+                    roomCallback: function(roomName) {
+    
+                        let room = Game.rooms[roomName];
+                        // In this example `room` will always exist, but since 
+                        // PathFinder supports searches which span multiple rooms 
+                        // you should be careful!
+                        if (!room) return;
+                        let costs = new PathFinder.CostMatrix;
+                
+                        room.find(FIND_STRUCTURES).forEach(function(struct) {
+                          if (struct.structureType === STRUCTURE_ROAD) {
+                            // Favor roads over plain tiles
+                            costs.set(struct.pos.x, struct.pos.y, 1);
+                          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                     (struct.structureType !== STRUCTURE_RAMPART ||
+                                      !struct.my)) {
+                            // Can't walk through non-walkable buildings
+                            costs.set(struct.pos.x, struct.pos.y, 0xff);
+                          }
+                        });
+                
+                        // "Avoid" creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                          costs.set(creep.pos.x, creep.pos.y, 10);
+                        
+                        });
+    
+                        return costs;
+                    },
+                }).path;
 
             //console.log(`PF PATH: ${JSON.stringify(newPath)}`);
 
