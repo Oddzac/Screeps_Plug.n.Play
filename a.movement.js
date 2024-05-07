@@ -172,10 +172,10 @@ var movement = {
 
             //HANDLE CREEP IN PATH
 
-            
-            const nextPos = path[0]; // Get the next step in the path
+  /*          
+            //const nextPos = path[0]; // Get the next step in the path
             console.log(`${JSON.stringify(nextPos)}`);
-            const blockingCreep = creep.room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
+            //const blockingCreep = creep.room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
 
             if (nextStep && blockingCreep.length > 1) {
                 // Path is blocked by another creep
@@ -188,7 +188,8 @@ var movement = {
                     creep.moveTo(freeSpace, {visualizePathStyle: {stroke: '#ffaa00'}});
                 }
 
-            } else { 
+
+            } else { */
                 //console.log(`Desrialized Path: ${JSON.stringify(path)}`);
                 const moveResult = creep.moveByPath(path);
                 if (moveResult !== OK) {
@@ -196,7 +197,7 @@ var movement = {
                     delete Memory.rooms[roomName].pathCache[pathKey];
                 }
                 creep.giveWay();
-            }
+            //}
 
         } else {
             const newPath = creep.pos.findPathTo(targetPos, {
