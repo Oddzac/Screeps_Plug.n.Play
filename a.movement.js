@@ -259,7 +259,7 @@ var movement = {
             const serializedPath = serialPF;
             //console.log(`SPATH: ${JSON.stringify(serializedPath)}`);
 
-            console.log(`${parseTest}`);
+            //console.log(`${parseTest}`);
             pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(parseResult);//(newPath);
             creep.giveWay();
