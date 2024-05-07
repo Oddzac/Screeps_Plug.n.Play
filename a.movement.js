@@ -120,7 +120,7 @@ var movement = {
 
             const newPath = creep.pos.findPathTo(targetPos, {
             range: effectiveRange,
-            ignoreCreeps: true,
+            ignoreCreeps: false,
             ignoreRoads: false,
             ignoreDestructibleStructures: false,
             costCallback: (roomName, costMatrix) => this.getCostMatrix(roomName)
