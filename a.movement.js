@@ -76,7 +76,7 @@ var movement = {
 
 
     // Method for creep movement using cached paths
-    findCachedPath: function(creep, target, defaultRange = 0) {
+    findCachedPath: function(creep, target, defaultRange = 1) {
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
         //console.log(`[FCP] ${creep}, Target: ${targetPos}`);
@@ -92,14 +92,14 @@ var movement = {
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
     
         // Check if the path is cached and still valid
-        if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 50 > Game.time) {
+        if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 5 > Game.time) {
             // Deserialize the path before using it
             const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
             const nextStep = path[0]; // Get the next step in the path
 
             if (nextStep && creep.room.lookForAt(LOOK_CREEPS, nextStep.x, nextStep.y).length) {
                 // Path is blocked by another creep
-                creep.say("Blocked!");
+                creep.say("!!!");
                 // Attempt to move to an adjacent free space
                 const freeSpace = creep.pos.findClosestByRange(FIND_MY_CREEPS, {
                     filter: (otherCreep) => otherCreep.id !== creep.id && creep.pos.getRangeTo(otherCreep) === 1
