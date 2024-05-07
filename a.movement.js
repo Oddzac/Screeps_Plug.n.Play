@@ -127,7 +127,7 @@ var movement = {
 
 
     // Main Pathfinding Call
-    moveToWithCache: function(creep, target, range = 0) {
+    moveToWithCache: function(creep, target, range = 1) {
         // Initialize home room if not already set
         //console.log(`[MTWC] ${creep}, Target: ${target}`);
 
@@ -176,7 +176,7 @@ var movement = {
     },
 
     // Method for creep movement using cached paths
-    findCachedPath: function(creep, target, defaultRange = 1) {
+    findCachedPath: function(creep, target, defaultRange = 0) {
         const targetPos = target.pos || target; 
         const effectiveRange = target.range !== undefined ? target.range : defaultRange;
         //console.log(`[FCP] ${creep}, Target: ${targetPos}`);
