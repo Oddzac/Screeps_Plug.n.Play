@@ -30,6 +30,21 @@ moveToWithCache: function(creep, target, range = 0) {
     if (!targetPos) {
         return;
     }
+// Initialize home room if not already set
+    if (!creep.memory.home) {
+        const nameParts = creep.name.split('_');
+        if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
+            creep.memory.home = nameParts[0];
+        } else {
+            creep.memory.home = creep.room.name;
+        }
+    }
+
+    const homeRoom = Game.rooms[creep.memory.home];
+    if (!homeRoom) {
+        console.log('Home room not accessible:', creep.memory.home);
+        return;
+    }
 
     this.findCachedPath(creep, { pos: targetPos, range: range });
 },
