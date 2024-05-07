@@ -204,11 +204,11 @@ var movement = {
             //}
 
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {
-                range: effectiveRange,
+ //           const newPath = creep.pos.findPathTo(targetPos, {
+ //               range: effectiveRange,
                 //REMOVE COMMENT AFTER TRAFFIC
                 //ignoreCreeps: true,
-                });
+ //               });
 
                
 
@@ -247,20 +247,16 @@ var movement = {
                     },
                 }).path;
 
-            console.log(`PF PATH: ${JSON.stringify(PFPath)}`);
-
 
             const serialPF = JSON.stringify(PFPath.map(pos=> ({x: pos.x, y: pos.y})));
             //console.log(`Serialized Path: ${serialPF}`);
             const parseTest = JSON.parse(serialPF);
             const parseResult = parseTest.map(coord => new RoomPosition(coord.x, coord.y, creep.room.name));
-            console.log(`Test: ${parseTest}`);
-            console.log(`Result: ${parseResult}`);
 
 
 
             // Serialize the new path for caching
-            const serializedPath = Room.serializePath(newPath);
+            const serializedPath = serialPF;
             //console.log(`SPATH: ${JSON.stringify(serializedPath)}`);
 
             console.log(`${parseTest}`);
