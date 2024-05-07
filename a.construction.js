@@ -95,7 +95,7 @@ var construction = {
 //
 //    
 connectExtensionsToStorage: function(room) {
-    const room = Game.rooms[roomName];
+    //const room = Game.rooms[roomName];
     if (!room) {
         console.log('Connect: room not found');
         return;
