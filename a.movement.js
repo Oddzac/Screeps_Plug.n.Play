@@ -192,6 +192,7 @@ var movement = {
                 // Clear the cache if the path is invalid and find a new path immediately
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
+            creep.giveWay();
         } else {
             const newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
@@ -223,8 +224,9 @@ var movement = {
 
 
             }
+            creep.giveWay();
         }
-        creep.giveWay();
+        
     },
 
     
