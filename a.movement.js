@@ -169,7 +169,7 @@ var movement = {
 
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
-            if (pathCache[pathKey].time + 5 < Game.time) {
+            if (pathCache[pathKey].time + 50 < Game.time) {
                 delete pathCache[pathKey]; // Delete paths older than 100 ticks
             }
         }
