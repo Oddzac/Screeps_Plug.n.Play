@@ -202,17 +202,15 @@ var movement = {
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
+           /* const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});*/
 
-            /*const newPath = PathFinder.search(
-                creep.pos, { pos: targetPos, range: effectiveRange },
-                {
-                    roomCallback: () => this.getCostMatrix(roomName),
-                    plainCost: 2,
-                    swampCost: 10,
-                    maxRooms: 1
-                }
-            ).path;*/
+            const newPath = creep.pos.findPathTo(targetPos, {
+            range: effectiveRange,
+            ignoreCreeps: true,
+            ignoreRoads: false,
+            ignoreDestructibleStructures: false,
+            costCallback: (roomName, costMatrix) => this.getCostMatrix(roomName)
+        });
 
             //console.log(`PF PATH: ${JSON.stringify(newPath)}`);
 
