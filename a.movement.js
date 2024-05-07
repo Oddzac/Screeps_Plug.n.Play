@@ -67,7 +67,7 @@ var movement = {
 
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
-            if (pathCache[pathKey].time + 50 < Game.time) {
+            if (pathCache[pathKey].time + 100 < Game.time) {
                 delete pathCache[pathKey]; // Delete paths older than 100 ticks
             }
         }
@@ -96,7 +96,7 @@ var movement = {
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find
     
         // Check if the path is cached and still valid
-        if (pathCache[pathKey] && pathCache[pathKey].time + 50 > Game.time) {
+        if (pathCache[pathKey] && pathCache[pathKey].time + 100 > Game.time) {
             // Deserialize the path before using it
             const path = pathCache[pathKey].path;
 
