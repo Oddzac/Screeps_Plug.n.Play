@@ -10,7 +10,7 @@
 
 
 //////////////////////////////
-var giveway = require("a.giveWay");
+var giveWay = require("a.giveWay");
 var movement = {
 
 // PATH CACHING AND MOVEMENT
