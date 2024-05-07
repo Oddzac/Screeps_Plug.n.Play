@@ -210,8 +210,8 @@ var movement = {
 //                //ignoreCreeps: true,
 //                });
 
-
-                const newPath = Pathfinder.search(creep.pos, targetPos, {
+                
+                const newPath = PathFinder.search(creep.pos, targetPos, {
                     plainCost: 2,
                     swampCost: 10,
     
