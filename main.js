@@ -246,7 +246,7 @@ global.Refresh = function() {
     }
 }
 
-global.Rebuild = function(room) {
+global.Rebuild = function(roomName) {
     construction.connectExtensionsToStorage(room);
 }
 
