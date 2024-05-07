@@ -204,14 +204,14 @@ var movement = {
             //}
 
         } else {
-//            const newPath = creep.pos.findPathTo(targetPos, {
-//                range: effectiveRange,
-//                //REMOVE COMMENT AFTER TRAFFIC
-//                //ignoreCreeps: true,
-//                });
+            const newPath = creep.pos.findPathTo(targetPos, {
+                range: effectiveRange,
+                //REMOVE COMMENT AFTER TRAFFIC
+                //ignoreCreeps: true,
+                });
 
                 
-                const newPath = PathFinder.search(creep.pos, targetPos, {
+                const PFPath = PathFinder.search(creep.pos, targetPos, {
                     plainCost: 2,
                     swampCost: 10,
     
@@ -246,7 +246,7 @@ var movement = {
                     },
                 }).path;
 
-            //console.log(`PF PATH: ${JSON.stringify(newPath)}`);
+            //console.log(`PF PATH: ${JSON.stringify(PFPath)}`);
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
