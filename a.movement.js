@@ -145,6 +145,10 @@ var movement = {
 
 */
 
+    // Utility method to generate a unique key for caching paths
+    generatePathKey: function(fromPos, toPos, range) {
+        return `${fromPos.roomName}_${fromPos.x},${fromPos.y}_${toPos.x},${toPos.y}_${range}`;
+    },
 
     // Method for creep movement using cached paths
     findCachedPath: function(creep, target, defaultRange = 1) {
@@ -169,9 +173,9 @@ var movement = {
             //HANDLE CREEP IN PATH
 
             
-            const nextPos = path[0].pos; // Get the next step in the path
+            const nextPos = path[0]; // Get the next step in the path
             console.log(`${JSON.stringify(nextPos)}`);
-            const blockingCreep = this.room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
+            const blockingCreep = room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
 
             if (nextStep && blockingCreep.length > 1) {
                 // Path is blocked by another creep
@@ -264,10 +268,7 @@ var movement = {
         }
     },
     
-    // Utility method to generate a unique key for caching paths
-    generatePathKey: function(fromPos, toPos, range) {
-        return `${fromPos.roomName}_${fromPos.x},${fromPos.y}_${toPos.x},${toPos.y}_${range}`;
-    },
+
 
 };
 
