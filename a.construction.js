@@ -94,6 +94,57 @@ var construction = {
 //
 //
 //    
+connectExtensionsToStorage: function(room) {
+    // Ensure memory initialization for construction progress tracking
+    if (!Memory.rooms[room.name].constructionProgress) {
+        Memory.rooms[room.name].constructionProgress = { extensionsToStorageCompleted: false, allExtensionsConnected: false, currentExtensionIndex: 0, currentPathIndex: 0 };
+    }
+    if (Memory.rooms[room.name].constructionProgress.extensionsToStorageCompleted) return; // Skip if already completed
+
+    const extensions = room.find(FIND_MY_STRUCTURES, {
+        filter: { structureType: STRUCTURE_EXTENSION }
+    });
+
+    const storage = room.storage;
+
+    if (!storage) {
+        console.log(`No storage found in room ${room.name}`);
+        return;
+    }
+
+    const startIndex = Memory.rooms[room.name].constructionProgress.currentExtensionIndex || 0;
+
+    for (let i = startIndex; i < extensions.length; i++) {
+        const extension = extensions[i];
+        const path = PathFinder.search(extension.pos, { pos: storage.pos, range: 1 }, {
+            roomCallback: (roomName) => this.pathCostMatrix(roomName)
+        }).path;
+
+        let pathIndex = Memory.rooms[room.name].constructionProgress.currentPathIndex || 0;
+        for (; pathIndex < path.length; pathIndex++) {
+            const pos = path[pathIndex];
+            const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
+            if (result === ERR_FULL) {
+                // Save progress and exit
+                Memory.rooms[room.name].constructionProgress.currentExtensionIndex = i;
+                Memory.rooms[room.name].constructionProgress.currentPathIndex = pathIndex;
+                return; // Early return due to site limit
+            } else if (result !== OK) {
+                console.log(`Failed to create road at (${pos.x},${pos.y}) in room ${room.name}, result: ${result}`);
+            }
+        }
+        // Reset path index for the next extension
+        Memory.rooms[room.name].constructionProgress.currentPathIndex = 0;
+    }
+
+    // Mark the task as completed if all extensions have been connected to storage
+    Memory.rooms[room.name].constructionProgress.extensionsToStorageCompleted = true;
+    Memory.rooms[room.name].constructionProgress.currentExtensionIndex = 0; // Reset for future operations
+    Memory.rooms[room.name].constructionProgress.currentPathIndex = 0; // Reset for future operations
+},
+
+
+
 connectSpawnToPOIs: function(room) {
     // Ensure memory initialization for construction progress tracking
     if (!Memory.rooms[room.name].constructionProgress) {
