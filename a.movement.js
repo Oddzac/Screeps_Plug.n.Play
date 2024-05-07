@@ -246,7 +246,8 @@ var movement = {
                     },
                 }).path;
 
-            //console.log(`PF PATH: ${JSON.stringify(PFPath)}`);
+            console.log(`PF PATH: ${JSON.stringify(PFPath)}`);
+            
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
