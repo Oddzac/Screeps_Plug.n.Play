@@ -265,7 +265,7 @@ var movement = {
 
             console.log(`${parseTest}`);
             pathCache[pathKey] = { path: serializedPath, time: Game.time };
-            const moveResult = creep.moveByPath(newPath);
+            const moveResult = creep.moveByPath(parseResult);//(newPath);
             creep.giveWay();
             if (moveResult !== OK) {
                 
