@@ -102,7 +102,7 @@ var movement = {
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
         } else {
-           /* const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});*/
+           // const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
 
             const newPath = creep.pos.findPathTo(targetPos, {
             range: effectiveRange,
