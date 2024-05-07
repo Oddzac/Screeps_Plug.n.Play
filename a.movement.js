@@ -210,7 +210,7 @@ var movement = {
                 //ignoreCreeps: true,
                 });
 
-                
+/*                
 
                 const PFPath = PathFinder.search(creep.pos, targetPos, {
                     plainCost: 2,
@@ -252,15 +252,15 @@ var movement = {
 
             const convertPF = PFPath.map(pos=> ({x: pos.x, y: pos.y}));
 
-            
+            */
 
 
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
-            const cachePF = Room.serializePath(convertPF);
+            //const cachePF = Room.serializePath(convertPF);
 
-            console.log(`Serialized Path: ${JSON.stringify(cachePF)}`);
+            //console.log(`Serialized Path: ${JSON.stringify(cachePF)}`);
             pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
             creep.giveWay();
