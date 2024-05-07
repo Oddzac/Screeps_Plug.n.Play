@@ -169,12 +169,13 @@ var movement = {
 
             //HANDLE CREEP IN PATH
 
-            /*
-            const nextStep = path[0]; // Get the next step in the path
+            
+            const nextPos = path[0]; // Get the next step in the path
+            const blockingCreep = this.room.lookForAt(LOOK_CREEPS, nextPosX, nextPosY)[0];
 
-            if (nextStep && creep.room.lookForAt(LOOK_CREEPS, nextStep.x, nextStep.y).length) {
+            if (nextStep && blockingCreep.length > 1) {
                 // Path is blocked by another creep
-                creep.say("!!!");
+                creep.say("💢");
                 // Attempt to move to an adjacent free space
                 const freeSpace = creep.pos.findClosestByRange(FIND_MY_CREEPS, {
                     filter: (otherCreep) => otherCreep.id !== creep.id && creep.pos.getRangeTo(otherCreep) === 1
@@ -182,22 +183,22 @@ var movement = {
                 if (freeSpace) {
                     creep.moveTo(freeSpace, {visualizePathStyle: {stroke: '#ffaa00'}});
                 }
+
             } else { 
-
-            */
-
-            //console.log(`Desrialized Path: ${JSON.stringify(path)}`);
-            const moveResult = creep.moveByPath(path);
-            if (moveResult !== OK) {
-                // Clear the cache if the path is invalid and find a new path immediately
-                delete Memory.rooms[roomName].pathCache[pathKey];
+                //console.log(`Desrialized Path: ${JSON.stringify(path)}`);
+                const moveResult = creep.moveByPath(path);
+                if (moveResult !== OK) {
+                    // Clear the cache if the path is invalid and find a new path immediately
+                    delete Memory.rooms[roomName].pathCache[pathKey];
+                }
+                creep.giveWay();
             }
-            creep.giveWay();
+
         } else {
             const newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
                 //REMOVE COMMENT AFTER TRAFFIC
-                //ignoreCreeps: true,
+                ignoreCreeps: true,
                 });
 
 
@@ -220,12 +221,12 @@ var movement = {
             Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
             if (moveResult !== OK) {
-                //HANDLE MOVE FAIL (Log)
-
+                creep.giveWay();
 
             }
-            creep.giveWay();
+            
         }
+    
         
     },
 
