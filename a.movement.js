@@ -67,7 +67,7 @@ var movement = {
 
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
-            if (pathCache[pathKey].time + 50 < Game.time) {
+            if (pathCache[pathKey].time + 10 < Game.time) {
                 delete pathCache[pathKey]; // Delete paths older than 100 ticks
             }
         }
@@ -169,7 +169,7 @@ var movement = {
         // Check if the path is cached and still valid
         if (pathCache[pathKey] && pathCache[pathKey].time + 50 > Game.time) {
             // Deserialize the path before using it
-            const path = pathCache[pathKey];
+            const path = Room.deserializePath(pathCache[pathKey].path);
 
 
 
@@ -204,14 +204,14 @@ var movement = {
             //}
 
         } else {
- //           const newPath = creep.pos.findPathTo(targetPos, {
- //               range: effectiveRange,
+            const newPath = creep.pos.findPathTo(targetPos, {
+                range: effectiveRange,
                 //REMOVE COMMENT AFTER TRAFFIC
                 //ignoreCreeps: true,
- //               });
+                });
 
                
-
+/*
                 const PFPath = PathFinder.search(creep.pos, targetPos, {
                     plainCost: 2,
                     swampCost: 10,
@@ -247,21 +247,24 @@ var movement = {
                     },
                 }).path;
 
+            console.log(`PF PATH: ${JSON.stringify(PFPath)}`);
+
 
             const serialPF = JSON.stringify(PFPath.map(pos=> ({x: pos.x, y: pos.y})));
             //console.log(`Serialized Path: ${serialPF}`);
             const parseTest = JSON.parse(serialPF);
             const parseResult = parseTest.map(coord => new RoomPosition(coord.x, coord.y, creep.room.name));
+            */
 
 
 
             // Serialize the new path for caching
-            const serializedPath = serialPF;
+            const serializedPath = Room.serializePath(newPath);
             //console.log(`SPATH: ${JSON.stringify(serializedPath)}`);
 
-            //console.log(`${parseTest}`);
+            
             pathCache[pathKey] = { path: serializedPath, time: Game.time };
-            const moveResult = creep.moveByPath(parseResult);//(newPath);
+            const moveResult = creep.moveByPath(newPath);
             creep.giveWay();
             if (moveResult !== OK) {
                 
