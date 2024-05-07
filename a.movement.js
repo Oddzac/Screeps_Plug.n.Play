@@ -192,11 +192,12 @@ var movement = {
             } else { */
                 //console.log(`Desrialized Path: ${JSON.stringify(path)}`);
                 const moveResult = creep.moveByPath(path);
+                creep.giveWay();
                 if (moveResult !== OK) {
                     // Clear the cache if the path is invalid and find a new path immediately
                     delete Memory.rooms[roomName].pathCache[pathKey];
                 }
-                creep.giveWay();
+                
             //}
 
         } else {
@@ -225,9 +226,9 @@ var movement = {
             //console.log(`Serialized Path: ${JSON.stringify(serializedPath)}`);
             Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
+            creep.giveWay();
             if (moveResult !== OK) {
-                creep.giveWay();
-
+                
             }
             
         }
