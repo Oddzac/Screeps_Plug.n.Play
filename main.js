@@ -246,6 +246,10 @@ global.Refresh = function() {
     }
 }
 
+global.Rebuild = function(room) {
+    construction.connectExtensionsToStorage(room);
+}
+
 global.RACS = function() {
     construction.removeAllConstructionSites();   
 }
