@@ -10,7 +10,7 @@
 
 
 //////////////////////////////
-
+var giveway = require("a.giveWay");
 var movement = {
 
 // PATH CACHING AND MOVEMENT
@@ -45,11 +45,11 @@ var movement = {
         }
 
         // Determine the target position
-    const targetPos = (target instanceof RoomPosition) ? target : target.pos;
-    if (!targetPos) {
-        console.log('Invalid or undefined target position for:', target);
-        return;
-    }
+        const targetPos = (target instanceof RoomPosition) ? target : target.pos;
+        if (!targetPos) {
+            console.log('Invalid or undefined target position for:', target);
+            return;
+        }
 
         // If target room is different from home and no range is provided, assume target is in home room
         if (!('roomName' in targetPos) || targetPos.roomName !== homeRoom.name) {
@@ -158,7 +158,6 @@ var movement = {
             Memory.rooms[roomName].pathCache = {};
         }
         const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange);
-        //const pathKey = `${roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
 
         this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
     
@@ -166,15 +165,42 @@ var movement = {
         if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 50 > Game.time) {
             // Deserialize the path before using it
             const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
-            //console.log(`Desrialized Path: ${path}`);
+            const nextStep = path[0];
+
+            //HANDLE CREEP IN PATH
+
+            /*
+            const nextStep = path[0]; // Get the next step in the path
+
+            if (nextStep && creep.room.lookForAt(LOOK_CREEPS, nextStep.x, nextStep.y).length) {
+                // Path is blocked by another creep
+                creep.say("!!!");
+                // Attempt to move to an adjacent free space
+                const freeSpace = creep.pos.findClosestByRange(FIND_MY_CREEPS, {
+                    filter: (otherCreep) => otherCreep.id !== creep.id && creep.pos.getRangeTo(otherCreep) === 1
+                });
+                if (freeSpace) {
+                    creep.moveTo(freeSpace, {visualizePathStyle: {stroke: '#ffaa00'}});
+                }
+            } else { 
+
+            */
+
+            //console.log(`Desrialized Path: ${JSON.stringify(path)}`);
             const moveResult = creep.moveByPath(path);
             if (moveResult !== OK) {
                 // Clear the cache if the path is invalid and find a new path immediately
                 delete Memory.rooms[roomName].pathCache[pathKey];
             }
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {range: effectiveRange});
+            const newPath = creep.pos.findPathTo(targetPos, {
+                range: effectiveRange,
+                //REMOVE COMMENT AFTER TRAFFIC
+                //ignoreCreeps: true,
+                });
 
+
+            //Potential Shift to PF for CPU
             /*const newPath = PathFinder.search(
                 creep.pos, { pos: targetPos, range: effectiveRange },
                 {
@@ -189,17 +215,19 @@ var movement = {
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
-            //console.log(`Serialized Path: ${serializedPath}`);
+            //console.log(`Serialized Path: ${JSON.stringify(serializedPath)}`);
             Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
             if (moveResult !== OK) {
+                //HANDLE MOVE FAIL (Log)
+
 
             }
         }
+        creep.giveWay();
     },
 
     
-    // Optional: Method to generate and cache room cost matrices for more efficient pathfinding
     getCostMatrix: function(roomName) {
         if (!Memory.costMatrices) Memory.costMatrices = {};
         if (Memory.costMatrices[roomName] && Memory.costMatrices[roomName].time + 10000 > Game.time) {
