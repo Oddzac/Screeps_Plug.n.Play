@@ -259,7 +259,7 @@ var movement = {
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
             console.log(`${serializedPath}`);
-            console.log(`Serialized Path: ${cachePF}`);
+            console.log(`Serialized Path: ${serialPF}`);
             pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
             creep.giveWay();
