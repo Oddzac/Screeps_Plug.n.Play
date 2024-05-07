@@ -289,7 +289,7 @@ connectSpawnToPOIs: function(room) {
         if (!spawn) return;
     
         // Start with an initial radius. Start from 1 and increase in odd increments.
-        if (!room.memory.extensionRadius) room.memory.extensionRadius = 2;
+        if (!room.memory.extensionRadius) room.memory.extensionRadius = 3;
     
         let radius = room.memory.extensionRadius;
         let placed = false;
