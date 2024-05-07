@@ -67,7 +67,7 @@ var movement = {
 
         const pathKeys = Object.keys(pathCache);
         for (const pathKey of pathKeys) {
-            if (pathCache[pathKey].time + 5 < Game.time) {
+            if (pathCache[pathKey].time + 10 < Game.time) {
                 delete pathCache[pathKey]; // Delete paths older than 100 ticks
             }
         }
@@ -247,11 +247,15 @@ var movement = {
                 }).path;
 
             console.log(`PF PATH: ${JSON.stringify(PFPath)}`);
-            
+
+
+
 
             // Serialize the new path for caching
             const serializedPath = Room.serializePath(newPath);
-            //console.log(`Serialized Path: ${JSON.stringify(serializedPath)}`);
+            const cachePF = Room.serializePath(PFPath);
+
+            console.log(`Serialized Path: ${JSON.stringify(cachePF)}`);
             pathCache[pathKey] = { path: serializedPath, time: Game.time };
             const moveResult = creep.moveByPath(newPath);
             creep.giveWay();
