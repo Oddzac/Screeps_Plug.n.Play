@@ -323,7 +323,7 @@ var roleHauler = {
                 break;
 
             case 'terminalHauler':
-                if (creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
+                if (creep.store[RESOURCE_ENERGY] > 50 && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
                     target = creep.room.storage
                 } else {
                     target = creep.room.terminal
