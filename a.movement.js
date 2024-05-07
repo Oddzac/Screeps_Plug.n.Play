@@ -205,7 +205,7 @@ var movement = {
             const newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
                 //REMOVE COMMENT AFTER TRAFFIC
-                ignoreCreeps: true,
+                //ignoreCreeps: true,
                 });
 
 
