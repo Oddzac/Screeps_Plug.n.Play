@@ -165,12 +165,11 @@ var movement = {
         if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 50 > Game.time) {
             // Deserialize the path before using it
             const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
-            const nextStep = path[0];
 
             //HANDLE CREEP IN PATH
 
             
-            const nextPos = path[0]; // Get the next step in the path
+            const nextPos = path[0].pos; // Get the next step in the path
             console.log(`${JSON.stringify(nextPos)}`);
             const blockingCreep = this.room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
 
