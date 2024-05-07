@@ -175,7 +175,7 @@ var movement = {
             
             const nextPos = path[0]; // Get the next step in the path
             console.log(`${JSON.stringify(nextPos)}`);
-            const blockingCreep = room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
+            const blockingCreep = creep.room.lookForAt(LOOK_CREEPS, nextPos.x, nextPos.y)[0];
 
             if (nextStep && blockingCreep.length > 1) {
                 // Path is blocked by another creep
