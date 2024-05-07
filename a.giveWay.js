@@ -14,7 +14,6 @@ Standard version:
 
 Creep.prototype.giveWay = function()
 {
-    console.log("giveWay Called");
     if(this.fatigue)
         return;
     // We can't block others when we're actively moving
