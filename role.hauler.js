@@ -58,7 +58,7 @@ var roleHauler = {
         const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'spawnHauler');
         const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'linkHauler');
         const terminalHauler = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'terminalHauler');
-
+        const collectors = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'collector');
         const energySources = creep.room.find(FIND_SOURCES).length;
         const containersBuilt = Memory.rooms[creep.room.name].containersBuilt;
         const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
@@ -72,9 +72,12 @@ var roleHauler = {
 
         let target;
 
-        //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers: 
+        //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers:
         
-        if (linkHaulers < 1 && linksBuilt > 1) {
+        if (collectors < 1) {
+            creep.memory.task = 'collector';
+                    
+        } else if (linkHaulers < 1 && linksBuilt > 1) {
             creep.memory.task = 'linkHauler';
 
         } else if (phase >= 6 && energySources > 1 && spawnHaulers < 2) {
