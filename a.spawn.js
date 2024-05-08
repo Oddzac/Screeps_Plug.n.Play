@@ -216,7 +216,9 @@ calculateDesiredCounts: function(room) {
         memories.spawnMode(room, nextSpawnRole);
 
         // Determine spawn mode and adjust energyToUse based on this mode
+        let spawnMode = Memory.rooms[room.name].spawnMode.mode;
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
+
     
         // Check if the available energy meets the requirement for the current spawn mode
         if (energyAvailable < energyToUse) {
@@ -225,7 +227,7 @@ calculateDesiredCounts: function(room) {
         }
         
         if (nextSpawnRole) {
-           //console.log(`${room} MS: ${nextSpawnRole}, EA ${energyAvailable}, E2U ${energyToUse}, Phase ${phase}`)
+           console.log(`SpawnMode: ${spawnMode}`)
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable.");
