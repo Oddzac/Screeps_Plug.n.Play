@@ -227,7 +227,7 @@ calculateDesiredCounts: function(room) {
         }
         
         if (nextSpawnRole) {
-           console.log(`Calling SCWR with NR: ${nextSpawnRole}, E2U: ${energyToUse}, Ph: ${phase}, Room: ${room}`);
+            //console.log(`Calling SCWR with NR: ${nextSpawnRole}, E2U: ${energyToUse}, Ph: ${phase}, Room: ${room}`);
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable.");
@@ -239,7 +239,7 @@ calculateDesiredCounts: function(room) {
        //console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
         
         const body = this.getBodyPartsForRole(role, energyToUse, phase);
-        console.log(`${room} - ${role} , Body: ${body}`);
+        //console.log(`${room} - ${role} , Body: ${body}`);
 
 
         if (!body) {
