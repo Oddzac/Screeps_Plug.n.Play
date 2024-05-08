@@ -459,6 +459,11 @@ calculateDesiredCounts: function(room) {
         // Build the base blueprint
         roleBlueprints[role].forEach(part => {
             if (energyUsed + partsCost[part] <= energyToUse) {
+                if (body.length >= 50) {
+                    //Cap at 50 parts
+                    return body; 
+                }
+
                 body.push(part);
                 energyUsed += partsCost[part];
             }
@@ -472,6 +477,10 @@ calculateDesiredCounts: function(room) {
             for (let i = 0; i < blueprint.length && energyUsed < energyToUse; i++) {
                 const part = blueprint[i];
                 if (energyUsed + partsCost[part] <= energyToUse) {
+                    if (body.length >= 50) {
+                        //Cap at 50 parts
+                        return added;
+                    }
                     body.push(part);
                     energyUsed += partsCost[part];
                     added = true;
