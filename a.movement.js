@@ -53,11 +53,16 @@ cleanupOldPaths: function(roomName) {
     }
 },
 
+// Utility method to generate a unique key for caching paths
+generatePathKey: function(fromPos, toPos, range) {
+    return `${fromPos.roomName}_${fromPos.x},${fromPos.y}_${toPos.x},${toPos.y}_${range}`;
+},
+    
 // Method for creep movement using cached paths
 findCachedPath: function(creep, target, defaultRange = 1) {
     const targetPos = target.pos || target; 
     const effectiveRange = target.range !== undefined ? target.range : defaultRange;
-    const pathKey = `${creep.pos.roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
+    const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange); // Use generatePathKey
     const roomName = creep.room.name;
 
     if (!Memory.pathCache) Memory.pathCache = {};
@@ -78,16 +83,16 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         const newPath = creep.pos.findPathTo(targetPos, {
             range: effectiveRange,
             //ignoreCreeps: true,
-            });
+        });
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
         const moveResult = creep.moveByPath(newPath);
 
         if (moveResult !== OK) {
+            // Handle if moveByPath fails
         }
     }
-    
 },
 
 // Optional: Method to generate and cache room cost matrices for more efficient pathfinding
@@ -124,11 +129,7 @@ getCostMatrix: function(roomName) {
     }
 },
 
-// Utility method to generate a unique key for caching paths
-generatePathKey: function(fromPos, toPos, range) {
-    return `${fromPos.roomName}_${fromPos.x},${fromPos.y}_${toPos.x},${toPos.y}_${range}`;
-},
-    
+
 
 
 };
