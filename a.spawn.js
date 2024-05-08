@@ -216,7 +216,7 @@ calculateDesiredCounts: function(room) {
         memories.spawnMode(room, nextSpawnRole);
 
         // Determine spawn mode and adjust energyToUse based on this mode
-        let spawnMode = Memory.rooms[room.name].spawnMode.mode;
+       
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
 
     
@@ -227,7 +227,7 @@ calculateDesiredCounts: function(room) {
         }
         
         if (nextSpawnRole) {
-           console.log(`SpawnMode: ${spawnMode}`)
+           
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
         } else {
             //console.log("[manageCreepSpawning] Population Acceptable.");
@@ -272,7 +272,7 @@ calculateDesiredCounts: function(room) {
                 const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
                 const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
                 const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
-                const totalCreeps = Object.keys(Game.creeps).length;
+                let spawnMode = Memory.rooms[room.name].spawnMode.mode;
                 // Count the body parts and prepare output format
                 const counts = _.countBy(body); // Count each type of body part
                 const formattedParts = Object.entries(counts)
@@ -280,7 +280,7 @@ calculateDesiredCounts: function(room) {
                     .join(", ");
 
                 console.log(`Room: ${room.name} Total: ${creepsInRoom.length}`);
-                console.log(`[spawnCreepWithRole] Spawned ${role} with ${formattedParts}`);
+                console.log(`Room: ${room.name} SpawnMode: ${spawnMode} Total: ${creepsInRoom.length}`);
                 console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
                 
             } else {
@@ -295,14 +295,14 @@ calculateDesiredCounts: function(room) {
             const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
             const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
             const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
-            const totalCreeps = Object.keys(Game.creeps).length;
+            let spawnMode = Memory.rooms[room.name].spawnMode.mode;
             // Count the body parts and prepare output format
             const counts = _.countBy(body); // Count each type of body part
             const formattedParts = Object.entries(counts)
                 .map(([part, count]) => `"${part}": ${count}`)
                 .join(", ");
 
-            console.log(`Room: ${room.name} Total: ${creepsInRoom.length}`);
+            console.log(`Room: ${room.name} SpawnMode: ${spawnMode} Total: ${creepsInRoom.length}`);
             console.log(`[spawnCreepWithRole] Spawned ${role} with ${formattedParts}`);
             console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
             
