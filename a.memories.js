@@ -244,7 +244,7 @@ var memories = {
             return;
         }
 
-        if (totalCreeps < 4) {
+        if (totalCreeps < 5) {
             //Emergency Power catch for room recovery
             Memory.rooms[room.name].spawnMode.mode = 'EmPower';
             Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
