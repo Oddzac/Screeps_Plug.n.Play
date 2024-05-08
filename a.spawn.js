@@ -279,8 +279,8 @@ calculateDesiredCounts: function(room) {
                     .map(([part, count]) => `"${part}": ${count}`)
                     .join(", ");
 
-                console.log(`Room: ${room.name} Total: ${creepsInRoom.length}`);
                 console.log(`Room: ${room.name} SpawnMode: ${spawnMode} Total: ${creepsInRoom.length}`);
+                console.log(`[spawnCreepWithRole] Spawned ${role} with ${formattedParts}`);
                 console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
                 
             } else {
