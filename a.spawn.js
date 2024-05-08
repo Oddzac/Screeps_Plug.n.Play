@@ -239,8 +239,8 @@ calculateDesiredCounts: function(room) {
        //console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
         
         const body = this.getBodyPartsForRole(role, energyToUse, phase);
-        console.log('${room} - ${role} , Body: ${body}');
-        
+        console.log(`${room} - ${role} , Body: ${body}`);
+
 
         if (!body) {
             // Log or handle the situation when not enough energy is available
