@@ -235,6 +235,7 @@ var memories = {
         const energyAvailable = room.energyAvailable;
         //const nextRole = Memory.rooms[room.name].nextSpawnRole;
         const energySources = room.find(FIND_SOURCES).length;
+        const totalCreeps = _.filter(Game.creeps, (creep) => creep.memory.home === roomName);
 
 
         if (nextRole === null) {
@@ -243,7 +244,15 @@ var memories = {
             return;
         }
 
+        if (totalCreeps < 4) {
+            //Emergency Power catch for room recovery
+            Memory.rooms[room.name].spawnMode.mode = 'EmPower';
+            Memory.rooms[room.name].spawnMode.energyToUse = energyAvailable;
+            return;
+        }
         if (energySources === 1) {
+
+            if (totalCreeps)
 
             switch (phase) {
                 case 1:
