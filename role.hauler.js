@@ -454,7 +454,7 @@ var roleHauler = {
                 
                     marketData.storedAmount = newTotal;
 
-                    console.log(`Updated cost basis for ${resourceType} to ${marketData.costBasis} after depositing ${transferredAmount}.`);
+                    console.log(`Updated cost basis for ${resourceType} to ${marketData.costBasis} after depositing ${transferredAmount} in ${creep.room.name}.`);
                 }
 
                 // If the transfer was successful
