@@ -74,7 +74,7 @@ var roleHauler = {
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers:
         
-        if (collectors < 1) {
+        if (collectors < 2) {
             creep.memory.task = 'collector';
             return;        
         } else if (linkHaulers < 1 && linksBuilt > 1) {
