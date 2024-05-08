@@ -69,7 +69,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         // Deserialize the path before using it
         const path = Room.deserializePath(Memory.pathCache[pathKey].path);
         const moveResult = creep.moveByPath(path);
-        creep.giveWay();
+        
         if (moveResult !== OK) {
             // Clear the cache if the path is invalid and find a new path immediately
             
@@ -84,11 +84,11 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
         const moveResult = creep.moveByPath(newPath);
-        creep.giveWay();
 
         if (moveResult !== OK) {
         }
     }
+    creep.giveWay();
 },
 
 // Optional: Method to generate and cache room cost matrices for more efficient pathfinding
