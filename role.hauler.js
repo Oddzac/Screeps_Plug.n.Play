@@ -76,22 +76,22 @@ var roleHauler = {
         
         if (collectors < 2) {
             creep.memory.task = 'collector';
-            return;        
+                  
         } else if (linkHaulers < 1 && linksBuilt > 1) {
             creep.memory.task = 'linkHauler';
-            return;
+            
         } else if (phase >= 6 && energySources > 1 && spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
-            return;
+            
         } else if (energySources < 2 && extensions > 30 && spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
-            return;
+            
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
             creep.memory.task = 'spawnHauler';
-            return;
+            
         } else if (terminalHauler < 1 && terminalBuilt > 0) {
             creep.memory.task = 'terminalHauler';
-            return;
+            
 
         } else {
             creep.memory.task = 'collector';
