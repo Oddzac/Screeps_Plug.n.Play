@@ -235,7 +235,7 @@ var memories = {
         const energyAvailable = room.energyAvailable;
         //const nextRole = Memory.rooms[room.name].nextSpawnRole;
         const energySources = room.find(FIND_SOURCES).length;
-        const totalCreeps = _.filter(Game.creeps, (creep) => creep.memory.home === room);
+        const totalCreeps = _.sum(Game.creeps, (creep) => creep.memory.home === room);
 
 
         if (nextRole === null) {
