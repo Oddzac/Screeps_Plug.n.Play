@@ -17,7 +17,7 @@ var movement = {
 
 
     // Main Pathfinding Call
-moveToWithCache: function(creep, target, range = 0) {
+moveToWithCache: function(creep, target, range = 1) {
     const targetPos = (target instanceof RoomPosition) ? target : target.pos;
     if (!targetPos) {
         return;
