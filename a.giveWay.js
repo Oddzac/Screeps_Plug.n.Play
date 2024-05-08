@@ -26,7 +26,7 @@ Creep.prototype.giveWay = function()
     if(!this.memory.blocking)
         return;
     // It's an old request that has timed out
-    if(Game.time > this.memory.blocking)
+    if(Game.time + 1> this.memory.blocking)
     {
         delete this.memory.blocking;
         return;
