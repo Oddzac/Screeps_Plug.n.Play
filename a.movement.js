@@ -74,7 +74,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         // Deserialize the path before using it
         const path = Room.deserializePath(Memory.pathCache[pathKey].path);
         const moveResult = creep.moveByPath(path);
-        new RoomVisual(roomName).line(path);
+        creep.room.visual.line(creep.pos, targetPos, {color: 'orange', lineStyle: 'dashed'});
         creep.giveWay();
         if (moveResult !== OK) {
             // Clear the cache if the path is invalid and find a new path immediately
