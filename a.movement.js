@@ -84,10 +84,17 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         let newPath;
         //Budget Traffic Bandaid
         if (roomName === 'E25S18') {
-            newPath = creep.pos.findPathTo(targetPos, {
-                range: effectiveRange,
-                ignoreCreeps: true,
-            });
+            if (Game.time % 50 === 0) {
+                newPath = creep.pos.findPathTo(targetPos, {
+                    range: effectiveRange,
+                    ignoreCreeps: false,
+                });
+            } else {
+                newPath = creep.pos.findPathTo(targetPos, {
+                    range: effectiveRange,
+                    ignoreCreeps: true,
+                });
+            }
         } else {
             newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
