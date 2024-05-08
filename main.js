@@ -92,7 +92,7 @@ module.exports.loop = function() {
                     if (harvesters.length < 1) {
                         // Spawn a harvester if there are less than 1
                         availableSpawn.spawnCreep([MOVE, CARRY, WORK], `Harvester_${Game.time}`, {memory: {role: 'harvester', room: roomName}}); 
-                    }  else if (haulers.length < 3) {
+                    }  else if (haulers.length < 4) {
                         // Spawn a hauler if there are less than 2
                         availableSpawn.spawnCreep([CARRY, MOVE, MOVE], `Hauler_${Game.time}`, {memory: {role: 'hauler', room: roomName}});
                     } else {
