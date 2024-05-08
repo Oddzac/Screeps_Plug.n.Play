@@ -127,14 +127,6 @@ var roleHauler = {
             if (leastAssigned && leastAssigned.id) {
                 creep.memory.containerId = leastAssigned.id;
             }
-        } else {
-
-            // If no containers are found or assigned, assign a source
-            const leastAssignedSource = _.min(sourcesAndMinerals, sourceOrMineral => _.sum(Game.creeps, c => c.memory.sourceId === sourceOrMineral.id && c.memory.role === 'hauler'));
-
-            if (leastAssignedSource) {
-                creep.memory.containerId = leastAssignedSource.id;
-            }
         }
     },
     
