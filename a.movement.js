@@ -80,10 +80,17 @@ findCachedPath: function(creep, target, defaultRange = 1) {
             delete Memory.pathCache[pathKey];
         }
     } else {
-        const newPath = creep.pos.findPathTo(targetPos, {
-            range: effectiveRange,
-            ignoreCreeps: true,
-        });
+        if (roomName === 'E25S18') {
+            const newPath = creep.pos.findPathTo(targetPos, {
+                range: effectiveRange,
+                ignoreCreeps: true,
+            });
+        } else {
+            const newPath = creep.pos.findPathTo(targetPos, {
+                range: effectiveRange,
+                ignoreCreeps: false,
+            });
+        }
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
