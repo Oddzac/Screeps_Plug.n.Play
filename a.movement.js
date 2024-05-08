@@ -74,7 +74,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         // Deserialize the path before using it
         const path = Room.deserializePath(Memory.pathCache[pathKey].path);
         const moveResult = creep.moveByPath(path);
-        creep.room.visual.line(path, {color: 'orange', lineStyle: 'dashed'});
+        
         creep.giveWay();
         if (moveResult !== OK) {
             // Clear the cache if the path is invalid and find a new path immediately
@@ -97,6 +97,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
+        creep.room.visual.line(newPath, {color: 'orange', lineStyle: 'dashed'});
         const moveResult = creep.moveByPath(newPath);
 
         if (moveResult !== OK) {
