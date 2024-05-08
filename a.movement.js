@@ -1,12 +1,4 @@
 // TODO
-// IMPLEMENT MATRIX 
-// - UNOWNED WALLS MORE PASSABLE THAN NATURAL WALLS
-
-
-
-
-
-
 
 
 //////////////////////////////
@@ -30,7 +22,7 @@ moveToWithCache: function(creep, target, range = 0) {
     if (!targetPos) {
         return;
     }
-// Initialize home room if not already set
+    // Initialize home room
     if (!creep.memory.home) {
         const nameParts = creep.name.split('_');
         if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
@@ -50,7 +42,7 @@ moveToWithCache: function(creep, target, range = 0) {
 },
 
 cleanupOldPaths: function(roomName) {
-    const pathCache = Memory.rooms[roomName].pathCache;
+    const pathCache = Memory.pathCache;
     if (!pathCache) return;
 
     const pathKeys = Object.keys(pathCache);
@@ -68,19 +60,19 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     const pathKey = `${creep.pos.roomName}_${targetPos.x}_${targetPos.y}_${effectiveRange}`;
     const roomName = creep.room.name;
 
-    if (!Memory.rooms[roomName].pathCache) Memory.rooms[roomName].pathCache = {};
+    if (!Memory.pathCache) Memory.pathCache = {};
 
     this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
 
     // Check if the path is cached and still valid
-    if (Memory.rooms[roomName].pathCache[pathKey] && Memory.rooms[roomName].pathCache[pathKey].time + 100 > Game.time) {
+    if (Memory.pathCache[pathKey] && Memory.pathCache[pathKey].time + 100 > Game.time) {
         // Deserialize the path before using it
-        const path = Room.deserializePath(Memory.rooms[roomName].pathCache[pathKey].path);
+        const path = Room.deserializePath(Memory.pathCache[pathKey].path);
         const moveResult = creep.moveByPath(path);
         if (moveResult !== OK) {
             // Clear the cache if the path is invalid and find a new path immediately
             creep.giveWay();
-            delete Memory.rooms[roomName].pathCache[pathKey];
+            delete Memory.pathCache[pathKey];
         }
     } else {
         const newPath = creep.pos.findPathTo(targetPos, {
@@ -89,7 +81,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
             });
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
-        Memory.rooms[roomName].pathCache[pathKey] = { path: serializedPath, time: Game.time };
+        Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
         const moveResult = creep.moveByPath(newPath);
 
         if (moveResult !== OK) {
