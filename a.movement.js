@@ -47,7 +47,7 @@ cleanupOldPaths: function(roomName) {
 
     const pathKeys = Object.keys(pathCache);
     for (const pathKey of pathKeys) {
-        if (pathCache[pathKey].time + 50 < Game.time) {
+        if (pathCache[pathKey].time + 10 < Game.time) {
             delete pathCache[pathKey]; // Delete paths older than 100 ticks
         }
     }
@@ -65,7 +65,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
 
     // Check if the path is cached and still valid
-    if (Memory.pathCache[pathKey] && Memory.pathCache[pathKey].time + 100 > Game.time) {
+    if (Memory.pathCache[pathKey] && Memory.pathCache[pathKey].time + 10 > Game.time) {
         // Deserialize the path before using it
         const path = Room.deserializePath(Memory.pathCache[pathKey].path);
         const moveResult = creep.moveByPath(path);
