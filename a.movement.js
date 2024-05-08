@@ -81,6 +81,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         }
     } else {
         let newPath;
+        //Budget Traffic Bandaid
         if (roomName === 'E25S18') {
             newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
