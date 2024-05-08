@@ -105,7 +105,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
         const moveResult = creep.moveByPath(newPath);
-        new RoomVisual(roomName).poly(path, {
+        new RoomVisual(roomName).poly(newPath, {
             stroke: '#ff000c',
             strokeWidth: .15,
             opacity: .2,
