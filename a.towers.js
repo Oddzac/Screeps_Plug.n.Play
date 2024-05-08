@@ -54,7 +54,8 @@ var towers = {
         if (tower.energy > (tower.energyCapacity * 0.8)) { 
             const criticalStructures = tower.room.find(FIND_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax * 0.2 && // Target at-risk structures
-                                        structure.structureType !== STRUCTURE_WALL
+                                        structure.structureType !== STRUCTURE_WALL &&
+                                        structure.structureType !== STRUCTURE_RAMPART
             });
             if (criticalStructures.length > 0) {
                 // Sort by lowest hits to prioritize the most damaged structure
