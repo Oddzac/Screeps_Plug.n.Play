@@ -86,7 +86,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         if (roomName === 'E25S18') {
             newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
-                //ignoreCreeps: true,
+                ignoreCreeps: true,
             });
         } else {
             newPath = creep.pos.findPathTo(targetPos, {
