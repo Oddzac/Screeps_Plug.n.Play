@@ -84,8 +84,8 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         }
     } else {
         const newPath = creep.pos.findPathTo(targetPos, {
-            range: effectiveRange
-            ignoreCreeps: true
+            range: effectiveRange,
+            ignoreCreeps: true,
             });
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
