@@ -200,23 +200,23 @@ calculateDesiredCounts: function(room) {
         
     
         let nextSpawnRole = null;
+        let largestDifference = 0;
     
         // Determine which role is most in need of spawning
         for (const [role, desiredCount] of Object.entries(desiredCounts)) {
             const currentCount = currentCounts[role] || 0;
             const difference = desiredCount - currentCount;
-            if (difference > 0) {
+            if (difference > largestDifference) {
+                largestDifference = difference;
                 nextSpawnRole = role; // Store the role to spawn next
                 break; // Found a role to spawn, exit the loop
             }
         }
         // Broadcast planned spawn
         Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
-
         memories.spawnMode(room, nextSpawnRole);
 
-        // Determine spawn mode and adjust energyToUse based on this mode
-       
+        // Determine spawn mode and adjust energyToUse based on this mode   
         let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
 
     
@@ -229,8 +229,6 @@ calculateDesiredCounts: function(room) {
         if (nextSpawnRole) {
             //console.log(`Calling SCWR with NR: ${nextSpawnRole}, E2U: ${energyToUse}, Ph: ${phase}, Room: ${room}`);
             this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
-        } else {
-            //console.log("[manageCreepSpawning] Population Acceptable.");
         }
     }, 
     
