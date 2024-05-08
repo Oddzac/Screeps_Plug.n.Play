@@ -47,7 +47,7 @@ cleanupOldPaths: function(roomName) {
 
     const pathKeys = Object.keys(pathCache);
     for (const pathKey of pathKeys) {
-        if (pathCache[pathKey].time + 100 < Game.time) {
+        if (pathCache[pathKey].time + 20 < Game.time) {
             delete pathCache[pathKey]; // Delete paths older than 100 ticks
         }
     }
