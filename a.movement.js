@@ -80,13 +80,14 @@ findCachedPath: function(creep, target, defaultRange = 1) {
             delete Memory.pathCache[pathKey];
         }
     } else {
+        let newPath;
         if (roomName === 'E25S18') {
-            const newPath = creep.pos.findPathTo(targetPos, {
+            newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
                 ignoreCreeps: true,
             });
         } else {
-            const newPath = creep.pos.findPathTo(targetPos, {
+            newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
                 ignoreCreeps: false,
             });
