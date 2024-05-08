@@ -244,7 +244,7 @@ var memories = {
             return;
         }
 
-        const totalCreeps = _.sum(Game.creeps, (creep) => creep.memory.home === room.name);
+        const totalCreeps = _.filter(Game.creeps, (creep) => creep.room.name === room.name).length;
         if (totalCreeps < 5) {
             //Emergency Power catch for room recovery
             Memory.rooms[room.name].spawnMode.mode = 'EmPower';
