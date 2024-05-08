@@ -398,37 +398,74 @@ calculateDesiredCounts: function(room) {
                 break;
 
             case 6:
-                roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move"], 
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
-                    //Defensive Units
-                    attacker: ["tough", "move", "move", "ranged_attack"],
-                    healer: ["move","heal"],
-                    //Recon
-                    scout: ["move"],
-                    claimer: ["claim", "move", "work"],
-                };
-                break;
+
+                if (energyToUse > 300) {
+                    roleBlueprints = {
+                        harvester: ["work", "work", "work", "work", "work", "carry", "move", "move"], 
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move", "work"],
+                    };
+                    break;
+                } else {
+                    //EmPower Contingency
+                    roleBlueprints = {
+                        harvester: ["work", "carry", "move"], // Basic setup for early game
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move", "work"],
+                    };
+                    break;
+                }
 
             case 7:
-                roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
-                    //Defensive Units
-                    attacker: ["tough", "move", "move", "ranged_attack"],
-                    healer: ["move","heal"],
-                    //Recon
-                    scout: ["move"],
-                    claimer: ["claim", "move", "work"],
-                };
-                break;
+                if (energyToUse > 300) {
+                    roleBlueprints = {
+                        harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move", "work"],
+                    };
+                    break;
+                } else {
+                    //EmPower Contingency
+                    roleBlueprints = {
+                        harvester: ["work", "carry", "move"], // Basic setup for early game
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
+                        //Defensive Units
+                        attacker: ["tough", "move", "move", "ranged_attack"],
+                        healer: ["move","heal"],
+                        //Recon
+                        scout: ["move"],
+                        claimer: ["claim", "move", "work"],
+                    };
+                    break;
+
+                }
 
             // Additional phases handled by default
             default:
+                if (energyToUse > 300) {
                 roleBlueprints = {
                     harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
                     upgrader: ["work", "move", "move", "carry"],
@@ -442,6 +479,22 @@ calculateDesiredCounts: function(room) {
                     claimer: ["claim", "move", "work"],
                 };
                 break;
+                } else {
+                        //EmPower Contingency
+                        roleBlueprints = {
+                            harvester: ["work", "carry", "move"], // Basic setup for early game
+                            upgrader: ["work", "move", "carry"],
+                            builder: ["work", "move", "carry"],
+                            hauler: ["carry", "move", "move"],
+                            //Defensive Units
+                            attacker: ["tough", "move", "move", "ranged_attack"],
+                            healer: ["move","heal"],
+                            //Recon
+                            scout: ["move"],
+                            claimer: ["claim", "move", "work"],
+                        };
+                        break;
+                }
         }
     
         let body = [];
