@@ -47,7 +47,7 @@ cleanupOldPaths: function(roomName) {
 
     const pathKeys = Object.keys(pathCache);
     for (const pathKey of pathKeys) {
-        if (pathCache[pathKey].time + 15 < Game.time) {
+        if (pathCache[pathKey].time + 25 < Game.time) {
             delete pathCache[pathKey]; // Delete paths older than 100 ticks
         }
     }
@@ -84,7 +84,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         let newPath;
         //Budget Traffic Bandaid
         if (roomName === 'E25S18') {
-            if (Game.time % 3 === 0) {
+            if (Game.time % 2 === 0) {
                 newPath = creep.pos.findPathTo(targetPos, {
                     range: effectiveRange,
                     ignoreCreeps: false,
