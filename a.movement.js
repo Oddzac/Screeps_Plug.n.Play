@@ -64,7 +64,10 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     const effectiveRange = target.range !== undefined ? target.range : defaultRange;
     const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange); // Use generatePathKey
     const roomName = creep.room.name;
+    const creepPos = creep.pos
+    let lastPos;
 
+    if (!creep.memory.lastPos) creep.memory.lastPos = creepPos;
     if (!Memory.pathCache) Memory.pathCache = {};
 
     this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
@@ -78,7 +81,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         
         if (moveResult !== OK) {
             // Clear the cache if the path is invalid and find a new path immediately
-creep.giveWay();
+            
             //delete Memory.pathCache[pathKey];
         }
     } else {
@@ -110,6 +113,16 @@ creep.giveWay();
         if (moveResult !== OK) {
             // Handle if moveByPath fails
         }
+    }
+
+    // if moveResult === didNotMove
+    if (creepPos !== lastPos) {
+        // Great job!
+        lastPos = creepPos;
+    } else {
+        // Let's try something else.
+        creep.giveway();
+        delete Memory.pathCache[pathKey];
     }
 },
 
