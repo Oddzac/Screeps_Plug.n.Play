@@ -121,6 +121,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         lastPos = creepPos;
     } else {
         // Let's try something else.
+        creep.say('💢');
         creep.giveway();
         delete Memory.pathCache[pathKey];
     }
