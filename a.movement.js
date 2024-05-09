@@ -122,6 +122,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     } else {
         // Let's try something else.
         creep.say('💢');
+        console.log(`${creep} did not move.`);
         creep.giveway();
         delete Memory.pathCache[pathKey];
     }
