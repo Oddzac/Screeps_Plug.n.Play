@@ -83,7 +83,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     } else {
         let newPath;
         //Budget Traffic Bandaid
-        //if (roomName === 'E25S18') {
+        if (roomName === 'E25S18') {
             if (Game.time % 3 === 0) {
                 newPath = creep.pos.findPathTo(targetPos, {
                     range: effectiveRange,
@@ -95,12 +95,12 @@ findCachedPath: function(creep, target, defaultRange = 1) {
                     ignoreCreeps: true,
                 });
             }
-       /* } else {
+        } else {
             newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
                 ignoreCreeps: false,
             });
-        }*/
+        }
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
