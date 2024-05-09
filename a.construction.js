@@ -312,7 +312,7 @@ connectSpawnToPOIs: function(room) {
                         const result = room.createConstructionSite(x, y, STRUCTURE_EXTENSION);
                         if (result === OK) {
                             console.log(`Extension construction site placed at (${x}, ${y}) with radius ${radius}.`);
-                            room.memory.extensionRadius = 1;
+                            room.memory.extensionRadius = 3;
                             placed = true;
                             break; // Exit the loop once a site is successfully placed
                         } else if (result === ERR_FULL) {
