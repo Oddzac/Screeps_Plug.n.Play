@@ -68,6 +68,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     let lastPos;
 
     if (!creep.memory.lastPos) creep.memory.lastPos = creepPos;
+
     if (!Memory.pathCache) Memory.pathCache = {};
 
     this.cleanupOldPaths(roomName); // Clean up old paths before trying to find a new one
@@ -137,6 +138,9 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         }
     }
 
+    if (lastPos !== creepPos) {
+        lastPos = creepPos;
+    }
 
 },
 
