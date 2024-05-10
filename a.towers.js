@@ -3,14 +3,16 @@ var towers = {
     run: function(tower) {
         if (!tower) return;
 
-        // Prioritize actions: first attack any hostiles, then heal any damaged creeps, finally repair critical structures
+        // Prioritize actions: Heal > Attack > Repair
+        if (this.healCreeps(tower)) {
+            return;
+        }
+ 
         if (this.attackHostiles(tower)) {
             return;
         }
 
-        if (this.healCreeps(tower)) {
-            return;
-        }
+
 
         this.repairStructures(tower);
     },
