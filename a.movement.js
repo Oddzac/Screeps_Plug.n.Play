@@ -2,7 +2,7 @@
 
 
 //////////////////////////////
-var giveWay = require("a.giveWay");
+//var giveWay = require("a.giveWay");
 var movement = {
 
 // PATH CACHING AND MOVEMENT
@@ -91,7 +91,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
                     creep.say('💢');
                     console.log(`${creep} did not move.`);
                     // Give Way a chance.
-                    creep.giveway();
+                    //creep.giveway();
 
                     if (creepPos !== lastPos) {
                         // giveWay worked!
