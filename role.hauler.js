@@ -74,10 +74,9 @@ var roleHauler = {
 
         //ifLink: assign 1 linkHauler > ifStorage: assign 1 spawnHauler > ifContainers:
         
-       //if (collectors < 2) {
-            //creep.memory.task = 'collector';
+       //
                   
-        /*} else*/ if (linkHaulers < 1 && linksBuilt > 1) {
+         if (linkHaulers < 1 && linksBuilt > 1) {
             creep.memory.task = 'linkHauler';
             
         } else if (phase >= 6 && energySources > 1 && spawnHaulers < 2) {
@@ -89,6 +88,10 @@ var roleHauler = {
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
             creep.memory.task = 'spawnHauler';
             
+
+        } else if (collectors < 1) {
+            creep.memory.task = 'collector';
+
         } else if (terminalHauler < 1 && terminalBuilt > 0) {
             creep.memory.task = 'terminalHauler';
             
