@@ -39,7 +39,7 @@ moveToWithCache: function(creep, target, range = 1) {
     }
 
     this.findCachedPath(creep, { pos: targetPos, range: range });
-    creep.giveWay();
+   // creep.giveWay();
 },
 
 cleanupOldPaths: function(roomName) {
