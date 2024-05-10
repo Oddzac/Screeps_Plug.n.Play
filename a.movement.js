@@ -2,7 +2,7 @@
 
 
 //////////////////////////////
-//var giveWay = require("a.giveWay");
+var giveWay = require("a.giveWay");
 var movement = {
 
 // PATH CACHING AND MOVEMENT
@@ -39,6 +39,7 @@ moveToWithCache: function(creep, target, range = 1) {
     }
 
     this.findCachedPath(creep, { pos: targetPos, range: range });
+    creep.giveWay();
 },
 
 cleanupOldPaths: function(roomName) {
