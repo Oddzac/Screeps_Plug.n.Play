@@ -115,7 +115,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
             if (Game.time % 3 === 0) {
                 newPath = creep.pos.findPathTo(targetPos, {
                     range: effectiveRange,
-                    ignoreCreeps: false,
+                    ignoreCreeps: true,
                 });
             } else {
                 newPath = creep.pos.findPathTo(targetPos, {
