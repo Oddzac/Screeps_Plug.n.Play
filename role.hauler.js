@@ -254,9 +254,9 @@ var roleHauler = {
             let totalMinerals = _.sum(creep.room.storage.store) - creep.room.storage.store[RESOURCE_ENERGY]; // Calculate total minerals in storage
             
             if (totalMinerals > 0) {
-                // If there are minerals, find one to withdraw with quantity greater than 1000
+                // If there are minerals, find one to withdraw
                 for(const resource in creep.room.storage.store) {
-                    if(resource !== RESOURCE_ENERGY && creep.room.storage.store[resource] > 1000) {
+                    if(resource !== RESOURCE_ENERGY && creep.room.storage.store[resource] > 0) {
                         resourceType = resource;
                         break; // Withdraw the first found surplus mineral
                     }
