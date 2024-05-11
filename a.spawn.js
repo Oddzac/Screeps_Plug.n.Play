@@ -235,8 +235,8 @@ calculateDesiredCounts: function(room) {
     // Handles spawning after need and energy are determined.
     spawnCreepWithRole: function(role, energyToUse, phase, room) {
        //console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
-        
-        const body = this.getBodyPartsForRole(role, energyToUse, phase);
+        let spawnMode = Memory.rooms[room.name].spawnMode.mode;
+        const body = this.getBodyPartsForRole(role, energyToUse, phase, spawnMode);
         //console.log(`${room} - ${role} , Body: ${body}`);
 
 
@@ -272,7 +272,7 @@ calculateDesiredCounts: function(room) {
                 const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
                 const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
                 const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
-                let spawnMode = Memory.rooms[room.name].spawnMode.mode;
+                
                 // Count the body parts and prepare output format
                 const counts = _.countBy(body); // Count each type of body part
                 const formattedParts = Object.entries(counts)
@@ -295,7 +295,7 @@ calculateDesiredCounts: function(room) {
             const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
             const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
             const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
-            let spawnMode = Memory.rooms[room.name].spawnMode.mode;
+            //let spawnMode = Memory.rooms[room.name].spawnMode.mode;
             // Count the body parts and prepare output format
             const counts = _.countBy(body); // Count each type of body part
             const formattedParts = Object.entries(counts)
@@ -313,18 +313,37 @@ calculateDesiredCounts: function(room) {
         }
     },
     
-    getBodyPartsForRole: function(role, energyToUse, phase) {
+    getBodyPartsForRole: function(role, energyToUse, phase, spawnMode) {
         const partsCost = BODYPART_COST;
+        
+
         let roleBlueprints;
+
+        if (spawnMode === 'EmPower') {
+           roleBlueprints = {
+                harvester: ["work", "carry", "carry", "move"], // Basic setup for early game
+                upgrader: ["work", "move", "carry"],
+                builder: ["work", "move", "carry"],
+                hauler: ["carry", "move", "move"],
+                //Defensive Units
+                attacker: ["tough", "move", "move", "ranged_attack"],
+                healer: ["move","heal"],
+                //Recon
+                scout: ["move"],
+                claimer: ["claim", "move", "work"],
+            };
+
+
+        } else {
     
-        // Adjust blueprint based on the phase
-        switch (phase) {
-            case 1:
-                roleBlueprints = {
-                    harvester: ["work", "carry", "carry", "move"], // Basic setup for early game
-                    upgrader: ["work", "move", "carry"],
-                    builder: ["work", "move", "carry"],
-                    hauler: ["carry", "move", "move"],
+            // Adjust blueprint based on the phase
+            switch (phase) {
+                case 1:
+                    roleBlueprints = {
+                        harvester: ["work", "carry", "carry", "move"], // Basic setup for early game
+                        upgrader: ["work", "move", "carry"],
+                        builder: ["work", "move", "carry"],
+                        hauler: ["carry", "move", "move"],
                     //Defensive Units
                     attacker: ["tough", "move", "move", "ranged_attack"],
                     healer: ["move","heal"],
@@ -494,6 +513,7 @@ calculateDesiredCounts: function(room) {
                         break;
                 }
         }
+}
     
         let body = [];
         let energyUsed = 0;
