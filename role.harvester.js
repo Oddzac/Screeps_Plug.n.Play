@@ -4,6 +4,8 @@
 
 var utility = require('a.utilities');
 var movement = require('a.movement');
+var giveWay = require("a.giveWay");
+
 
 var roleHarvester = {
     run: function(creep) {
@@ -26,6 +28,7 @@ var roleHarvester = {
             this.manageEnergy(creep, haulers);
         
         }
+        creep.giveWay();
     },
 
     manageEnergy: function(creep, haulers) {

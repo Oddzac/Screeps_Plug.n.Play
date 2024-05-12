@@ -5,6 +5,7 @@
 
 var utility = require('a.utilities'); // Utility functions like phase checks
 var movement = require('a.movement'); // Movement functions
+var giveWay = require("a.giveWay");
 
 var roleHauler = {
     run: function(creep) {
@@ -36,6 +37,7 @@ var roleHauler = {
         } else {
             this.deliverResources(creep);
         }
+        creep.giveWay();
     },
 
     signRoom: function(creep) {

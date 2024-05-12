@@ -1,5 +1,7 @@
 var movement = require('a.movement');
 var utility = require('a.utilities');
+var giveWay = require("a.giveWay");
+
 var roleUpgrader = {
     run: function(creep) {
         // Initialize harvestingTicks if it doesn't exist
@@ -38,6 +40,7 @@ var roleUpgrader = {
             // Reset harvestingTicks since the creep is now upgrading
             creep.memory.harvestingTicks = 0;
         }
+        creep.giveWay();
     },
 
     upgradeController: function(creep) {
@@ -59,7 +62,8 @@ var roleUpgrader = {
         console.log('Not enough CPU in the bucket to generate a pixel.');
     }
 },
-  
+
+  
 };
 
 module.exports = roleUpgrader;

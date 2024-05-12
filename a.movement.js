@@ -2,7 +2,6 @@
 
 
 //////////////////////////////
-var giveWay = require("a.giveWay");
 var movement = {
 
 // PATH CACHING AND MOVEMENT
@@ -78,14 +77,14 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     if (Memory.pathCache[pathKey] && Memory.pathCache[pathKey].time + 100 > Game.time) {
         // Deserialize the path before using it
         const path = Room.deserializePath(Memory.pathCache[pathKey].path);
-        creep.giveWay();
+        
         const moveResult = creep.moveByPath(path);
 
-
+        if (moveResult !== OK) {
             // Clear the cache if the path is invalid and find a new path immediately
-            
-            //delete Memory.pathCache[pathKey];
-        //}
+            delete Memory.pathCache[pathKey];
+        }
+
     } else {
         let newPath;
         //Budget Traffic Bandaid
@@ -110,13 +109,11 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
-        creep.giveWay();
+
         const moveResult = creep.moveByPath(newPath);
         lastPos = creep.pos
 
-        if (moveResult !== OK) {
-            // Handle if moveByPath fails
-        }
+
     }
 
     if (lastPos !== creepPos) {

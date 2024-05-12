@@ -1,6 +1,7 @@
 
 var utility = require('a.utilities');
 var movement = require('a.movement');
+var giveWay = require("a.giveWay");
 
 var roleBuilder = {
     run: function(creep) {
@@ -18,6 +19,7 @@ var roleBuilder = {
         } else {
             this.performTask(creep); // Ensure task execution is correctly called
         }
+        creep.giveWay();
     },
 
     
