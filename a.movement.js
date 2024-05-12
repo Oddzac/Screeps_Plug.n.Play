@@ -39,7 +39,7 @@ moveToWithCache: function(creep, target, range = 1) {
     }
 
     this.findCachedPath(creep, { pos: targetPos, range: range });
-   // creep.giveWay();
+   
 },
 
 cleanupOldPaths: function(roomName) {
@@ -132,7 +132,9 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         // Serialize the new path for caching
         const serializedPath = Room.serializePath(newPath);
         Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
+        creep.giveWay();
         const moveResult = creep.moveByPath(newPath);
+        lastPos = creep.pos
 
         if (moveResult !== OK) {
             // Handle if moveByPath fails
