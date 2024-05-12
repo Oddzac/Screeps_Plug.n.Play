@@ -103,7 +103,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         } else {
             newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
-                ignoreCreeps: false,
+                ignoreCreeps: true,
             });
         }
         // Serialize the new path for caching
