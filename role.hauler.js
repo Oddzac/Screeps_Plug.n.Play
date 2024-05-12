@@ -329,11 +329,11 @@ var roleHauler = {
                 break;
 
             case 'terminalHauler':
-                if (creep.store[RESOURCE_ENERGY] > 49 && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
+              /*  if (creep.store[RESOURCE_ENERGY] > 49 && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
                     target = creep.room.storage
-                } else {
+                } else { */
                     target = creep.room.terminal
-                }
+               // }
                 break;
 
             case 'linkHauler':
