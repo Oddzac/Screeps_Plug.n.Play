@@ -101,6 +101,8 @@ findCachedPath: function(creep, target, defaultRange = 1) {
                 range: effectiveRange,
                 ignoreCreeps: false,
             });
+            const serializedPath = Room.serializePath(path);
+            Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
         } else {
             // Execute movement
             moveResult = creep.moveByPath(path);
