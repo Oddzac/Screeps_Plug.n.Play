@@ -114,7 +114,7 @@ var utilities = {
     waitStrategically: function(creep) {
         let waitNear = Game.flags[creep.room.name];
         if (waitNear) {
-            movement.moveToWithCache(creep, waitNear);
+            movement.moveToWithCache(creep, waitNear, 3);
             creep.say('⌛');
         }
     },
