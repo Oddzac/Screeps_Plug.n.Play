@@ -44,6 +44,7 @@ var marketManager = {
         const bucket = Game.cpu.bucket;
         let lastCredits = Memory.marketData.PL.lastCredits; //Get last recorded credits
         let limitSwitch = lastCredits * 0.001;
+        let purchased = false;
 
     
         if (Memory.marketData.PL.PL < limitSwitch) {
@@ -72,7 +73,7 @@ var marketManager = {
             const avgPrice = resourceData.avgPrice;
             const maxPriceToPay = avgPrice * (1 - DISCOUNT_THRESHOLD);
     
-            let purchased = false;
+
             let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
             let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * (1 - DISCOUNT_THRESHOLD));
     
