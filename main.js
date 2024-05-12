@@ -20,7 +20,10 @@ module.exports.loop = function() {
         terminals.cleanupOldOrders();
         terminals.globalMarketManagement();
         
-        
+        if (Game.time % 10 === 0) {
+            console.log(`Bucket CPU: ${Game.cpu.bucket}`);
+            
+        }
         // Short-Term Memory (30min)
         if (Game.time % 600 === 0) {
             memories.shortTerm();
