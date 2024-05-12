@@ -47,6 +47,9 @@ var roleUpgrader = {
         if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             creep.say('🔋');
             movement.moveToWithCache(creep, creep.room.controller.pos);
+            creep.memory.working = false;
+        } else {
+            creep.memory.working = true;
         }
     },
 
