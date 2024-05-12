@@ -81,30 +81,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         creep.giveWay();
         const moveResult = creep.moveByPath(path);
 
-        
-        //if (moveResult !== OK) {
-                // if moveResult === didNotMove
-                if (creepPos !== lastPos) {
-                    lastPos = creepPos;
-                    // Great job! Now keep going.
-                    return;
-                } else {
-                    // Let's try something else.
-                    creep.say('💢');
-                    console.log(`${creep} did not move.`);
-                    // Give Way a chance.
-                    //creep.giveway();
 
-                    if (creepPos !== lastPos) {
-                        // giveWay worked!
-                        lastPos = creepPos;
-                        return;
-                    } else {
-                        // nuke it and refind
-                        delete Memory.pathCache[pathKey];
-                    }
-                    
-                }
             // Clear the cache if the path is invalid and find a new path immediately
             
             //delete Memory.pathCache[pathKey];
