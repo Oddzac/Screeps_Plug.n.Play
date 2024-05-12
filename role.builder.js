@@ -17,7 +17,7 @@ var roleBuilder = {
         if(creep.memory.harvesting) {
             utility.harvestEnergy(creep);
         } else {
-            this.performTask(creep); // Ensure task execution is correctly called
+            this.performTask(creep);
         }
         creep.giveWay();
     },
@@ -176,7 +176,10 @@ var roleBuilder = {
         if (priorityRepairTarget) {
             if (creep.repair(priorityRepairTarget) === ERR_NOT_IN_RANGE) {
                 movement.moveToWithCache(creep,priorityRepairTarget);
-                creep.say('🔧');
+                creep.memory.working = false;
+                creep.say('!🔧!');
+            } else {
+                creep.memory.working = true;
             }
         } else {
             // Find the most damaged structure, not just the closest
@@ -188,7 +191,10 @@ var roleBuilder = {
                 let mostDamagedStructure = allDamagedStructures[0]; // Most damaged structure
                 if (creep.repair(mostDamagedStructure) === ERR_NOT_IN_RANGE) {
                     movement.moveToWithCache(creep, mostDamagedStructure);
+                    creep.memory.working = false;
                     creep.say('🔧');
+                } else {
+                    creep.memory.working = true;
                 }
             } else {
                 // If no structures need repair, check for construction sites or upgrade
@@ -236,7 +242,10 @@ var roleBuilder = {
         if (targetSite) {
             if (creep.build(targetSite) === ERR_NOT_IN_RANGE) {
                 movement.moveToWithCache(creep, targetSite);
+                creep.memory.working = false;
                 creep.say('🚧');
+            } else {
+                creep.memory.working = true;
             }
         } else {
             // If no construction sites, consider repairing or upgrading
@@ -249,6 +258,9 @@ var roleBuilder = {
         if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
             var target = creep.room.controller
             movement.moveToWithCache(creep, target);
+            creep.memory.working = false;
+        } else {
+            creep.memory.working = true;
         }
     },
 
