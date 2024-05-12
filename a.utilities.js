@@ -115,6 +115,7 @@ var utilities = {
         let waitNear = Game.flags[creep.room.name];
         if (waitNear) {
             movement.moveToWithCache(creep, waitNear, 3);
+            creep.memory.working = false;
             creep.say('⌛');
         }
     },
