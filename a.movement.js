@@ -78,6 +78,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
     if (Memory.pathCache[pathKey] && Memory.pathCache[pathKey].time + 100 > Game.time) {
         // Deserialize the path before using it
         const path = Room.deserializePath(Memory.pathCache[pathKey].path);
+        creep.giveWay();
         const moveResult = creep.moveByPath(path);
 
         
@@ -126,7 +127,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
         } else {
             newPath = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
-                ignoreCreeps: false,
+                ignoreCreeps: true,
             });
         }
         // Serialize the new path for caching
