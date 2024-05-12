@@ -72,6 +72,7 @@ var marketManager = {
             const avgPrice = resourceData.avgPrice;
             const maxPriceToPay = avgPrice * (1 - DISCOUNT_THRESHOLD);
     
+            let purchased = false;
             let sellOrders = Game.market.getAllOrders({ type: ORDER_SELL, resourceType: resource });
             let underpricedOrders = sellOrders.filter(order => order.price <= avgPrice * (1 - DISCOUNT_THRESHOLD));
     
@@ -122,7 +123,7 @@ var marketManager = {
                         let newQuantity = masterTerminal.store[resource] || 0;
                         console.log(`[PurchaseResource] Current quantity of ${resource} in ${masterTerminal.room.name}: ${newQuantity}`);
                         Game.notify(`[PurchaseResource] Current quantity of ${resource} in ${masterTerminal.room.name}: ${newQuantity}`);
-                        
+                        purchased = true;
                     } else {
                         console.log(`[PurchaseResource] Purchase failed... ${result}`);
                         return;
@@ -133,7 +134,10 @@ var marketManager = {
             }
         });
     
-        Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
+        if (purchased) {
+            Memory.marketData.PL.lastCredits = Game.market.credits; // Update the lastCredits with the current credits for the next comparison
+        }
+    
     },
     
     
