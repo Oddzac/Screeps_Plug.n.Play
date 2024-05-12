@@ -51,7 +51,7 @@ var marketManager = {
             return;
         }
         
-        if (bucket < 1000) {
+        if (bucket < 500) {
             console.log(`CPU: ${bucket} / 500 (Below Execution Threshold)`);
             return;
         }
