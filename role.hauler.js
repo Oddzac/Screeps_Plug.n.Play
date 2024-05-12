@@ -504,7 +504,7 @@ var roleHauler = {
     }
 
     if (waitLocation) {
-        movement.moveToWithCache(creep, waitLocation);
+        movement.moveToWithCache(creep, waitLocation, 3);
         creep.say('⌛');
     } else {
         console.log(`No valid waitLocation found for creep ${creep.name} in room ${creep.room.name}`);
