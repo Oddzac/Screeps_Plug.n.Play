@@ -23,8 +23,12 @@ var roleHarvester = {
                 // Move towards the source if not in range.
                 movement.moveToWithCache(creep, source);
                 creep.say('⛏️');
+            } else {
+                creep.memory.working = true;
             }
+            
         } else {
+            creep.memory.working = false;
             this.manageEnergy(creep, haulers);
         
         }
