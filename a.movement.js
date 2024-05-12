@@ -95,7 +95,7 @@ findCachedPath: function(creep, target, defaultRange = 1) {
 
         if (isBlocking) {
             // Handle the scenario when the next position is blocked by a working creep
-            console.log('Blocked by working creep at', nextPos);
+            creep.say("👀");
             // Generate new path
             path = creep.pos.findPathTo(targetPos, {
                 range: effectiveRange,
