@@ -249,7 +249,7 @@ var marketManager = {
                             };
                         }
                     }
-                    console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} globally in room ${terminal.room.name}`);
+                    console.log(`Adjusted pricing for ${resourceType} to ${myPrice.toFixed(3)} in room ${terminal.room.name}`);
                 }
             });
         });
