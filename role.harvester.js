@@ -19,7 +19,10 @@ var roleHarvester = {
 
         // Decision-making process for harvesting or energy management
         if (creep.store.getFreeCapacity() > 0) {
-            if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
+            if (!source || source.energy === 0) {
+                return;
+
+            } else if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
                 // Move towards the source if not in range.
                 movement.moveToWithCache(creep, source);
                 creep.memory.working = false;
