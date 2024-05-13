@@ -18,11 +18,9 @@ var roleHarvester = {
         const haulers = _.filter(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === creep.room.name).length;
 
         // Decision-making process for harvesting or energy management
-        if (creep.store.getFreeCapacity() > 0) {
-            if (!source || source.energy === 0) {
-                return;
+        if (creep.store.getFreeCapacity() > 0 && source.energy !== 0) {
 
-            } else if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
+            if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
                 // Move towards the source if not in range.
                 movement.moveToWithCache(creep, source);
                 creep.memory.working = false;
