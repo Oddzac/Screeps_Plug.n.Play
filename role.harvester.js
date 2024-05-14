@@ -51,9 +51,8 @@ var roleHarvester = {
 
         const roomName = creep.room.name;
         const minerals = creep.room.find(FIND_MINERALS);
-        const extractors = creep.room.extractor
-            //find(FIND_STRUCTURES, {
-            //filter: s => s.structureType === STRUCTURE_EXTRACTOR});
+        const extractors = creep.room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_EXTRACTOR});
         const harvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName);
         const extractingHarvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName && c.memory.task === 'extractHarvest');
         const sources = creep.room.find(FIND_SOURCES);
