@@ -102,14 +102,26 @@ var roleHarvester = {
     
 
 passEnergy: function(creep) {
-    let targets = creep.pos.findInRange(FIND_STRUCTURES, 3, {
-        filter: (structure) => {
-            return [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER].includes(structure.structureType);
+    let targets;
+        if (creep.memory.task === "extractHarvest") {
+            targets = creep.pos.findInRange(FIND_STRUCTURES, 3, {
+                filter: (structure) => {
+                    return [STRUCTURE_LINK, STRUCTURE_STORAGE, STRUCTURE_CONTAINER].includes(structure.structureType);
+               }
+            }).sort((a, b) => {
+                const priority = [STRUCTURE_LINK, STRUCTURE_CONTAINER, STRUCTURE_STORAGE];
+                return priority.indexOf(a.structureType) - priority.indexOf(b.structureType);
+            });
+        } else {
+            targets = creep.pos.findInRange(FIND_STRUCTURES, 3, {
+                filter: (structure) => {
+                    return [STRUCTURE_LINK, STRUCTURE_CONTAINER].includes(structure.structureType);
+               }
+            }).sort((a, b) => {
+                const priority = [STRUCTURE_LINK, STRUCTURE_CONTAINER];
+                return priority.indexOf(a.structureType) - priority.indexOf(b.structureType);
+            });
         }
-    }).sort((a, b) => {
-        const priority = [STRUCTURE_LINK, STRUCTURE_CONTAINER, STRUCTURE_STORAGE];
-        return priority.indexOf(a.structureType) - priority.indexOf(b.structureType);
-    });
 
     if(targets.length > 0) {
         for(const target of targets) {
