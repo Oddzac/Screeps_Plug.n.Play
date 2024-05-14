@@ -22,36 +22,24 @@ var utilities = {
     
             
 
-        //Structure counts (> 0 determines behavior)
-        const containerCount = creep.room.find(FIND_STRUCTURES, {
-            filter: (s) => (s.structureType === STRUCTURE_CONTAINER)
-        }).length;
-        const storageCount = creep.room.find(FIND_STRUCTURES, {
-            filter: (s) => (s.structureType === STRUCTURE_STORAGE)
-        }).length;
-        
-        // Attempt to find a container with energy
-        const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
-            filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
-                            s.store[RESOURCE_ENERGY] > 100 // Only withdraw if sufficient reserve
-        });
+
+        const storage = creep.room.storage;
+        const storageEnergy = creep.room.storage.store[RESOURCE_ENERGY]
+        if (!storage) {
+            const containerCount = creep.room.find(FIND_STRUCTURES, {
+                filter: (s) => (s.structureType === STRUCTURE_CONTAINER)
+            }).length;
+            // Attempt to find a container with energy
+            const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
+                filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
+                                s.store[RESOURCE_ENERGY] > 100 // Only withdraw if sufficient reserve
+            });
+        }
 
         // Attempt to find storage with energy
-        const storageWithEnergy = creep.room.find(FIND_STRUCTURES, {
-            filter: (s) => (s.structureType === STRUCTURE_STORAGE) &&
-                            s.store[RESOURCE_ENERGY] > 500 // Only withdraw if sufficient reserve
-        });
-
-        if (storageCount > 0) {
-            if (storageWithEnergy.length > 0) {
-                // If storage with energy is found, prioritize the closest one
-                const closestStorage = creep.pos.findClosestByPath(storageWithEnergy);
-                if (closestStorage) {
-                    creep.memory.sourceId = closestStorage.id;
-                    creep.memory.sourceType = 'storage';
-                    // No need to re-select a source if one is found
-                    return this.attemptEnergyWithdrawal(creep, closestStorage);
-                }
+        if (storage) {
+            if (storageEnergy > 500) {
+                return this.attemptEnergyWithdrawal(creep, storage);
             } else {
                 this.waitStrategically(creep);
             }
