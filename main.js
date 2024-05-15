@@ -30,7 +30,7 @@ module.exports.loop = function() {
         }
         // Med-Term (1hr)
         if (Game.time % 1200 === 0) {
-    
+        
         }
         // Long-Term Memory (5hr)
         if (Game.time % 6000 === 0) {
@@ -55,7 +55,7 @@ module.exports.loop = function() {
 
             // Med-Term (1hr)
             if (Game.time % 1200 === 0) {
-                
+                construction.connectExtensionsToStorage(room.name);  
             }
             
             // Long-Term Memory (5hr)
