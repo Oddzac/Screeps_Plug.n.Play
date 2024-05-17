@@ -48,7 +48,7 @@ const linker = {
 
         room.memory.links.childLinks.forEach(childLinkId => {
             const childLink = Game.getObjectById(childLinkId);
-            if (childLink && childLink.store.getUsedCapacity(RESOURCE_ENERGY) > 200) {
+            if (childLink && childLink.store.getUsedCapacity(RESOURCE_ENERGY) > 199) {
                 childLink.transferEnergy(masterLink);
             }
         });
