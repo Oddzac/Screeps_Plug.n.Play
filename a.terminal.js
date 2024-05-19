@@ -260,30 +260,35 @@ var marketManager = {
     updateMarketPrices: function() {
         const resources = Object.keys(Memory.marketData.resources);
         resources.forEach(resource => {
-
             let orders = Game.market.getAllOrders({ resourceType: resource, type: ORDER_SELL })
-                .filter(o => o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
+                .filter(o => !Game.rooms[o.roomName] || o.roomName !== Game.rooms[Object.keys(Game.rooms)[0]].name);
     
-            if (orders.length > 2) {
-                orders.sort((a, b) => a.price - b.price);
+            let data = Memory.marketData.resources[resource];
+            
+            if (orders.length > 0) {
+                if (orders.length > 2) {
+                    orders.sort((a, b) => a.price - b.price);
     
-                // Determine weights based on price gaps
-                const weights = new Array(orders.length).fill(1); // Start with a base weight of 1 for all orders
-                for (let i = 1; i < orders.length; i++) {
-                    if ((orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
-                        // Reduce weight by 75% if the price jump from the previous order is more than 10%
-                        weights[i] = weights[i - 1] * 0.30;
-                    } else {
-                        weights[i] = weights[i - 1]; // Maintain the same weight as the previous order if there's no significant gap
+                    // Determine weights based on price gaps
+                    const weights = new Array(orders.length).fill(1); // Start with a base weight of 1 for all orders
+                    for (let i = 1; i < orders.length; i++) {
+                        if ((orders[i].price - orders[i - 1].price) > (orders[i - 1].price * 0.1)) {
+                            // Reduce weight by 70% if the price jump from the previous order is more than 10%
+                            weights[i] = weights[i - 1] * 0.30;
+                        } else {
+                            weights[i] = weights[i - 1]; // Maintain the same weight as the previous order if there's no significant gap
+                        }
                     }
+    
+                    // Calculate weighted average
+                    let totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
+                    let weightedSum = orders.reduce((acc, order, index) => acc + order.price * weights[index], 0);
+                    var weightedAverage = weightedSum / totalWeight;
+                } else {
+                    // Simple average for <= 2 orders
+                    var weightedAverage = orders.reduce((acc, order) => acc + order.price, 0) / orders.length;
                 }
     
-                // Calculate weighted average
-                let totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
-                let weightedSum = orders.reduce((acc, order, index) => acc + order.price * weights[index], 0);
-                let weightedAverage = weightedSum / totalWeight;
-    
-                let data = Memory.marketData.resources[resource];
                 data.averagePrices.push(weightedAverage);
     
                 if (data.averagePrices.length > 10) {
@@ -291,10 +296,15 @@ var marketManager = {
                 }
     
                 data.avgPrice = data.averagePrices.reduce((acc, price) => acc + price, 0) / data.averagePrices.length;
-                data.lastUpdate = Game.time;
+            } else {
+                // Handle case with no orders, set avgPrice to 0 or maintain previous value
+                data.avgPrice = 0;
             }
+    
+            data.lastUpdate = Game.time;
         });
     },
+    
 
 
 
