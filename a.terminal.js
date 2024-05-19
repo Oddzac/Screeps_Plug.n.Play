@@ -5,7 +5,7 @@
 var marketManager = {
 
     globalMarketManagement: function() {
-        
+        this.updateMarketPrices();
         if (Game.time % 50 === 0) {
             this.updatePL();
             this.purchaseUnderpricedResources();
@@ -68,7 +68,7 @@ var marketManager = {
             return;
         }
     
-        Object.keys(Memory.marketData).forEach(resource => {
+        Object.keys(Memory.marketData.resources).forEach(resource => {
             const resourceData = Memory.marketData.resources[resource];
             const avgPrice = resourceData.avgPrice;
             const maxPriceToPay = avgPrice * (1 - DISCOUNT_THRESHOLD);
