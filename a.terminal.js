@@ -69,7 +69,7 @@ var marketManager = {
         }
     
         Object.keys(Memory.marketData).forEach(resource => {
-            const resourceData = Memory.marketData[resource];
+            const resourceData = Memory.marketData.resources[resource];
             const avgPrice = resourceData.avgPrice;
             const maxPriceToPay = avgPrice * (1 - DISCOUNT_THRESHOLD);
     
@@ -109,11 +109,11 @@ var marketManager = {
                         let terminal = terminals.length > 0 ? terminals[0] : null;
                         let currentQuantity = terminal ? terminal.store[resource] || 0 : 0; // Existing quantity before purchase
 
-                        if (Memory.marketData[resource].costBasis === 0 && currentQuantity === 0) {
-                            Memory.marketData[resource].costBasis = orderToBuy.price;
+                        if (Memory.marketData.resources[resource].costBasis === 0 && currentQuantity === 0) {
+                            Memory.marketData.resources[resource].costBasis = orderToBuy.price;
                         } else {
-                            let newCostBasis = ((Memory.marketData[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
-                            Memory.marketData[resource].costBasis = newCostBasis;
+                            let newCostBasis = ((Memory.marketData.resources[resource].costBasis * currentQuantity) + totalCost) / (currentQuantity + amountToBuy);
+                            Memory.marketData.resources[resource].costBasis = newCostBasis;
 
                             console.log(`[PurchaseResource] New Cost Basis for ${resource}: ${newCostBasis}`);
                         }
@@ -273,15 +273,15 @@ var marketManager = {
         const latestAvgPrice = latestRecord.avgPrice;
 
         // Update Memory with the latest average price
-        Memory.marketData[resource].avgPrice = latestAvgPrice;
-        Memory.marketData[resource].lastUpdate = Game.time;
+        Memory.marketData.resources[resource].avgPrice = latestAvgPrice;
+        Memory.marketData.resources[resource].lastUpdate = Game.time;
     } else {
         console.log('No history available for', resource);
         // Optionally handle resources with no history data, e.g., by keeping the old avgPrice or setting a default
     }
 
     // Use the updated or existing avgPrice
-    const avgPrice = Memory.marketData[resource].avgPrice;
+    const avgPrice = Memory.marketData.resources[resource].avgPrice;
     console.log(resource, 'average price:', avgPrice);
 });
 
@@ -310,7 +310,7 @@ var marketManager = {
                 let weightedSum = orders.reduce((acc, order, index) => acc + order.price * weights[index], 0);
                 let weightedAverage = weightedSum / totalWeight;
     
-                let data = Memory.marketData[resource];
+                let data = Memory.marketData.resources[resource];
                 data.averagePrices.push(weightedAverage);
     
                 if (data.averagePrices.length > 10) {

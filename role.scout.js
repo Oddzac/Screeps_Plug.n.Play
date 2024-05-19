@@ -54,17 +54,17 @@ var roleScout = {
               }
           } else {
               // If within 5 tiles, set accessibleController flag to true
-              if (!Memory.scoutedRooms[creep.room.name]) {
-                  Memory.scoutedRooms[creep.room.name] = {};
+              if (!Memory.conquest.scoutedRooms[creep.room.name]) {
+                  Memory.conquest.scoutedRooms[creep.room.name] = {};
               }
-              Memory.scoutedRooms[creep.room.name].accessibleController = true;
+              Memory.conquest.scoutedRooms[creep.room.name].accessibleController = true;
               // Reset move attempts counter
               creep.memory.moveAttempts = 0;
           }
 
           // Consider the controller inaccessible if move attempts exceed a threshold (e.g., 50 attempts)
           if (creep.memory.moveAttempts > 50) {
-              Memory.scoutedRooms[creep.room.name].accessibleController = false;
+              Memory.conquest.scoutedRooms[creep.room.name].accessibleController = false;
               console.log('Controller in', creep.room.name, 'is deemed inaccessible.');
               // Reset move attempts counter to prevent repeated logging
               creep.memory.moveAttempts = 0;
@@ -158,17 +158,17 @@ var roleScout = {
       
         // Determine if the room is claimable
         if (roomInfo.hasController && !roomInfo.owner) {
-          Memory.claimRooms[roomInfo.name] = true;
+          Memory.conquest.claimRooms[roomInfo.name] = true;
         }
 
         // Determine if the room is attack target (check that room owner formatted correctly) 
         if (roomInfo.hasController && roomInfo.owner !== 'Odd-z') {
-          Memory.targetRooms[roomInfo.name] = true;
+          Memory.conquest.targetRooms[roomInfo.name] = true;
         }
       
         // Avoid duplicating info
-        if (!Memory.scoutedRooms[roomInfo.name]) {
-          Memory.scoutedRooms[roomInfo.name] = roomInfo;
+        if (!Memory.conquest.scoutedRooms[roomInfo.name]) {
+          Memory.conquest.scoutedRooms[roomInfo.name] = roomInfo;
         }
       
         console.log(`Scouting report for room ${roomInfo.name}: `, JSON.stringify(roomInfo));

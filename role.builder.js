@@ -141,7 +141,7 @@ var roleBuilder = {
 //DYNAMICALLY SET TARGET ROOM
     performAway: function(creep) {
         // Define the target room for the away team
-        const claimRooms = Object.keys(Memory.claimRooms).filter(roomName => Memory.claimRooms[roomName] === true);
+        const claimRooms = Object.keys(Memory.conquest.claimRooms).filter(roomName => Memory.conquest.claimRooms[roomName] === true);
         const targetRoom = creep.memory.targetRoom; 
         // Check if the creep is in the target room
         if (creep.room.name !== targetRoom) {

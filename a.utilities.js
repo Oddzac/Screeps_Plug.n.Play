@@ -20,8 +20,6 @@ var utilities = {
             creep.memory.avoidingHostiles = false;
         }
     
-            
-
 
         const storage = creep.room.storage;
         const storageEnergy = creep.room.storage.store[RESOURCE_ENERGY]

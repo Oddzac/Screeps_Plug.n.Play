@@ -1,9 +1,9 @@
 var roleClaimer = {
     run: function(creep) {
-        if (!Memory.claimRooms) Memory.claimRooms = {};
+        if (!Memory.conquest.claimRooms) Memory.conquest.claimRooms = {};
 
         if (!creep.memory.targetRoom) {
-            const targetRoomName = Object.keys(Memory.claimRooms)[0];
+            const targetRoomName = Object.keys(Memory.conquest.claimRooms)[0];
             if (targetRoomName) {
                 creep.memory.targetRoom = targetRoomName;
             } else {
@@ -109,12 +109,12 @@ module.exports = roleClaimer;
 var roleClaimer = {
     run: function(creep) {
         // Check if targetRoom is already set or if claimRooms is undefined
-        if (!creep.memory.targetRoom || !Memory.claimRooms) {
-            // Initialize Memory.claimRooms if it doesn't exist
-            if (!Memory.claimRooms) Memory.claimRooms = {};
+        if (!creep.memory.targetRoom || !Memory.conquest.claimRooms) {
+            // Initialize Memory.conquest.claimRooms if it doesn't exist
+            if (!Memory.conquest.claimRooms) Memory.conquest.claimRooms = {};
 
-            // Find the first room in Memory.claimRooms to claim
-            const targetRoomName = Object.keys(Memory.claimRooms)[0]; // Get the first room name
+            // Find the first room in Memory.conquest.claimRooms to claim
+            const targetRoomName = Object.keys(Memory.conquest.claimRooms)[0]; // Get the first room name
             if (targetRoomName) {
                 creep.memory.targetRoom = targetRoomName;
             } else {

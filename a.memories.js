@@ -4,7 +4,6 @@ PHASE STRUCTURE:
 Phase 1 (RCL 1)
 SPAWN
 X Base Worker Blueprint: [W,C,M]
-X Population Based Spawns: Hrv(20%) Hal(20%) Bld(30%) Upg(30%)
 MEMORY
 X Energy To Use: 100%
 ROLE
@@ -93,28 +92,6 @@ var memories = {
             }
         } 
         
-
-        
-        //Clean and maintain Hauler drop claims
-        for (const [dropId, dropInfo] of Object.entries(Memory.claimedDrops)) {
-        const drop = Game.getObjectById(dropId);
-            if (!drop || drop.amount === 0) {
-                delete Memory.claimedDrops[dropId];
-            } else {
-                dropInfo.energy = drop.amount;
-    
-                // Ensure haulers array is initialized
-                if (!dropInfo.haulers) {
-                    dropInfo.haulers = [];
-                } else {
-                    // Clean up the list of haulers
-                    dropInfo.haulers = dropInfo.haulers.filter(haulerId => Game.getObjectById(haulerId));
-                    if (dropInfo.haulers.length === 0) {
-                        delete Memory.claimedDrops[dropId];
-                    }
-                }
-            }
-        }
         
         //Assign Creep roles
         for (var name in Game.creeps) {
@@ -134,13 +111,19 @@ var memories = {
 
         
 
-        for (const roomName in Memory.claimRooms) {
+        for (const roomName in Memory.conquest.claimRooms) {
             // Check if the Game object has the room, and if so, whether you own the controller
             if (Game.rooms[roomName] && Game.rooms[roomName].controller && Game.rooms[roomName].controller.my) {
-                // Room is claimed by you, so remove it from Memory.claimRooms
-                delete Memory.claimRooms[roomName];
+                // Room is claimed by you, so remove it from Memory.conquest.claimRooms
+                delete Memory.conquest.claimRooms[roomName];
                 console.log('Removing claimed room from memory:', roomName);
             }
+
+            // Check for hostiles
+            Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
+                filter: (creep) => creep.owner.username !== "Source Keeper"
+            }).length > 0;
+
         }
 
 
@@ -149,83 +132,88 @@ var memories = {
         
     //Initialize Memory
     memInit: function() {
-        // Initialize global memory objects if they don't exist
-        if (!Memory.claimedDrops) Memory.claimedDrops = {};
-        if (!Memory.terrainData) Memory.terrainData = {};
-        if (!Memory.costMatrices) Memory.costMatrices = {};
+        // GLOBAL MEM
+        //
+        //
         if (!Memory.rooms) Memory.rooms = {};
-        if (!Memory.claimRooms) Memory.claimRooms = {};
-        if (!Memory.targetRooms) Memory.targetRooms = {};
-        if (!Memory.scoutedRooms) Memory.scoutedRooms = {};
-        if (!Memory.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
-        if (!Memory.marketData) {
-            Memory.marketData = {};
-            
 
-            // Initialize P&L tracking object
-            Memory.marketData.PL = {
-                lastCredits: 0,
-                PL: 0
-            };
+        // Conquest - Attack, Claim, Scout targets
+        if (!Memory.conquest) Memory.conquest = {}
+        if (!Memory.conquest.claimRooms) Memory.claimRooms = {};
+        if (!Memory.conquest.targetRooms) Memory.conquest.targetRooms = {};
+        if (!Memory.conquest.scoutedRooms) Memory.conquest.scoutedRooms = {};
+        if (!Memory.conquest.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
 
-            if (!Memory.marketData.marketSummary.soldQuantities[resourceType]) {
-                Memory.marketData.marketSummary.soldQuantities[resourceType] = { quantity: 0, creditsEarned: 0 };
-            }
 
-            RESOURCES_ALL.forEach(resource => {
-                Memory.marketData[resource] = {
+        // Market Data
+        if (!Memory.marketData) Memory.marketData = {};
+        if (!Memory.marketData.PL) {
+            Memory.marketData.PL = { lastCredits: 0, PL: 0 };
+        }
+        if (!Memory.marketData.marketSummary) {
+            Memory.marketData.marketSummary = { soldQuantities: {}, purchasedQuantities: {} };
+        }
+        if (!Memory.marketData.resources) {
+            Memory.marketData.resources = {};
+        }
+        
+        RESOURCES_ALL.forEach(resource => {
+            if (!Memory.marketData.resources[resource]) {
+                Memory.marketData.resources[resource] = {
                     avgPrice: 0,
                     costBasis: 0,
                     averagePrices: [],
                     orders: {},
                     lastUpdate: Game.time
                 };
-            });
-        
-
-        }
-        if (!Memory.marketData.marketSummary) Memory.marketData.marketSummary = {};
-        if (!Memory.marketData.marketSummary.soldQuantities) Memory.marketData.marketSummary.soldQuantities = {};
-        
-        
-    
-        // Loop through each room to initialize or update room-specific memory
-        Object.keys(Game.rooms).forEach(roomName => {
-            const room = Game.rooms[roomName];
-    
-            //if (!Memory.rooms[room.name].tradeSummary) {
-                //Memory.rooms[room.name].tradeSummary = { creditsEarned: 0, lastUpdate: Game.time };
-            //}
-            // Initialize room memory object if it doesn't exist
-            if (!Memory.rooms[roomName]) {
-                Memory.rooms[roomName] = {
-                    phase: { Phase: 1, RCL: room.controller.level },
-                    underAttack: room.find(FIND_HOSTILE_CREEPS).length > 0,
-                    scoutingComplete: false,
-                    nextSpawnRole: null,
-                    spawnMode: { mode: null, energyToUse: 0 },
-                    tradeSummary:{ creditsEarned: 0, lastUpdate: Game.time },
-                    constructionRuns: 0,
-                    constructionEnergyRequired: 0,
-                    containersBuilt: 0,
-                    storageBuilt: 0,
-                    extractorBuilt: 0,
-                    linksBuilt: 0,
-                    terminalBuilt: 0,
-                    towersBuilt: 0,
-                    pathCache: {},
-                    claimedDrops: {},
-                };
-            } else {
-                // Update existing room memory objects
-                Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
-                    filter: (creep) => creep.owner.username !== "Source Keeper"
-                }).length > 0;
-                // Additional updates can be made here as needed
             }
         });
+        
+        
     
-        // Other memory initialization or cleanup tasks can be added here
+        // LOCAL MEM
+        //
+        //
+        Object.keys(Game.rooms).forEach(roomName => {
+            const room = Game.rooms[roomName];
+            // Initialize room memory object if it doesn't exist
+            if (!Memory.rooms[roomName]) {
+                Memory.rooms[roomName] = {};
+
+            } else {
+
+                if (!Memory.rooms[roomName].phase) {Memory.rooms[roomName].phase = { Phase: 1, RCL: room.controller.level }}
+                if (!Memory.rooms[roomName].underAttack) {Memory.rooms[roomName].underAttack = false}
+                if (!Memory.rooms[roomName].scoutingComplete) {Memory.rooms[roomName].scoutingComplete = false}
+
+                //Spawning
+                if (!Memory.rooms[roomName].spawning) {Memory.rooms[roomName].spawning = {
+                    nextSpawnRole: null,
+                    spawnMode: {mode: null, energyToUse: 0},
+                    desiredCounts: {}
+                }}
+
+                //Construction
+                if (!Memory.rooms[roomName].construct) {Memory.rooms[roomName].construct = {
+                    extensionRadius: 0,
+                    structureCount: {
+                        containers: {built: 0, pending: 0},
+                        storage: {built: 0, pending: 0},
+                        extractor: {built: 0, pending: 0},
+                        links: {built: 0, pending: 0},
+                        terminal: {built: 0, pending: 0},
+                        towers: {built: 0, pending: 0},
+                    },
+                }}
+
+                if (!Memory.rooms[roomName].weightedCenter) Memory.rooms[roomName].weightedCenter = {x: 0,y: 0}
+
+                //Mapping
+                if (!Memory.rooms[roomName].mapping) Memory.rooms[roomName].mapping = {}
+                if (!Memory.rooms[roomName].mapping.terrainData) Memory.rooms[roomName].mapping.terrainData = {};
+                if (!Memory.rooms[roomName].mapping.costMatrix) Memory.rooms[roomName].mapping.costMatrix = {};
+            }
+        });
     },
     
     // Manage memory governing spawn behavior
@@ -755,16 +743,16 @@ var memories = {
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
             // Check if we already have the terrain data stored
-            if (!Memory.terrainData || !Memory.terrainData[roomName]) {
+            if (!Memory.rooms[roomName] || !Memory.rooms[roomName].mapping.terrainData) {
                 // If not, retrieve and store it
                 const terrain = room.getTerrain();
-                Memory.terrainData = Memory.terrainData || {};
-                Memory.terrainData[roomName] = [];
+                Memory.rooms[roomName].mapping.terrainData = Memory.rooms[roomName].mapping.terrainData || {};
+                Memory.rooms[roomName].mapping.terrainData = [];
                 for (let y = 0; y < 50; y++) {
                     for (let x = 0; x < 50; x++) {
                         const terrainType = terrain.get(x, y);
                         // Store terrain type; 0: plain, 1: wall, 2: swamp
-                        Memory.terrainData[roomName].push(terrainType);
+                        Memory.rooms[roomName].mapping.terrainData.push(terrainType);
                     }
                 }
                 console.log(`Terrain data cached for room: ${roomName}`);
@@ -774,12 +762,12 @@ var memories = {
     },
 
     cacheRoomCostMatrix: function(roomName) {
-        if (!Memory.terrainData || !Memory.terrainData[roomName]) {
+        if (!Memory.rooms[roomName] || !Memory.rooms[roomName].mapping || !Memory.rooms[roomName].mapping.terrainData) {
             console.log('Terrain data for room not found:', roomName);
             return;
         }
     
-        var terrain = Memory.terrainData[roomName];
+        var terrain = Memory.rooms[roomName].mapping.terrainData;
         var costMatrix = new PathFinder.CostMatrix();
     
         for (let y = 0; y < 50; y++) {
@@ -795,8 +783,8 @@ var memories = {
             }
         }
     
-        Memory.costMatrices = Memory.costMatrices || {};
-        Memory.costMatrices[roomName] = costMatrix.serialize();
+
+        Memory.rooms[roomName].mapping.costMatrix = costMatrix.serialize();
     },
 
     
