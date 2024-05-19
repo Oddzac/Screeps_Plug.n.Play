@@ -139,7 +139,7 @@ var memories = {
 
         // Conquest - Attack, Claim, Scout targets
         if (!Memory.conquest) Memory.conquest = {}
-        if (!Memory.conquest.claimRooms) Memory.claimRooms = {};
+        if (!Memory.conquest.claimRooms) Memory.conquest.claimRooms = {};
         if (!Memory.conquest.targetRooms) Memory.conquest.targetRooms = {};
         if (!Memory.conquest.scoutedRooms) Memory.conquest.scoutedRooms = {};
         if (!Memory.conquest.roomClaimsAvailable) Memory.conquest.roomClaimsAvailable = 0;
