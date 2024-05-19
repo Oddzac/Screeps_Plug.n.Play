@@ -79,9 +79,9 @@ var memories = {
         const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
         const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
         // Update claims available
-        if (roomsAvailableToClaim != Memory.roomClaimsAvailable) {
+        if (roomsAvailableToClaim != Memory.conquest.roomClaimsAvailable) {
             console.log('Updating available claims...');
-            Memory.roomClaimsAvailable = roomsAvailableToClaim;
+            Memory.conquest.roomClaimsAvailable = roomsAvailableToClaim;
         }
         
         //Dearly departed, we are gathered here today... (clear creep names)
@@ -142,7 +142,7 @@ var memories = {
         if (!Memory.conquest.claimRooms) Memory.claimRooms = {};
         if (!Memory.conquest.targetRooms) Memory.conquest.targetRooms = {};
         if (!Memory.conquest.scoutedRooms) Memory.conquest.scoutedRooms = {};
-        if (!Memory.conquest.roomClaimsAvailable) Memory.roomClaimsAvailable = 0;
+        if (!Memory.conquest.roomClaimsAvailable) Memory.conquest.roomClaimsAvailable = 0;
 
 
         // Market Data
