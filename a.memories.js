@@ -646,7 +646,9 @@ var memories = {
         const currentPhase = Memory.rooms[room.name].phase.Phase;
         const rcl = room.controller.level;
         let transitioned = false;
-    
+
+        currentPhase = rcl;
+    /*
         switch (currentPhase) {
             case 1:
                 // Phase 1 to Phase 2 transition: RCL reaches 2
@@ -713,6 +715,8 @@ var memories = {
     handlePhaseTransitionActions: function(room) {
         // Placeholder for actions to perform upon entering a new phase
         console.log(`Performing transition actions for Room ${room.name}.`);
+
+*/
     },
         
 
