@@ -11,11 +11,11 @@ var spawner = {
 calculateDesiredCounts: function(room) {
     const phase = Memory.rooms[room.name].phase.Phase;
     const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-    const linksBuilt = Memory.rooms[room.name].linksBuilt;
-    const extractorBuilt = Memory.rooms[room.name].extractorBuilt;
-    const terminalBuilt = Memory.rooms[room.name].terminalBuilt;
+    const linksBuilt = Memory.rooms[room.name].construct.links.built;
+    const extractorBuilt = Memory.rooms[room.name].construct.extractor.built;
+    const terminalBuilt = Memory.rooms[room.name].construct.terminal.built;
     const scouted = Memory.rooms[room.name].scoutingComplete;
-    const roomClaimsAvailable = Memory.roomClaimsAvailable;
+    const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
     const claimers = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_claimer")).length;
     const scouts = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_scout")).length;
     let desiredCounts = {};
@@ -217,7 +217,7 @@ calculateDesiredCounts: function(room) {
         memories.spawnMode(room, nextSpawnRole);
 
         // Determine spawn mode and adjust energyToUse based on this mode   
-        let energyToUse = Memory.rooms[room.name].spawnMode.energyToUse;
+        let energyToUse = Memory.rooms[room.name].spawning.spawnMode.energyToUse;
 
     
         // Check if the available energy meets the requirement for the current spawn mode
@@ -235,7 +235,7 @@ calculateDesiredCounts: function(room) {
     // Handles spawning after need and energy are determined.
     spawnCreepWithRole: function(role, energyToUse, phase, room) {
        //console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
-        let spawnMode = Memory.rooms[room.name].spawnMode.mode;
+        let spawnMode = Memory.rooms[room.name].spawning.spawnMode.mode;
         const body = this.getBodyPartsForRole(role, energyToUse, phase, spawnMode);
         //console.log(`${room} - ${role} , Body: ${body}`);
 
