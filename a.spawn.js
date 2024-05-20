@@ -181,7 +181,7 @@ calculateDesiredCounts: function(room) {
         
         //console.log(`${totalEnergyRequired}`);
         //console.log(`${JSON.stringify(desiredCounts)}`);
-        Memory.rooms[room.name].desiredCounts = desiredCounts;
+        Memory.rooms[room.name].spawning.desiredCounts = desiredCounts;
         return desiredCounts;
         
     },
@@ -213,7 +213,7 @@ calculateDesiredCounts: function(room) {
             }
         }
         // Broadcast planned spawn
-        Memory.rooms[room.name].nextSpawnRole = nextSpawnRole;
+        Memory.rooms[room.name].spawning.nextSpawnRole = nextSpawnRole;
         memories.spawnMode(room, nextSpawnRole);
 
         // Determine spawn mode and adjust energyToUse based on this mode   
