@@ -138,27 +138,26 @@ var memories = {
         if (!Memory.rooms) Memory.rooms = {};
 
         // Conquest - Attack, Claim, Scout targets
-        if (!Memory.conquest) Memory.conquest = {}
-        if (!Memory.conquest.claimRooms) Memory.conquest.claimRooms = {};
-        if (!Memory.conquest.targetRooms) Memory.conquest.targetRooms = {};
-        if (!Memory.conquest.scoutedRooms) Memory.conquest.scoutedRooms = {};
-        if (!Memory.conquest.roomClaimsAvailable) Memory.conquest.roomClaimsAvailable = 0;
+        if (!Memory.conquest) {
+            Memory.conquest = {
+                claimRooms: {},
+                targetRooms: {},
+                scoutedRooms: {},
+                roomClaimsAvailable: 0,
+            }
+        }
 
 
         // Market Data
-        if (!Memory.marketData) Memory.marketData = {};
-        if (!Memory.marketData.PL) {
-            Memory.marketData.PL = { lastCredits: 0, PL: 0 };
-        }
-        if (!Memory.marketData.marketSummary) {
-            Memory.marketData.marketSummary = { soldQuantities: {}, purchasedQuantities: {} };
-        }
-        if (!Memory.marketData.resources) {
-            Memory.marketData.resources = {};
-        }
+        if (!Memory.marketData) {
+            Memory.marketData = {
+                PL: {lastCredits: 0, PL: 0},
+                marketSummary: {soldQuantities: {}, purchasedQuantities: {}},
+                resources: {},
+            };
+
         
-        RESOURCES_ALL.forEach(resource => {
-            if (!Memory.marketData.resources[resource]) {
+            RESOURCES_ALL.forEach(resource => {
                 Memory.marketData.resources[resource] = {
                     avgPrice: 0,
                     costBasis: 0,
@@ -166,8 +165,8 @@ var memories = {
                     orders: {},
                     lastUpdate: Game.time
                 };
-            }
-        });
+            });
+        }
         
         
     
