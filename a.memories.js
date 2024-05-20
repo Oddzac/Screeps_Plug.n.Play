@@ -75,7 +75,7 @@ var memories = {
     immediateMemory: function() {
         
         this.memInit();
-            this.updateRoomPhase(room);
+  
         const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
         const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
         // Update claims available
@@ -118,6 +118,8 @@ var memories = {
                 delete Memory.conquest.claimRooms[roomName];
                 console.log('Removing claimed room from memory:', roomName);
             }
+
+          this.updateRoomPhase(roomName);
 
             // Check for hostiles
             Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
