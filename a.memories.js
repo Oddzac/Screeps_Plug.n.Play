@@ -119,8 +119,6 @@ var memories = {
                 console.log('Removing claimed room from memory:', roomName);
             }
 
-            this.updateRoomPhase(roomName);
-
             // Check for hostiles
             Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
                 filter: (creep) => creep.owner.username !== "Source Keeper"
@@ -177,6 +175,7 @@ var memories = {
         //
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
+            this.updateRoomPhase(roomName);
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
