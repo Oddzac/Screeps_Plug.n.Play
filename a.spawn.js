@@ -10,10 +10,11 @@ var spawner = {
 // Phase-based spawning counts
 calculateDesiredCounts: function(room) {
     const phase = Memory.rooms[room.name].phase.Phase;
+    const structureCount = Memory.rooms[room.name].construct.structureCount;
     const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-    const linksBuilt = Memory.rooms[room.name].construct.links.built;
-    const extractorBuilt = Memory.rooms[room.name].construct.extractor.built;
-    const terminalBuilt = Memory.rooms[room.name].construct.terminal.built;
+    const linksBuilt = structureCount.links.built;
+    const extractorBuilt = structureCount.extractor.built;
+    const terminalBuilt = structureCount.terminal.built;
     const scouted = Memory.rooms[room.name].scoutingComplete;
     const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
     const claimers = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_claimer")).length;
