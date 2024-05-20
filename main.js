@@ -27,6 +27,7 @@ module.exports.loop = function() {
         // Short-Term Memory (30min)
         if (Game.time % 600 === 0) {
             memories.shortTerm();
+
         }
         // Med-Term (1hr)
         if (Game.time % 1200 === 0) {
@@ -50,7 +51,7 @@ module.exports.loop = function() {
 
             // Short-Term (30min)
             if (Game.time % 600 === 0) {
-
+                construction.countStructures(room);
             }
 
             // Med-Term (1hr)
