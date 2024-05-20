@@ -40,7 +40,6 @@ module.exports.loop = function() {
 
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
-            construction.countStructures(room);
             memories.spawnMode(room);
             // Memory Cleanup
 
