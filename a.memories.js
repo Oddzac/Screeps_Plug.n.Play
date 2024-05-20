@@ -639,21 +639,6 @@ var memories = {
 
         // Update the current RCL in memory (useful for tracking progress and phase changes)
         Memory.rooms[room.name].phase.RCL = room.controller.level;
-    
-        const containersBuilt = room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_CONTAINER }}).length;
-        const towersBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER }}).length;
-        const storageBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE }}).length;
-        const linksBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK }}).length;
-        const extractorBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTRACTOR }}).length;
-        const terminalBuilt = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TERMINAL }}).length;
-
-
-        Memory.rooms[room.name].containersBuilt = containersBuilt;
-        Memory.rooms[room.name].towersBuilt = towersBuilt;
-        Memory.rooms[room.name].storageBuilt = storageBuilt;
-        Memory.rooms[room.name].linksBuilt = linksBuilt;
-        Memory.rooms[room.name].extractorBuilt = extractorBuilt;
-        Memory.rooms[room.name].terminalBuilt = terminalBuilt;
 
 
         const currentPhase = Memory.rooms[room.name].phase.Phase;
@@ -671,7 +656,7 @@ var memories = {
                 break;
             case 2:
                 // Phase 2 to Phase 3 transition: RCL reaches 3, and containers are built
-                if (rcl >= 3 && containersBuilt > 1) {
+                if (rcl >= 3) {
                     Memory.rooms[room.name].phase.Phase = 3;
                     console.log(`Room ${room.name} has advanced to Phase 3.`);
                     transitioned = true;
@@ -679,7 +664,7 @@ var memories = {
                 break;
             case 3:
                 // Phase 3 to Phase 4 transition: RCL reaches 4, and a tower is built
-                if (rcl >= 4 && towersBuilt > 0) {
+                if (rcl >= 4) {
                     Memory.rooms[room.name].phase.Phase = 4;
                     console.log(`Room ${room.name} has advanced to Phase 4.`);
                     transitioned = true;
@@ -687,7 +672,7 @@ var memories = {
                 break;
             case 4:
                 // Phase 4 to Phase 5 transition: RCL reaches 5, and storage is built
-                if (rcl >= 5 && storageBuilt > 0) {
+                if (rcl >= 5) {
                     Memory.rooms[room.name].phase.Phase = 5;
                     console.log(`Room ${room.name} has advanced to Phase 5.`);
                     transitioned = true;
