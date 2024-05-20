@@ -119,7 +119,7 @@ var memories = {
                 console.log('Removing claimed room from memory:', roomName);
             }
 
-          this.updateRoomPhase(roomName);
+            this.updateRoomPhase(roomName);
 
             // Check for hostiles
             Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
@@ -643,11 +643,11 @@ var memories = {
         Memory.rooms[room.name].phase.RCL = room.controller.level;
 
 
-        const currentPhase = Memory.rooms[room.name].phase.Phase;
+        const currentPhase = Memory.rooms[room.name].phase;
         const rcl = room.controller.level;
         let transitioned = false;
 
-        currentPhase = rcl;
+        currentPhase.Phase = rcl;
     /*
         switch (currentPhase) {
             case 1:
