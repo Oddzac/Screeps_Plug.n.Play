@@ -650,7 +650,7 @@ var memories = {
         switch (currentPhase) {
             case 1:
                 // Phase 1 to Phase 2 transition: RCL reaches 2
-                if (rcl >= 2) {
+                if (rcl = 2) {
                     Memory.rooms[room.name].phase.Phase = 2;
                     console.log(`Room ${room.name} has advanced to Phase 2.`);
                     transitioned = true;
@@ -658,7 +658,7 @@ var memories = {
                 break;
             case 2:
                 // Phase 2 to Phase 3 transition: RCL reaches 3, and containers are built
-                if (rcl >= 3) {
+                if (rcl = 3) {
                     Memory.rooms[room.name].phase.Phase = 3;
                     console.log(`Room ${room.name} has advanced to Phase 3.`);
                     transitioned = true;
@@ -666,7 +666,7 @@ var memories = {
                 break;
             case 3:
                 // Phase 3 to Phase 4 transition: RCL reaches 4, and a tower is built
-                if (rcl >= 4) {
+                if (rcl = 4) {
                     Memory.rooms[room.name].phase.Phase = 4;
                     console.log(`Room ${room.name} has advanced to Phase 4.`);
                     transitioned = true;
@@ -674,7 +674,7 @@ var memories = {
                 break;
             case 4:
                 // Phase 4 to Phase 5 transition: RCL reaches 5, and storage is built
-                if (rcl >= 5) {
+                if (rcl = 5) {
                     Memory.rooms[room.name].phase.Phase = 5;
                     console.log(`Room ${room.name} has advanced to Phase 5.`);
                     transitioned = true;
@@ -682,14 +682,14 @@ var memories = {
                 break;
 
             case 5:
-                if (rcl >= 6) {
+                if (rcl = 6) {
                     Memory.rooms[room.name].phase.Phase = 6;
                     console.log(`Room ${room.name} has advanced to Phase 6.`);
                     transitioned = true;
                 }
                 break;
             case 6:
-                if (rcl >= 7) {
+                if (rcl = 7) {
                     Memory.rooms[room.name].phase.Phase = 7;
                     console.log(`Room ${room.name} has advanced to Phase 7.`);
                     transitioned = true;
