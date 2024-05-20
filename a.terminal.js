@@ -196,7 +196,7 @@ var marketManager = {
                 return; // Skip if no terminal is present
             }
     
-            Object.keys(Memory.marketData).forEach(resourceType => {
+            Object.keys(Memory.marketData.resources).forEach(resourceType => {
 
                 let myInventory = terminal.store[resourceType] || 0;
                 if (resourceType === RESOURCE_ENERGY && myInventory < 10000) return; // Skip energy
@@ -319,7 +319,7 @@ var marketManager = {
     },
 
     cleanupOldOrders: function() {
-        Object.keys(Memory.marketData).forEach(resourceType => {
+        Object.keys(Memory.marketData.resources).forEach(resourceType => {
             if (Memory.marketData.resources[resourceType].orders && typeof Memory.marketData.resources[resourceType].orders === 'object') {
                 Object.keys(Memory.marketData.resources[resourceType].orders).forEach(orderId => {
                     if (!Game.market.orders[orderId]) {
@@ -382,7 +382,7 @@ var marketManager = {
         for (const orderId in Game.market.orders) {
             const order = Game.market.orders[orderId];
             if (order.active) {
-                const costBasis = Memory.marketData[order.resourceType] ? Memory.marketData[order.resourceType].costBasis : 'N/A';
+                const costBasis = Memory.marketData.resources[order.resourceType] ? Memory.marketData.resources[order.resourceType].costBasis : 'N/A';
                 summary += `Order ${orderId}: ${order.amount} x ${order.resourceType} @ ${order.price} (Cost Basis: ${costBasis})\n`;
             }
         }
