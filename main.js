@@ -42,7 +42,6 @@ module.exports.loop = function() {
             const room = Game.rooms[roomName];
     
             memories.spawnMode(room);
-            construction.countStructures(room);
             // Memory Cleanup
 
             // Room Terminal MGMT
@@ -52,7 +51,7 @@ module.exports.loop = function() {
 
             // Short-Term (30min)
             if (Game.time % 600 === 0) {
-                construction.countStructures(room);
+                
             }
 
             // Med-Term (1hr)
