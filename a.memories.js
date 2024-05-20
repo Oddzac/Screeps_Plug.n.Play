@@ -156,7 +156,7 @@ var memories = {
                 resources: {},
             };
 
-        
+            //Populate all resources
             RESOURCES_ALL.forEach(resource => {
                 Memory.marketData.resources[resource] = {
                     avgPrice: 0,
@@ -177,42 +177,36 @@ var memories = {
             const room = Game.rooms[roomName];
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
-                Memory.rooms[roomName] = {};
-
-            } else {
-
-                if (!Memory.rooms[roomName].phase) {Memory.rooms[roomName].phase = { Phase: 1, RCL: room.controller.level }}
-                if (!Memory.rooms[roomName].underAttack) {Memory.rooms[roomName].underAttack = false}
-                if (!Memory.rooms[roomName].scoutingComplete) {Memory.rooms[roomName].scoutingComplete = false}
-
-                //Spawning
-                if (!Memory.rooms[roomName].spawning) {Memory.rooms[roomName].spawning = {
-                    nextSpawnRole: null,
-                    spawnMode: {mode: null, energyToUse: 0},
-                    desiredCounts: {}
-                }}
-
-                //Construction
-                if (!Memory.rooms[roomName].construct) {Memory.rooms[roomName].construct = {
-                    extensionRadius: 0,
-                    structureCount: {
-                        containers: {built: 0, pending: 0},
-                        storage: {built: 0, pending: 0},
-                        extractor: {built: 0, pending: 0},
-                        links: {built: 0, pending: 0},
-                        terminal: {built: 0, pending: 0},
-                        towers: {built: 0, pending: 0},
+                Memory.rooms[roomName] = {
+                    phase: {Phase: 1, RCL: room.controller.level},
+                    underAttack: false,
+                    scoutingComplete: false,
+                    spawning: {
+                        nextSpawnRole: null,
+                        spawnMode: {mode: null, energyToUse: 0},
+                        desiredCounts: {} 
                     },
-                }}
+                    construct: {
+                        extensionRadius: 0,
+                        structureCount: {
+                            containers: {built: 0, pending: 0},
+                            storage: {built: 0, pending: 0},
+                            extractor: {built: 0, pending: 0},
+                            links: {built: 0, pending: 0},
+                            terminal: {built: 0, pending: 0},
+                            towers: {built: 0, pending: 0},
+                        },
+                    },
+                    weightedCenter: {x: 0, y: 0},
+                    mapping: {
+                        terrainData: {},
+                        costMatrix: {},
+                    }
 
-                if (!Memory.rooms[roomName].weightedCenter) Memory.rooms[roomName].weightedCenter = {x: 0,y: 0}
-
-                //Mapping
-                if (!Memory.rooms[roomName].mapping) Memory.rooms[roomName].mapping = {}
-                if (!Memory.rooms[roomName].mapping.terrainData) Memory.rooms[roomName].mapping.terrainData = {};
-                if (!Memory.rooms[roomName].mapping.costMatrix) Memory.rooms[roomName].mapping.costMatrix = {};
+                };
             }
         });
+    
     },
     
     // Manage memory governing spawn behavior
