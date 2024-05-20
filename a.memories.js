@@ -640,10 +640,10 @@ var memories = {
 
         // Update the current RCL in memory (useful for tracking progress and phase changes)
         console.log(`${room}...${room.name}`)
-        Memory.rooms[room.name].phase.RCL = room.controller.level;
+        Memory.rooms[room].phase.RCL = room.controller.level;
 
 
-        const currentPhase = Memory.rooms[room.name].phase;
+        const currentPhase = Memory.rooms[room].phase;
         const rcl = room.controller.level;
         let transitioned = false;
 
