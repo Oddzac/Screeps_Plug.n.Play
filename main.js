@@ -42,7 +42,7 @@ module.exports.loop = function() {
             const room = Game.rooms[roomName];
             memories.spawnMode(room);
             // Memory Cleanup
-
+            construction.countStructures(room);
             // Room Terminal MGMT
             if (Game.time % 200 === 0) {
                 terminals.handleRoomTerminal(room);
