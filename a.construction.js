@@ -85,7 +85,7 @@ countStructures: function(room) {
         };
     }
 
-    const structuresCount = Memory.rooms[room.name].structureCount;
+    const structuresCount = Memory.rooms[room.name].construct.structureCount;
 
     // Reset structure counts
     for (let key in structuresCount) {
