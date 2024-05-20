@@ -164,7 +164,7 @@ var marketManager = {
         let orders = Game.market.getAllOrders(order => order.resourceType === resourceType && order.type === ORDER_BUY).sort((a, b) => b.price - a.price);
         if (orders.length > 0) {
             let marketPrice = orders[0].price;
-            if (marketPrice > Memory.marketData[resourceType].costBasis) {
+            if (marketPrice > Memory.marketData.resources[resourceType].costBasis) {
                 let result = Game.market.deal(orders[0].id, amount, room.name);
                 if (result === OK) {
                     this.registerSale(resourceType, amount, marketPrice);
@@ -205,7 +205,7 @@ var marketManager = {
                 sellOrders.sort((a, b) => a.price - b.price);
                 let lowestSellPrice = sellOrders.length > 0 ? sellOrders[0].price : null;
     
-                let marketData = Memory.marketData[resourceType];
+                let marketData = Memory.marketData.resources[resourceType];
                 let costBasis = marketData.costBasis || 0;
                 let profitMargin = 0.01; // Desired profit margin
                 let significantlyLowerThreshold = 0.10; // Price must be at least 10% lower than the lowest sell price
@@ -244,7 +244,7 @@ var marketManager = {
                             roomName: terminal.room.name
                         });
                         if (typeof orderResult === "string") {
-                            Memory.marketData[resourceType].orders[orderResult] = {
+                            Memory.marketData.resources[resourceType].orders[orderResult] = {
                                 remainingAmount: myInventory - SURPLUS_THRESHOLD,
                                 price: myPrice
                             };
@@ -320,10 +320,10 @@ var marketManager = {
 
     cleanupOldOrders: function() {
         Object.keys(Memory.marketData).forEach(resourceType => {
-            if (Memory.marketData[resourceType].orders && typeof Memory.marketData[resourceType].orders === 'object') {
-                Object.keys(Memory.marketData[resourceType].orders).forEach(orderId => {
+            if (Memory.marketData.resources[resourceType].orders && typeof Memory.marketData.resources[resourceType].orders === 'object') {
+                Object.keys(Memory.marketData.resources[resourceType].orders).forEach(orderId => {
                     if (!Game.market.orders[orderId]) {
-                        delete Memory.marketData[resourceType].orders[orderId];
+                        delete Memory.marketData.resources[resourceType].orders[orderId];
                     }
                 });
             }
