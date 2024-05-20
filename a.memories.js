@@ -639,6 +639,7 @@ var memories = {
     updateRoomPhase: function(room) {
 
         // Update the current RCL in memory (useful for tracking progress and phase changes)
+        console.log(`${room}...${room.name}`)
         Memory.rooms[room.name].phase.RCL = room.controller.level;
 
 
