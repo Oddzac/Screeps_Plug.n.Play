@@ -175,7 +175,6 @@ var memories = {
         //
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
-            this.updateRoomTerrainData()
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
