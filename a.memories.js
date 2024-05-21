@@ -175,7 +175,7 @@ var memories = {
         //
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
-            
+            this.updateRoomTerrainData()
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
@@ -353,7 +353,8 @@ var memories = {
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
             // Check if we already have the terrain data stored
-            if (!Memory.rooms[roomName] || !Memory.rooms[roomName].mapping.terrainData) {
+            if (!Memory.rooms[room.name] || !Memory.rooms[room.name].mapping.terrainData) {
+                Memory.rooms[room.name].sources = room.find(FIND_SOURCES).length
                 // If not, retrieve and store it
                 const terrain = room.getTerrain();
                 Memory.rooms[roomName].mapping.terrainData = Memory.rooms[roomName].mapping.terrainData || {};
