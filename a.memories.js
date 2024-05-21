@@ -409,7 +409,7 @@ var memories = {
         const phase = roomMemory.phase.Phase;
         const energyCapacity = room.energyCapacityAvailable;
         const energyAvailable = room.energyAvailable;
-        const energySources = room.find(FIND_SOURCES).length;
+        const energySources = roomMemory.mapping.sources;
 
         if (nextRole === null) {
             roomMemory.spawning.spawnMode = { mode: 'Null', energyToUse: 0 };
