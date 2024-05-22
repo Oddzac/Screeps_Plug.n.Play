@@ -55,7 +55,7 @@ var roleHauler = {
         // Determine task based on room phase and structure availability
         const roomName = creep.room.name;
         const phase = Memory.rooms[creep.room.name].phase.Phase;
-        const structureCount = Memory.rooms[creep.room.name].structureCount;
+        const structureCount = Memory.rooms[creep.room.name].construct.structureCount;
         
         const haulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName);
         const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'spawnHauler');
