@@ -440,7 +440,7 @@ var memories = {
         } else if (nextRole === 'claimer') {
             setSpawnMode('Claimer', config.claimer || 700);
         } else {
-            setSpawnMode('Cap', energyCapacity * config.cap);
+            setSpawnMode(`${config.cap}`, energyCapacity * config.cap);
         }
     }
 
