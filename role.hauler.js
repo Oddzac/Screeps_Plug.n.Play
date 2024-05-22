@@ -55,6 +55,7 @@ var roleHauler = {
         // Determine task based on room phase and structure availability
         const roomName = creep.room.name;
         const phase = Memory.rooms[creep.room.name].phase.Phase;
+        const structureCount = Memory.rooms[creep.room.name].structureCount;
         
         const haulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName);
         const spawnHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'spawnHauler');
@@ -62,10 +63,10 @@ var roleHauler = {
         const terminalHauler = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'terminalHauler');
         const collectors = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'collector');
         const energySources = creep.room.find(FIND_SOURCES).length;
-        const containersBuilt = Memory.rooms[creep.room.name].containersBuilt;
-        const storageBuilt = Memory.rooms[creep.room.name].storageBuilt;
-        const linksBuilt = Memory.rooms[creep.room.name].linksBuilt;
-        const terminalBuilt = Memory.rooms[creep.room.name].terminalBuilt;
+        const containersBuilt = structureCount.containers.built;
+        const storageBuilt = structureCount.storage.built;
+        const linksBuilt = structureCount.links.built;
+        const terminalBuilt = structureCount.terminal.built;
         const extensions = creep.room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_EXTENSION }
         });
