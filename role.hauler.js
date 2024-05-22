@@ -62,12 +62,12 @@ var roleHauler = {
         const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'linkHauler');
         const terminalHauler = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'terminalHauler');
         const collectors = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'collector');
-        const energySources = creep.room.find(FIND_SOURCES).length;
+        const energySources = Memory.rooms[creep.room.name].mapping.sources;
         const containersBuilt = structureCount.containers.built;
         const storageBuilt = structureCount.storage.built;
         const linksBuilt = structureCount.links.built;
         const terminalBuilt = structureCount.terminal.built;
-        const extensions = creep.room.find(FIND_MY_STRUCTURES, {
+        //const extensions = creep.room.find(FIND_MY_STRUCTURES, {
             filter: { structureType: STRUCTURE_EXTENSION }
         });
 
