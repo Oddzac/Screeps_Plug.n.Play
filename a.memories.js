@@ -255,15 +255,7 @@ var memories = {
 
 
         /*
-        structureCount: {
-                            containers: {built: 0, pending: 0},
-                            storage: {built: 0, pending: 0},
-                            extractor: {built: 0, pending: 0},
-                            links: {built: 0, pending: 0},
-                            terminal: {built: 0, pending: 0},
-                            towers: {built: 0, pending: 0},
-                        },
-                        */
+                        
         const structureCount = Memory.rooms[room.name].construct.structureCount;
         const containersBuilt = structureCount.containers.built;
         const storageBuilt = structureCount.storage.built;
@@ -273,7 +265,7 @@ var memories = {
         const towersBuilt = structureCount.towers.built;
 
         currentPhase.Phase = rcl;
-    /*
+    
         switch (currentPhase) {
             case 1:
                 // Phase 1 to Phase 2 transition: RCL reaches 2
@@ -421,10 +413,10 @@ var memories = {
             return;
         }
 
-        if (roomMemory.underAttack) {
+        /*if (roomMemory.underAttack) {
             roomMemory.spawning.spawnMode = { mode: 'Defense', energyToUse: energyAvailable };
             return;
-        }
+        }*/
 
         const setSpawnMode = (mode, energy) => {
             roomMemory.spawning.spawnMode = { mode, energyToUse: energy };
@@ -437,8 +429,8 @@ var memories = {
             4: { energyCap: 1300, harvester: 600, claimer: 700, cap: 0.6 },
             5: { energyCap: 1800, harvester: 600, claimer: 700, cap: 0.5 },
             6: { energyCap: 2300, harvester: 650, claimer: 700, cap: 0.4 },
-            7: { energyCap: 5600, harvester: 700, claimer: 700, cap: 0.2 },
-            default: { energyCap: 12900, harvester: 700, claimer: 700, cap: 0.1 }
+            7: { energyCap: 5600, harvester: 700, claimer: 700, cap: 0.3 },
+            default: { energyCap: 12900, harvester: 700, claimer: 700, cap: 0.2 }
         };
 
         const config = phaseConfigs[phase] || phaseConfigs.default;

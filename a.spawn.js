@@ -9,6 +9,84 @@ var spawner = {
 
 // Phase-based spawning counts
 calculateDesiredCounts: function(room) {
+    const roomMemory = Memory.rooms[room.name];
+    const phase = roomMemory.phase.Phase;
+    const structureCount = roomMemory.construct.structureCount;
+    //const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
+    const linksBuilt = structureCount.links.built;
+    const extractorBuilt = structureCount.extractor.built;
+    const terminalBuilt = structureCount.terminal.built;
+    const scouted = roomMemory.scoutingComplete;
+    const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
+    const claimers = _.filter(Game.creeps, (creep) => creep.memory.role === 'claimer' && creep.memory.home === roomName).length;
+    const scouts = _.filter(Game.creeps, (creep) => creep.memory.role === 'scout' && creep.memory.home === roomName).length;
+    const energySources = roomMemory.mapping.sources;
+
+    // Early return if there is only one energy source
+    if (energySources === 1) {
+        return {
+            harvester: 2,
+            hauler: 3,
+            builder: 2,
+            upgrader: 1
+        };
+    }
+
+    // Default desired counts
+    let desiredCounts = {
+        //harvester: 2,
+        //hauler: 3,
+        //upgrader: 1,
+        //builder: 2,
+    };
+
+    // Phase-specific adjustments
+    switch (phase) {
+        case 1:
+            desiredCounts = { harvester: 2, hauler: 3, upgrader: 1, builder: 4 };
+            break;
+        case 2:
+            desiredCounts = { harvester: 2, hauler: 3, upgrader: 2, builder: 3 };
+            break;
+        case 3:
+            desiredCounts = { harvester: 2, hauler: 4, upgrader: 2, builder: 3 };
+            break;
+        case 4:
+            desiredCounts = { harvester: 2, hauler: 5, upgrader: 2, builder: 3 };
+            break;
+        case 5:
+            desiredCounts = { harvester: 2, hauler: 5, upgrader: 1, builder: 3 };
+            break;
+        case 6:
+            if (extractorBuilt > 0) {
+                if (terminalBuilt < 1) {
+                    desiredCounts = { harvester: 3, hauler: 3, upgrader: 1, builder: 3 };
+                } else {
+                    desiredCounts = { harvester: 3, hauler: 4, upgrader: 1, builder: 1 };
+                }
+            } else {
+                desiredCounts = { harvester: 2, hauler: 3, upgrader: 1, builder: 2 };
+            }
+            break;
+        case 7:
+            if (extractorBuilt > 0 && terminalBuilt > 0) {
+                desiredCounts = { harvester: 3, hauler: 5, upgrader: 1, builder: 1 };
+            } else {
+                desiredCounts = { harvester: 2, hauler: 4, upgrader: 1, builder: 3 };
+            }
+            break;
+        default:
+            desiredCounts = { harvester: 3, hauler: 5, upgrader: 1, builder: 2 };
+            break;
+    }
+
+    // Final desired counts assignment
+    roomMemory.spawning.desiredCounts = desiredCounts;
+    return desiredCounts;
+},
+
+/*
+calculateDesiredCounts: function(room) {
     const phase = Memory.rooms[room.name].phase.Phase;
     const structureCount = Memory.rooms[room.name].construct.structureCount;
     const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
@@ -59,8 +137,8 @@ calculateDesiredCounts: function(room) {
                 claimer: 1
             };
 
-        } else {*/
-
+        } else {   //////////////COMMENT OUT
+            //IMPLEMENT "IF CONSTRUCTION SITES: BUILDER +1"
             switch (phase) {
                 case 1:
                     // Phase 1
@@ -116,7 +194,7 @@ calculateDesiredCounts: function(room) {
                     break;
 
                 case 6:
-                    
+                
                     if (extractorBuilt > 0 && terminalBuilt < 1) {
                         desiredCounts = {
                             harvester: 3,
@@ -130,7 +208,7 @@ calculateDesiredCounts: function(room) {
                             harvester: 3,
                             hauler: 4,
                             upgrader: 1,
-                            builder: 2,
+                            builder: 1,
                             
                         };
 
@@ -139,7 +217,7 @@ calculateDesiredCounts: function(room) {
                             harvester: 2,
                             hauler: 3,
                             upgrader: 1,
-                            builder: 3,
+                            builder: 2,
                             
                         };
 
@@ -153,7 +231,7 @@ calculateDesiredCounts: function(room) {
                             harvester: 3,
                             hauler: 5,
                             upgrader: 1,
-                            builder: 2,
+                            builder: 1,
                             
                         };
 
@@ -186,7 +264,7 @@ calculateDesiredCounts: function(room) {
         return desiredCounts;
         
     },
-    
+*/    
 
 
     manageCreepSpawning: function(room) {

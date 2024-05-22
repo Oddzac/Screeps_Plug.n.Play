@@ -40,11 +40,14 @@ module.exports.loop = function() {
 
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
+            
             memories.spawnMode(room);
-            // Memory Cleanup
 
-            // Room Terminal MGMT
+            // Memory Cleanup?
+
+            // 10 Minute
             if (Game.time % 200 === 0) {
+                // Room Terminal MGMT
                 terminals.handleRoomTerminal(room);
             }
 
@@ -58,7 +61,7 @@ module.exports.loop = function() {
                  
             }
             
-            // Long-Term Memory (5hr)
+            // Long-Term (5hr)
             if (Game.time % 6000 === 0) {
 
             }
