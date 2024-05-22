@@ -18,7 +18,7 @@ module.exports.loop = function() {
         
         memories.immediateMemory();
         terminals.cleanupOldOrders();
-        terminals.globalMarketManagement();
+        //terminals.globalMarketManagement();
         
         if (Game.time % 10 === 0) {
             console.log(`Bucket CPU: ${Game.cpu.bucket}`);
