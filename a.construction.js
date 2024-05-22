@@ -76,6 +76,7 @@ countStructures: function(room) {
     // Initialize structure counts if necessary
     if (!Memory.rooms[room.name].construct.structureCount) {
         Memory.rooms[room.name].construct.structureCount = {
+            extensions: {built: 0, pending: 0},
             containers: {built: 0, pending: 0},
             storage: {built: 0, pending: 0},
             extractor: {built: 0, pending: 0},
@@ -96,6 +97,8 @@ countStructures: function(room) {
     // Count built structures
     room.find(FIND_STRUCTURES).forEach(structure => {
         switch (structure.structureType) {
+            case STRUCTURE_EXTENSION:
+                structuresCount.extensions.built++;
             case STRUCTURE_CONTAINER:
                 structuresCount.containers.built++;
                 break;
@@ -120,6 +123,8 @@ countStructures: function(room) {
     // Count construction sites
     room.find(FIND_CONSTRUCTION_SITES).forEach(site => {
         switch (site.structureType) {
+            case STRUCTURE_EXTENSION:
+                structuresCount.extensions.pending++;
             case STRUCTURE_CONTAINER:
                 structuresCount.containers.pending++;
                 break;
@@ -174,13 +179,11 @@ checkExtensionsAvailable: function(room) {
     const controllerLevel = room.controller.level;
 
     // Get current number of extensions and extension construction sites
-    const extensions = room.find(FIND_MY_STRUCTURES, {
-        filter: { structureType: STRUCTURE_EXTENSION }
-    });
+    const extensions = Memory.rooms[room.name].construct.extensions.built
     const extensionSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
         filter: { structureType: STRUCTURE_EXTENSION }
     });
-    const totalExtensions = extensions.length + extensionSites.length;
+    const totalExtensions = extensions + extensionSites.length;
 
     // Calculate the number of extensions that can still be built
     const extensionsAvailable = extensionsLimits[controllerLevel] - totalExtensions;

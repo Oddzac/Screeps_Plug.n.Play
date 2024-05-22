@@ -67,9 +67,7 @@ var roleHauler = {
         const storageBuilt = structureCount.storage.built;
         const linksBuilt = structureCount.links.built;
         const terminalBuilt = structureCount.terminal.built;
-        const extensions = creep.room.find(FIND_MY_STRUCTURES, {
-            filter: { structureType: STRUCTURE_EXTENSION }
-        });
+        const extensions = structureCount.extensions.built
 
 
 
