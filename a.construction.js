@@ -153,11 +153,11 @@ countStructures: function(room) {
 //Weighted Center - Find central location based on Controller, Spawn, and Sources
 findCenterWeighted: function(room) {
 
-    if (!Memory.rooms[room.name].weightedCenter) {
-        Memory.rooms[room.name].weightedCenter = {x: 0, y: 0}
+    if (!Memory.rooms[room.name].construct.weightedCenter) {
+        Memory.rooms[room.name].construct.weightedCenter = {x: 0, y: 0}
     }
 
-    const weightedCenter = Memory.rooms[room.name].weightedCenter;
+    const weightedCenter = Memory.rooms[room.name].construct.weightedCenter;
 
     // Find structures to set weighted center
     const spawns = room.find(FIND_MY_SPAWNS);
@@ -358,12 +358,12 @@ placeSpawn: function(room) {
     const searchRadius = 5; // Define a search area around the weighted center
 
     // Calculate weighted center
-    if (!Memory.rooms[room.name].weightedCenter) {
+    if (!Memory.rooms[room.name].construct.weightedCenter) {
         this.findCenterWeighted(room);
     }
 
-    const weightedCenterX = Memory.rooms[room.name].weightedCenter.x;
-    const weightedCenterY = Memory.rooms[room.name].weightedCenter.y;
+    const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
+    const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
 
 
     // Generate all possible positions within the search radius
@@ -434,12 +434,12 @@ placeTower: function(room) {
     }
 
 
-    if (!Memory.rooms[room.name].weightedCenter) {
+    if (!Memory.rooms[room.name].construct.weightedCenter) {
         this.findCenterWeighted(room);
     }
 
-    const weightedCenterX = Memory.rooms[room.name].weightedCenter.x;
-    const weightedCenterY = Memory.rooms[room.name].weightedCenter.y;
+    const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
+    const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
 
 
     // Generate all possible positions within the search radius
@@ -494,12 +494,12 @@ placeStorage: function(room) {
     }
 
     // Calculate weighted center
-    if (!Memory.rooms[room.name].weightedCenter) {
+    if (!Memory.rooms[room.name].construct.weightedCenter) {
         this.findCenterWeighted(room);
     }
 
-    const weightedCenterX = Memory.rooms[room.name].weightedCenter.x;
-    const weightedCenterY = Memory.rooms[room.name].weightedCenter.y;
+    const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
+    const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
 
     // Define a search area around the weighted center
     let searchRadius = 7; // Adjust based on room layout and preferences
