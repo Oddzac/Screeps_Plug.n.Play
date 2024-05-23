@@ -87,6 +87,9 @@ countStructures: function(room) {
     }
 
     const structuresCount = Memory.rooms[room.name].construct.structureCount;
+    if (!structuresCount.extensions) {
+        structuresCount.extensions = {built: 0, pending: 0};
+    }
 
     // Reset structure counts
     for (let key in structuresCount) {
