@@ -35,6 +35,7 @@ var construction = {
         if (this.checkExtensionsAvailable(room) > 0) {
             this.placeExtensionsAroundSpawn(room);
         }
+        this.findCenterWeighted(room);
 
         if (this.checkTowersAvailable(room) > 0) {
             this.placeTower(room);
