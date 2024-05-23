@@ -189,7 +189,7 @@ var memories = {
                     construct: {
                         extensionRadius: 0,
                         structureCount: {
-                            extensions: {built: 0, pending},
+                            extensions: {built: 0, pending: 0},
                             containers: {built: 0, pending: 0},
                             storage: {built: 0, pending: 0},
                             extractor: {built: 0, pending: 0},
