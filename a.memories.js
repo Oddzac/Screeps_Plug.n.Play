@@ -215,12 +215,6 @@ var memories = {
     shortTerm: function() {
         // Refresh Construction Energy Reqs / Room Phase
         Object.values(Game.rooms).forEach(room => {
-            const constructionSites = _.filter(Game.constructionSites, site => site.my);
-            let totalEnergyRequired = 0;
-            
-            constructionSites.forEach(site => {totalEnergyRequired += site.progressTotal;});
-            Memory.rooms[room.name].constructionEnergyRequired = totalEnergyRequired;
-            
             console.log(`Checking ${room.name}`);
             console.log('Checking phase...');
             this.updateRoomPhase(room);
