@@ -62,7 +62,7 @@ calculateDesiredCounts: function(room) {
                 if (terminalBuilt < 1) {
                     desiredCounts = { harvester: 3, hauler: 3, upgrader: 1, builder: 3 };
                 } else {
-                    desiredCounts = { harvester: 3, hauler: 4, upgrader: 1, builder: 1 };
+                    desiredCounts = { harvester: 3, hauler: 4, upgrader: 1, builder: 2 };
                 }
             } else {
                 desiredCounts = { harvester: 2, hauler: 3, upgrader: 1, builder: 2 };
@@ -70,7 +70,7 @@ calculateDesiredCounts: function(room) {
             break;
         case 7:
             if (extractorBuilt > 0 && terminalBuilt > 0) {
-                desiredCounts = { harvester: 3, hauler: 5, upgrader: 1, builder: 1 };
+                desiredCounts = { harvester: 3, hauler: 5, upgrader: 1, builder: 2 };
             } else {
                 desiredCounts = { harvester: 2, hauler: 4, upgrader: 1, builder: 3 };
             }
