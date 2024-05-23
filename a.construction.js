@@ -200,7 +200,7 @@ checkTowersAvailable: function(room) {
     const controllerLevel = room.controller.level;
 
     // Get current number of extensions and extension construction sites
-    const towers = Memory.rooms[room.name].construct.towers.built;
+    const towers = Memory.rooms[room.name].construct.structureCount.towers.built;
     const towerSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
         filter: { structureType: STRUCTURE_TOWER }
     });
