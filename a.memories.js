@@ -421,11 +421,11 @@ var memories = {
             1: { energyCap: 300, harvester: energyAvailable, harvesterLite: energyAvailable, cap: 1 },
             2: { energyCap: 550, harvester: 500, harvesterLite: energyAvailable, cap: 1 },
             3: { energyCap: 800, harvester: 600, harvesterLite: 500, claimer: 700, cap: 0.7 },
-            4: { energyCap: 1300, harvester: 600, claimer: 700, cap: 0.6 },
-            5: { energyCap: 1800, harvester: 600, claimer: 700, cap: 0.5 },
-            6: { energyCap: 2300, harvester: 650, claimer: 700, cap: 0.4 },
-            7: { energyCap: 5600, harvester: 700, claimer: 700, cap: 0.3 },
-            default: { energyCap: 12900, harvester: 700, claimer: 700, cap: 0.2 }
+            4: { energyCap: 1300, harvester: 600, claimer: 700, cap: 0.55 },
+            5: { energyCap: 1800, harvester: 600, claimer: 700, cap: 0.45 },
+            6: { energyCap: 2300, harvester: 650, claimer: 700, cap: 0.35 },
+            7: { energyCap: 5600, harvester: 700, claimer: 700, cap: 0.25 },
+            default: { energyCap: 12900, harvester: 700, claimer: 700, cap: 0.15 }
         };
 
         const config = phaseConfigs[phase] || phaseConfigs.default;
