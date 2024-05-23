@@ -67,7 +67,7 @@ var roleHauler = {
         const storageBuilt = structureCount.storage.built;
         const linksBuilt = structureCount.links.built;
         const terminalBuilt = structureCount.terminal.built;
-        const extensions = structureCount.extensions.built
+        //const extensions = structureCount.extensions.built
 
 
 
@@ -83,7 +83,7 @@ var roleHauler = {
         } else if (phase >= 6 && linksBuilt > 2 && energySources > 1 && spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
             
-        } else if (energySources < 2 && extensions > 30 && spawnHaulers < 2) {
+        } else if (energySources < 2 && /*extensions > 30 &&*/ spawnHaulers < 2) {
             creep.memory.task = 'spawnHauler';
             
         } else if (spawnHaulers < 1 && storageBuilt > 0) {
