@@ -14,8 +14,8 @@ var construction = {
         
         const spawns = room.find(FIND_MY_SPAWNS);
         const buildersCount = _.filter(Game.creeps, { memory: { role: 'builder' } }).length;
-        const activeSitesCount = Object.keys(Game.constructionSites).length;
-        const activeSites = Object.keys(Game.constructionSites);
+        //const activeSitesCount = Object.keys(Game.constructionSites).length;
+        //const activeSites = Object.keys(Game.constructionSites);
         const structureCount = Memory.rooms[room.name].construct.structureCount;
         const containersBuilt = structureCount.containers.built; //Memory.rooms[room.name].containersBuilt;
         const containerSites = structureCount.containers.pending; //Object.values(Game.constructionSites).filter(site => site.structureType === STRUCTURE_CONTAINER && site.room.name === room).length;
@@ -47,7 +47,7 @@ var construction = {
         } else if (Memory.rooms[room.name].phase.Phase <3 && containersBuilt > 1) {
             
             return;
-        } else if (Memory.rooms[room.name].phase.Phase < 5 && memories.storageBuilt < 1 && storageSites < 1) {
+        } else if (Memory.rooms[room.name].phase.Phase < 5 && storageBuilt < 1 && storageSites < 1) {
             this.placeStorage(room);
             return;
         } else if (Memory.rooms[room.name].phase.Phase < 6) {
@@ -183,11 +183,9 @@ checkExtensionsAvailable: function(room) {
     const controllerLevel = room.controller.level;
 
     // Get current number of extensions and extension construction sites
-    const extensions = Memory.rooms[room.name].construct.structureCount.extensions.built
-    const extensionSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
-        filter: { structureType: STRUCTURE_EXTENSION }
-    });
-    const totalExtensions = extensions + extensionSites.length;
+    const extensions = Memory.rooms[room.name].construct.structureCount.extensions.built;
+    const extensionSites = Memory.rooms[room.name].construct.structureCount.extensions.pending;
+    const totalExtensions = extensions + extensionSites;
 
     // Calculate the number of extensions that can still be built
     const extensionsAvailable = extensionsLimits[controllerLevel] - totalExtensions;
@@ -202,9 +200,7 @@ checkTowersAvailable: function(room) {
 
     // Get current number of extensions and extension construction sites
     const towers = Memory.rooms[room.name].construct.structureCount.towers.built;
-    const towerSites = room.find(FIND_MY_CONSTRUCTION_SITES, {
-        filter: { structureType: STRUCTURE_TOWER }
-    });
+    const towerSites = Memory.rooms[room.name].construct.structureCount.towers.pending;
     const totalTowers = towers + towerSites.length;
 
     // Calculate the number of extensions that can still be built
