@@ -55,6 +55,7 @@ var roleHarvester = {
             filter: s => s.structureType === STRUCTURE_EXTRACTOR});
         const harvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName);
         const extractingHarvesters = _.sum(Game.creeps, (c) => c.memory.role === 'harvester' && c.room.name === roomName && c.memory.task === 'extractHarvest');
+        const sources = Memory.rooms[roomName].mapping.sources.id;
         const sourceCount = sources.map(sourceId => {
         const source = Game.getObjectById(sourceId);
             if (!source) return null;
