@@ -99,7 +99,7 @@ var memories = {
         for (var name in Game.creeps) {
             var creep = Game.creeps[name];
             switch (creep.memory.role) {
-                case 'harvester': roleHarvester.run(creep); break;
+                //case 'harvester': roleHarvester.run(creep); break;
                 case 'upgrader': roleUpgrader.run(creep); break;
                 case 'builder': roleBuilder.run(creep); break;
                 case 'attacker': roleAttacker.run(creep); break;
