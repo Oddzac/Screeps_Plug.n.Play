@@ -340,7 +340,7 @@ var memories = {
                 const sources = room.find(FIND_SOURCES);
                 Memory.rooms[room.name].mapping.sources = {
                     count: sources.length,
-                    ids: sources.map(source => source.id)
+                    id: sources.map(source => source.id)
                 };
             }
             if (!Memory.rooms[room.name].mapping.terrainData) {
