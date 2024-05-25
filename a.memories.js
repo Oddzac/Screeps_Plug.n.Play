@@ -351,11 +351,13 @@ var memories = {
 //
 
     updateRoomTerrainData: function(room) {
+        console.log('Calling UpTerr..');
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
             // Check if we already have the terrain data stored
 
             if (!Memory.rooms[room.name].mapping.terrainData) {
+                console.log('Generating Terrain data...');
                 
                 // If not, retrieve and store it
                 const terrain = room.getTerrain();
