@@ -76,14 +76,8 @@ var memories = {
         
         this.memInit();
 
-        if (!Memory.rooms[room.name].mapping.sources) {
-            const sources = room.find(FIND_SOURCES);
-            Memory.rooms[room.name].mapping.sources = {
-                count: sources.length,
-                id: sources.map(source => source.id)
-            };
-        }
-        
+
+
         const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
         const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
         // Update claims available
