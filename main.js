@@ -42,7 +42,7 @@ module.exports.loop = function() {
             const room = Game.rooms[roomName];
             
             memories.spawnMode(room);
-            
+            construction.countStructures(room);
             // Memory Cleanup?
 
             // 10 Minute
