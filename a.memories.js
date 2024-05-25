@@ -219,6 +219,11 @@ var memories = {
                         id: sources.map(source => source.id)
                     };
                 }
+
+                if (!Memory.rooms[room.name].mapping.terrainData) {
+
+                    this.updateRoomTerrainData(room);
+                }
             }
         });
     
