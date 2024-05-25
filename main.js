@@ -96,25 +96,26 @@ module.exports.loop = function() {
                 } else {
                     construction.manageConstruction(room); // Handle other construction tasks
                 }
-            }
+            
 
-            // Towers
-            const myTowers = room.find(FIND_MY_STRUCTURES, {
-                filter: { structureType: STRUCTURE_TOWER }
-            });
+                // Towers
+                const myTowers = room.find(FIND_MY_STRUCTURES, {
+                    filter: { structureType: STRUCTURE_TOWER }
+                });
 
-            myTowers.forEach(tower => {
-                towers.run(tower);
-            });
-            //Manage Links
-            const myLinksCount = room.find(FIND_MY_STRUCTURES, {
-                filter: { structureType: STRUCTURE_LINK }
-            });
+                myTowers.forEach(tower => {
+                    towers.run(tower);
+                });
+                //Manage Links
+                const myLinksCount = room.find(FIND_MY_STRUCTURES, {
+                    filter: { structureType: STRUCTURE_LINK }
+                });
 
-            if (myLinksCount.length > 1) {
+                if (myLinksCount.length > 1) {
 
-                //console.log(`calling linker for ${room}`);
-                linker.manageLinks(room);
+                    //console.log(`calling linker for ${room}`);
+                    linker.manageLinks(room);
+                }
             }
             
         }
