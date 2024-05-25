@@ -7,12 +7,12 @@ var linker = require('a.links');
 var terminals = require('a.terminal');
 var movement = require('a.movement');
 
-const profiler = require('screeps-profiler');
+//const profiler = require('screeps-profiler');
 
 // This line monkey patches the global prototypes.
-profiler.enable();
+//profiler.enable();
 module.exports.loop = function() {
-    profiler.wrap(function() {
+    //profiler.wrap(function() {
 
         //Globals
         
@@ -118,7 +118,7 @@ module.exports.loop = function() {
             }
             
         }
-    });
+    //});
 
 }
 
