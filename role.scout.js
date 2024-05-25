@@ -146,7 +146,7 @@ var roleScout = {
           name: creep.room.name,
           owner: creep.room.controller ? creep.room.controller.owner : null,
           //isHighway: this.isHighwayRoom(creep.room),
-          sources: creep.room.find(FIND_SOURCES).map(source => ({
+          sources: Memory.rooms[creep.room.name].mapping.sources.id.map(source => ({
             id: source.id,
             type: source.energy ? 'energy' : 'unknown' // Add other types as necessary
           })),

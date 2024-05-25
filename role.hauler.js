@@ -62,7 +62,7 @@ var roleHauler = {
         const linkHaulers = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'linkHauler');
         const terminalHauler = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'terminalHauler');
         const collectors = _.sum(Game.creeps, (c) => c.memory.role === 'hauler' && c.room.name === roomName && c.memory.task === 'collector');
-        const energySources = Memory.rooms[creep.room.name].mapping.sources;
+        const energySources = Memory.rooms[creep.room.name].mapping.sources.count;
         const containersBuilt = structureCount.containers.built;
         const storageBuilt = structureCount.storage.built;
         const linksBuilt = structureCount.links.built;

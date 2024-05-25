@@ -66,11 +66,12 @@ module.exports.loop = function() {
 
             }
 
+
             // Count the number of harvesters and haulers specifically in this room
             const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester' && creep.memory.home === roomName);
             const haulers = _.filter(Game.creeps, (creep) => creep.memory.role === 'hauler' && creep.memory.home === roomName);
             // Check the number of energy sources in the room
-            const energySources = room.find(FIND_SOURCES).length;
+            const energySources = Memory.rooms[room.name].mapping.sources.count;
             // Find available spawns in the room
             const availableSpawn = room.find(FIND_MY_SPAWNS, {
                 filter: (spawn) => !spawn.spawning
@@ -160,7 +161,7 @@ global.Connect = function(roomName, pointA, pointB) {
             default:
                 if (pointName.startsWith('source')) {
                     let index = parseInt(pointName.slice(6)) - 1; // Convert 'source1' to 0, 'source2' to 1, etc.
-                    let sources = room.find(FIND_SOURCES);
+                    let sources = Memory.rooms[room.name].mapping.sources.id;
                     if (index >= 0 && index < sources.length) {
                         return sources[index].pos;
                     }

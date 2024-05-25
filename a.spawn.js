@@ -20,7 +20,7 @@ calculateDesiredCounts: function(room) {
     const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
     const claimers = _.filter(Game.creeps, (creep) => creep.memory.role === 'claimer' && creep.memory.home === roomName).length;
     const scouts = _.filter(Game.creeps, (creep) => creep.memory.role === 'scout' && creep.memory.home === roomName).length;
-    const energySources = roomMemory.mapping.sources;
+    const energySources = roomMemory.mapping.sources.count;
 
     // Early return if there is only one energy source
     if (energySources === 1) {

@@ -163,7 +163,7 @@ findCenterWeighted: function(room) {
     // Find structures to set weighted center
     const spawns = room.find(FIND_MY_SPAWNS);
     const controller = room.controller;
-    const sources = room.find(FIND_SOURCES);
+    const sources = Memory.rooms[room.name].mapping.sources.id;
 
     // Calculate weighted center
     let sumX = 0, sumY = 0, count = 0;
@@ -201,7 +201,7 @@ checkTowersAvailable: function(room) {
     // Get current number of extensions and extension construction sites
     const towers = Memory.rooms[room.name].construct.structureCount.towers.built;
     const towerSites = Memory.rooms[room.name].construct.structureCount.towers.pending;
-    const totalTowers = towers + towerSites.length;
+    const totalTowers = towers + towerSites;
 
     // Calculate the number of extensions that can still be built
     const towersAvailable = towersLimits[controllerLevel] - totalTowers;
@@ -271,7 +271,7 @@ placeContainersNearSources: function(room) {
     const spawn = room.find(FIND_MY_SPAWNS)[0];
     if (!spawn) return;
 
-    const sources = room.find(FIND_SOURCES);
+    const sources = Memory.rooms[room.name].mapping.sources.id;
     sources.forEach(source => {
         const path = PathFinder.search(spawn.pos, {pos: source.pos, range: 2}, {
             plainCost: 2,

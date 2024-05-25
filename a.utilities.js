@@ -19,14 +19,12 @@ var utilities = {
             console.log(`[${creep.name}] No longer avoiding hostiles.`);
             creep.memory.avoidingHostiles = false;
         }
-    
-
+        
+        const structureCount = Memory.rooms[creep.room.name].construct.structureCount
         const storage = creep.room.storage;
         const storageEnergy = creep.room.storage.store[RESOURCE_ENERGY]
         if (!storage) {
-            const containerCount = creep.room.find(FIND_STRUCTURES, {
-                filter: (s) => (s.structureType === STRUCTURE_CONTAINER)
-            }).length;
+            const containerCount = structureCount.containers.built
             // Attempt to find a container with energy
             const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
@@ -108,7 +106,8 @@ var utilities = {
 
     
     chooseSource: function(creep) {
-        const sources = creep.room.find(FIND_SOURCES);
+        const roomMem = Memory.rooms[creep.room.name];
+        const sources = roomMem.mapping.sources.id;
         let bestScore = -Infinity; // Initialize with a very low score
         let bestSource = null;
     

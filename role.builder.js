@@ -33,7 +33,7 @@ var roleBuilder = {
         priority += completionRatio * 100; // Smaller is better, so we subtract from a base value
     
         // Check if the site is directly adjacent to sources
-        let sources = creep.room.find(FIND_SOURCES);
+        let sources = cMemory.rooms[creep.room.name].mapping.sources.id;
         let isAdjacentToSource = sources.some(source => site.pos.inRangeTo(source, 2));
         priority += isAdjacentToSource ? -500 : 0;
     
