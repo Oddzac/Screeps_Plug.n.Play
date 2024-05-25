@@ -202,7 +202,7 @@ var memories = {
                             towers: {built: 0, pending: 0},
                         },
                     },
-                    weightedCenter: {x: 0, y: 0},
+                    //weightedCenter: {x: 0, y: 0},
                     mapping: {
                         //sources: {},
                         //terrainData: {},
@@ -223,6 +223,10 @@ var memories = {
                 if (!Memory.rooms[room.name].mapping.terrainData) {
 
                     this.updateRoomTerrainData(room);
+                }
+
+                if (!Memory.rooms[room.name].construct.weightedCenter) {
+                    this.findCenterWeighted(room);
                 }
             }
         });
@@ -350,6 +354,32 @@ var memories = {
 // MAPPING METHODS
 //
 
+    //Weighted Center - Find central location based on Controller, Spawn, and Sources
+    findCenterWeighted: function(room) {
+
+        if (!Memory.rooms[room.name].construct.weightedCenter) {
+            Memory.rooms[room.name].construct.weightedCenter = {x: 0, y: 0}
+        }
+
+        const weightedCenter = Memory.rooms[room.name].construct.weightedCenter;
+
+        // Find structures to set weighted center
+        const spawns = room.find(FIND_MY_SPAWNS);
+        const controller = room.controller;
+        const sources = Memory.rooms[room.name].mapping.sources.id;
+
+        // Calculate weighted center
+        let sumX = 0, sumY = 0, count = 0;
+        spawns.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
+        sumX += controller.pos.x; sumY += controller.pos.y; count++;
+        sources.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
+        const weightedCenterX = Math.floor(sumX / count);
+        const weightedCenterY = Math.floor(sumY / count);
+        console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
+        weightedCenter.x = weightedCenterX
+        weightedCenter.y = weightedCenterY
+    },
+    
     updateRoomTerrainData: function(room) {
         console.log('Calling UpTerr..');
         for (const roomName in Game.rooms) {

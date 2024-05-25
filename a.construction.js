@@ -151,31 +151,7 @@ countStructures: function(room) {
     });
 },
 
-//Weighted Center - Find central location based on Controller, Spawn, and Sources
-findCenterWeighted: function(room) {
 
-    if (!Memory.rooms[room.name].construct.weightedCenter) {
-        Memory.rooms[room.name].construct.weightedCenter = {x: 0, y: 0}
-    }
-
-    const weightedCenter = Memory.rooms[room.name].construct.weightedCenter;
-
-    // Find structures to set weighted center
-    const spawns = room.find(FIND_MY_SPAWNS);
-    const controller = room.controller;
-    const sources = Memory.rooms[room.name].mapping.sources.id;
-
-    // Calculate weighted center
-    let sumX = 0, sumY = 0, count = 0;
-    spawns.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
-    sumX += controller.pos.x; sumY += controller.pos.y; count++;
-    sources.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
-    const weightedCenterX = Math.floor(sumX / count);
-    const weightedCenterY = Math.floor(sumY / count);
-    console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
-    weightedCenter.x = weightedCenterX
-    weightedCenter.y = weightedCenterY
-},
 
 checkExtensionsAvailable: function(room) {
     // Maximum extensions allowed by controller level
@@ -356,7 +332,7 @@ placeSpawn: function(room) {
 
     // Calculate weighted center
     if (!Memory.rooms[room.name].construct.weightedCenter) {
-        this.findCenterWeighted(room);
+        memories.findCenterWeighted(room);
     }
 
     const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
@@ -431,9 +407,7 @@ placeTower: function(room) {
     }
 
 
-    if (!Memory.rooms[room.name].construct.weightedCenter) {
-        this.findCenterWeighted(room);
-    }
+
 
     const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
     const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
@@ -492,7 +466,7 @@ placeStorage: function(room) {
 
     // Calculate weighted center
     if (!Memory.rooms[room.name].construct.weightedCenter) {
-        this.findCenterWeighted(room);
+        memories.findCenterWeighted(room);
     }
 
     const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
