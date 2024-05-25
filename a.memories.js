@@ -355,14 +355,6 @@ var memories = {
             const room = Game.rooms[roomName];
             // Check if we already have the terrain data stored
 
-            if (!Memory.rooms[room.name].mapping.sources) {
-                const sources = room.find(FIND_SOURCES);
-                Memory.rooms[room.name].mapping.sources = {
-                    count: sources.length,
-                    id: sources.map(source => source.id)
-                };
-            }
-
             if (!Memory.rooms[room.name].mapping.terrainData) {
                 
                 // If not, retrieve and store it
