@@ -42,13 +42,15 @@ var marketManager = {
     purchaseUnderpricedResources: function() {
 
         const bucket = Game.cpu.bucket;
+        const currentPL = Memory.marketData.PL.PL;
         let lastCredits = Memory.marketData.PL.lastCredits; //Get last recorded credits
         let limitSwitch = lastCredits * 0.001;
         let purchased = false;
-
+        
     
         if (Memory.marketData.PL.PL < limitSwitch) {
-            console.log(`PL: ${Memory.marketData.PL.PL} / ${limitSwitch} (Below Profit Threshold)`);
+            let percentToLimit = (currentPL / limitSwitch) * 100;
+            console.log(`PL: ${percentToLimit}% (Below Profit Threshold)`);
             return;
         }
         
