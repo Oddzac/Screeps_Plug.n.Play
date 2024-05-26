@@ -85,7 +85,8 @@ var roleHarvester = {
             filter: (structure) => {
                 return (structure.structureType === STRUCTURE_SPAWN || 
                         structure.structureType === STRUCTURE_EXTENSION ||
-                        structure.structureType === STRUCTURE_CONTAINER || 
+                        structure.structureType === STRUCTURE_CONTAINER ||
+                        structure.structureType === STRUCTURE_STORAGE || 
                         structure.structureType === STRUCTURE_LINK) && 
                         _.sum(structure.store) < structure.storeCapacity; // Checks if the structure is not full
             }
