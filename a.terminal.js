@@ -48,7 +48,7 @@ var marketManager = {
         let purchased = false;
         
     
-        if (Memory.marketData.PL.PL < limitSwitch) {
+        if (currentPL < limitSwitch && currentPL !== 0) {
             let percentToLimit = (currentPL / limitSwitch) * 100;
             console.log(`PL: ${percentToLimit}% (Below Profit Threshold)`);
             return;
