@@ -265,7 +265,7 @@ var memories = {
         const currentPhase = Memory.rooms[room.name].phase.Phase;
         const rcl = room.controller.level;
         let transitioned = false;
-        currentPhase = rcl;
+        const currentPhase = rcl;
 
 
         /*
