@@ -258,14 +258,12 @@ var memories = {
 
 
     updateRoomPhase: function(room) {
-
         // Update the current RCL in memory (useful for tracking progress and phase changes)
         Memory.rooms[room.name].phase.RCL = room.controller.level;
 
-        const currentPhase = Memory.rooms[room.name].phase.Phase;
-        const rcl = room.controller.level;
-        let transitioned = false;
-        const currentPhase = rcl;
+        // Update the Phase property directly
+        Memory.rooms[room.name].phase.Phase = room.controller.level;
+
 
 
         /*
