@@ -38,7 +38,7 @@ var construction = {
         
 
         if (this.checkTowersAvailable(room) > 0) {
-            this.placeTower(room);
+            //this.placeTower(room);
         }
 
         if (Memory.rooms[room.name].phase.Phase < 2) {
