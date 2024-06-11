@@ -32,9 +32,9 @@ var construction = {
             return;
         }
 
-        if (this.checkExtensionsAvailable(room) > 0) {
+        /*if (this.checkExtensionsAvailable(room) > 0) {
             this.placeExtensionsAroundSpawn(room);
-        }
+        }*/
         
 
         if (this.checkTowersAvailable(room) > 0) {
@@ -70,7 +70,7 @@ var construction = {
 
 
 
-//Construction Memories
+//Construction Memories - Structure Awareness
 
 // Count structures - Container, Storage, Extractor, Link, Terminal, Tower
 countStructures: function(room) {
@@ -149,6 +149,22 @@ countStructures: function(room) {
                 break;
         }
     });
+},
+
+cacheRoomStructures: function(room) {
+    if (!Memory.rooms[room.name] || !Memory.rooms[room.name].lastUpdate || Game.time - Memory.rooms[room.name].lastUpdate > 50) {
+        // Update every 50 ticks or if the room structure is not in memory
+        Memory.rooms[room.name] = {
+            structures: {},
+            lastUpdate: Game.time
+        };
+        room.find(FIND_STRUCTURES).forEach(struct => {
+            if (!Memory.rooms[room.name].structures[struct.structureType]) {
+                Memory.rooms[room.name].structures[struct.structureType] = [];
+            }
+            Memory.rooms[room.name].structures[struct.structureType].push(struct.id);
+        });
+    }
 },
 
 
