@@ -14,6 +14,13 @@ var giveWay = require('./u.giveWay');
 module.exports.loop = function() {
     //profiler.wrap(function() {
 
+        // Reset path cache on first tick after code update to prevent deserialization errors
+        if (!global.lastCodeUpdate || global.lastCodeUpdate < Game.time) {
+            delete Memory.pathCache;
+            global.lastCodeUpdate = Game.time;
+            console.log('Code update detected, path cache reset');
+        }
+
         //Globals
         giveWay.resetCreepMovement();
         memories.immediateMemory();
@@ -238,6 +245,10 @@ global.Connect = function(roomName, pointA, pointB) {
 
 
 global.Refresh = function() {
+    // Reset path cache to fix any deserialization issues
+    delete Memory.pathCache;
+    console.log('Path cache reset');
+    
     movement.cleanupOldPaths();
     memories.immediateMemory();
     memories.shortTerm();
@@ -248,7 +259,6 @@ global.Refresh = function() {
 
         if(room.terminal && room.controller && room.controller.my) {
             terminals.adjustPrices(room);
-
         }
     }
 }
@@ -282,4 +292,10 @@ global.ToggleTraffic = function(enabled) {
         Memory.visualizeTraffic = !!enabled;
     }
     return `Traffic visualization ${Memory.visualizeTraffic ? 'enabled' : 'disabled'}`;
+}
+
+// Reset path cache to fix deserialization errors
+global.ResetPaths = function() {
+    delete Memory.pathCache;
+    return 'Path cache has been reset';
 }
