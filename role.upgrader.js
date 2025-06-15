@@ -1,10 +1,19 @@
 var utility = require('./u.utilities');
 var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
+var collaboration = require('./u.collaboration');
 
 var roleUpgrader = {
     run: function(creep) {
         if (!creep) return;
+        
+        // Check if we should switch roles based on colony needs
+        const newRole = collaboration.evaluateRoleSwitch(creep);
+        if (newRole) {
+            creep.memory.role = newRole;
+            creep.say(`Now ${newRole}`);
+            return; // Let the next tick handle the new role's logic
+        }
         
         // Initialize harvestingTicks if it doesn't exist
         if (!creep.memory.harvestingTicks) {
@@ -20,15 +29,23 @@ var roleUpgrader = {
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.harvesting = true;
             creep.memory.working = false;
+            
+            // Register that we need energy
+            collaboration.requestResource(creep, RESOURCE_ENERGY, 3); // Priority 3 for upgraders
         } else if (creep.store.getFreeCapacity() === 0 || 
                   (creep.store.getUsedCapacity() > creep.store.getCapacity() * 0.5 && 
                    creep.memory.harvestingTicks > 50)) {
             creep.memory.harvesting = false;
             creep.memory.harvestingTicks = 0;
+            collaboration.fulfillRequest(creep); // No longer need energy
         }
 
         // Execute current state
         if (creep.memory.harvesting) {
+            // If we're full, stop requesting
+            if (creep.store.getFreeCapacity() === 0) {
+                collaboration.fulfillRequest(creep);
+            }
             utility.harvestEnergy(creep);
             creep.memory.harvestingTicks++;
         } else {

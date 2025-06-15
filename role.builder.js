@@ -1,9 +1,18 @@
 var utility = require('./u.utilities');
 var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
+var collaboration = require('./u.collaboration');
 
 var roleBuilder = {
     run: function(creep) {
+        // Check if we should switch roles based on colony needs
+        const newRole = collaboration.evaluateRoleSwitch(creep);
+        if (newRole) {
+            creep.memory.role = newRole;
+            creep.say(`Now ${newRole}`);
+            return; // Let the next tick handle the new role's logic
+        }
+        
         if(creep.memory.harvesting && creep.store.getFreeCapacity() === 0) {
             creep.memory.harvesting = false;
             delete creep.memory.sourceId;
@@ -11,11 +20,19 @@ var roleBuilder = {
         } else if(!creep.memory.harvesting && creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.harvesting = true;
             delete creep.memory.task; // Clear task when harvesting
+            
+            // Register that we need energy
+            collaboration.requestResource(creep, RESOURCE_ENERGY, 2); // Priority 2 for builders
         }
     
         if(creep.memory.harvesting) {
+            // If we're full or have been harvesting too long, stop requesting
+            if (creep.store.getFreeCapacity() === 0) {
+                collaboration.fulfillRequest(creep);
+            }
             utility.harvestEnergy(creep);
         } else {
+            collaboration.fulfillRequest(creep); // No longer need energy
             this.performTask(creep);
         }
         creep.giveWay();

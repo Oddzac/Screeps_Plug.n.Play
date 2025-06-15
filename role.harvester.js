@@ -5,11 +5,17 @@
 var utility = require('./u.utilities');
 var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
-
+var collaboration = require('./u.collaboration');
 
 var roleHarvester = {
     run: function(creep) {
-
+        // Check if we should switch roles based on colony needs
+        const newRole = collaboration.evaluateRoleSwitch(creep);
+        if (newRole) {
+            creep.memory.role = newRole;
+            creep.say(`Now ${newRole}`);
+            return; // Let the next tick handle the new role's logic
+        }
         
         if (!creep.memory.sourceId) {
             this.assignSource(creep);
@@ -19,7 +25,6 @@ var roleHarvester = {
 
         // Decision-making process for harvesting or energy management
         if (creep.store.getFreeCapacity() > 0) {
-
             if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
                 // Move towards the source if not in range.
                 movement.moveToWithCache(creep, source);
@@ -32,7 +37,6 @@ var roleHarvester = {
         } else {
             creep.memory.working = false;
             this.manageEnergy(creep, haulers);
-        
         }
         creep.giveWay();
     },

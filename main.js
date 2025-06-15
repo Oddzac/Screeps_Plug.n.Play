@@ -6,6 +6,7 @@ var linker = require('./m.links');
 var terminals = require('./m.terminal');
 var movement = require('./u.movement');
 var giveWay = require('./u.giveWay');
+var collaboration = require('./u.collaboration');
 
 //const profiler = require('u.screeps-profiler');
 
@@ -19,6 +20,11 @@ module.exports.loop = function() {
         memories.immediateMemory();
         terminals.cleanupOldOrders();
         terminals.globalMarketManagement();
+        
+        // Clean up the collaboration request registry periodically
+        if (Game.time % 20 === 0) {
+            collaboration.cleanup();
+        }
         
         // Visualize traffic patterns if enabled and CPU allows
         if (Memory.visualizeTraffic && Game.cpu.bucket > 8000 && Game.time % 10 === 0) {

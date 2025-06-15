@@ -3,6 +3,7 @@
 var utility = require('./u.utilities');
 var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
+var collaboration = require('./u.collaboration');
 
 var roleHauler = {
     run: function(creep) {
@@ -141,7 +142,33 @@ var roleHauler = {
         let targets = [];
         let target;
     
-
+        // Always check for dropped resources and tombstones regardless of task
+        // This fixes the issue where haulers stop collecting these after containers are built
+        const droppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
+            filter: r => r.amount > 50
+        });
+        
+        const tombstonesWithResources = creep.room.find(FIND_TOMBSTONES, {
+            filter: t => _.sum(t.store) > 0
+        });
+        
+        const ruinsWithResources = creep.room.find(FIND_RUINS, {
+            filter: r => _.sum(r.store) > 0
+        });
+        
+        // If there are high-value resources to collect, prioritize them
+        if (droppedResources.length > 0 || tombstonesWithResources.length > 0 || ruinsWithResources.length > 0) {
+            const highValueTargets = [...droppedResources, ...tombstonesWithResources, ...ruinsWithResources];
+            const closestTarget = creep.pos.findClosestByPath(highValueTargets);
+            
+            if (closestTarget && (
+                (closestTarget instanceof Resource && closestTarget.amount > 100) || 
+                (closestTarget.store && _.sum(closestTarget.store) > 100)
+            )) {
+                this.moveToAndCollect(creep, closestTarget);
+                return;
+            }
+        }
 
         if (creep.memory.task === 'linkHauler') {
             delete creep.memory.containerId;
@@ -311,50 +338,69 @@ var roleHauler = {
         const roomMemory = Memory.rooms[creep.room.name];
         const noNextSpawnRole = !roomMemory.spawning || !roomMemory.spawning.nextSpawnRole;
         
-        // If spawn is full and no next spawn role, check for construction sites or upgraders
+        // If spawn is full and no next spawn role, check for creeps requesting resources
         if (spawnsAndExtensions.length === 0 && noNextSpawnRole && 
             creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0 && 
             creep.memory.task !== 'linkHauler' && creep.memory.task !== 'terminalHauler') {
             
-            // Check for construction sites
-            const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if (constructionSites.length > 0) {
-                // Find builders to help
-                const builders = creep.room.find(FIND_MY_CREEPS, {
-                    filter: c => c.memory.role === 'builder' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                });
+            // Check for creeps requesting energy through the collaboration system
+            const requestingCreep = collaboration.findNearestRequest(creep, RESOURCE_ENERGY);
+            
+            if (requestingCreep) {
+                creep.memory.helpingRole = requestingCreep.memory.role;
+                creep.memory.helpingId = requestingCreep.id;
                 
-                if (builders.length > 0) {
-                    // Find the closest builder
-                    const builder = creep.pos.findClosestByPath(builders);
-                    if (builder) {
-                        creep.memory.helpingRole = 'builder';
-                        creep.memory.helpingId = builder.id;
-                        // Transfer energy to the builder
-                        if (creep.transfer(builder, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                            movement.moveToWithCache(creep, builder);
-                            creep.say('🔄👷');
-                            return;
-                        }
-                    }
+                // Transfer energy to the requesting creep
+                if (creep.transfer(requestingCreep, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                    movement.moveToWithCache(creep, requestingCreep);
+                    creep.say('🔄🤝');
+                    return;
+                } else if (creep.transfer(requestingCreep, RESOURCE_ENERGY) === OK) {
+                    collaboration.fulfillRequest(requestingCreep);
+                    return;
                 }
             } else {
-                // No construction sites, help upgraders
-                const upgraders = creep.room.find(FIND_MY_CREEPS, {
-                    filter: c => c.memory.role === 'upgrader' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                });
-                
-                if (upgraders.length > 0) {
-                    // Find the closest upgrader
-                    const upgrader = creep.pos.findClosestByPath(upgraders);
-                    if (upgrader) {
-                        creep.memory.helpingRole = 'upgrader';
-                        creep.memory.helpingId = upgrader.id;
-                        // Transfer energy to the upgrader
-                        if (creep.transfer(upgrader, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                            movement.moveToWithCache(creep, upgrader);
-                            creep.say('🔄⬆️');
-                            return;
+                // Fall back to the old method if no requests found
+                // Check for construction sites
+                const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                if (constructionSites.length > 0) {
+                    // Find builders to help
+                    const builders = creep.room.find(FIND_MY_CREEPS, {
+                        filter: c => c.memory.role === 'builder' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                    });
+                    
+                    if (builders.length > 0) {
+                        // Find the closest builder
+                        const builder = creep.pos.findClosestByPath(builders);
+                        if (builder) {
+                            creep.memory.helpingRole = 'builder';
+                            creep.memory.helpingId = builder.id;
+                            // Transfer energy to the builder
+                            if (creep.transfer(builder, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                                movement.moveToWithCache(creep, builder);
+                                creep.say('🔄👷');
+                                return;
+                            }
+                        }
+                    }
+                } else {
+                    // No construction sites, help upgraders
+                    const upgraders = creep.room.find(FIND_MY_CREEPS, {
+                        filter: c => c.memory.role === 'upgrader' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                    });
+                    
+                    if (upgraders.length > 0) {
+                        // Find the closest upgrader
+                        const upgrader = creep.pos.findClosestByPath(upgraders);
+                        if (upgrader) {
+                            creep.memory.helpingRole = 'upgrader';
+                            creep.memory.helpingId = upgrader.id;
+                            // Transfer energy to the upgrader
+                            if (creep.transfer(upgrader, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                                movement.moveToWithCache(creep, upgrader);
+                                creep.say('🔄⬆️');
+                                return;
+                            }
                         }
                     }
                 }
