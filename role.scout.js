@@ -36,7 +36,8 @@ var roleScout = {
     } else if (creep.room.name === creep.memory.targetRoom) {
         console.log('Scout in target room:', creep.memory.initialRoom);
 
-        // Attempt to move towards the controller if it's an unowned room
+        // Attempt to move towards the controller if it exists and is unowned
+        const controller = creep.room.controller;
         if (controller && !controller.owner) {
           // Initialize move attempt counter if not already set
           if (creep.memory.moveAttempts === undefined) {
@@ -54,6 +55,11 @@ var roleScout = {
               }
           } else {
               // If within 5 tiles, set accessibleController flag to true
+              if (!Memory.conquest || !Memory.conquest.scoutedRooms) {
+                  if (!Memory.conquest) Memory.conquest = {};
+                  if (!Memory.conquest.scoutedRooms) Memory.conquest.scoutedRooms = {};
+              }
+              
               if (!Memory.conquest.scoutedRooms[creep.room.name]) {
                   Memory.conquest.scoutedRooms[creep.room.name] = {};
               }
@@ -64,6 +70,14 @@ var roleScout = {
 
           // Consider the controller inaccessible if move attempts exceed a threshold (e.g., 50 attempts)
           if (creep.memory.moveAttempts > 50) {
+              if (!Memory.conquest || !Memory.conquest.scoutedRooms) {
+                  if (!Memory.conquest) Memory.conquest = {};
+                  if (!Memory.conquest.scoutedRooms) Memory.conquest.scoutedRooms = {};
+              }
+              
+              if (!Memory.conquest.scoutedRooms[creep.room.name]) {
+                  Memory.conquest.scoutedRooms[creep.room.name] = {};
+              }
               Memory.conquest.scoutedRooms[creep.room.name].accessibleController = false;
               console.log('Controller in', creep.room.name, 'is deemed inaccessible.');
               // Reset move attempts counter to prevent repeated logging
@@ -90,90 +104,146 @@ var roleScout = {
   }, */
       
     chooseNextRoom: function(creep) {
-        if (!creep.memory.initialRoom) {
-            creep.memory.initialRoom = creep.room.name;
-        }
-        if (!creep.memory.availableExits) {
-            // Store available exits from the initial room
-            creep.memory.availableExits = Game.map.describeExits(creep.memory.initialRoom);
-        }
-
-        if (!creep.memory.exploredRooms) {
-            // Initialize an array to keep track of rooms that have been attempted for scouting
-            creep.memory.exploredRooms = [];
-        }
-
-        if (!creep.memory.exitOrder) {
-            // Define the order in which exits will be checked based on the clockwise direction
-            creep.memory.exitOrder = [FIND_EXIT_RIGHT, FIND_EXIT_BOTTOM, FIND_EXIT_LEFT, FIND_EXIT_TOP];
-        }
-
-        if (!creep.memory.currentExitIndex) {
-            creep.memory.currentExitIndex = 0; // Start with the first direction in the order
-        }
-    
-        // Increment and loop the index to cycle through directions
-        let attemptedAllDirections = false;
-        let nextRoom = null;
-        while (!nextRoom && !attemptedAllDirections) {
-            const direction = creep.memory.exitOrder[creep.memory.currentExitIndex];
-            nextRoom = creep.memory.availableExits[direction];
-            if (!nextRoom || creep.memory.exploredRooms.includes(nextRoom)) {
-                // If the room is not available or already explored, move to the next direction
-                creep.memory.currentExitIndex = (creep.memory.currentExitIndex + 1) % creep.memory.exitOrder.length;
-                nextRoom = null; // Reset nextRoom to null to continue the search
-                // Check if we have attempted all directions
-                attemptedAllDirections = creep.memory.currentExitIndex === 0;
+        try {
+            // Initialize memory structures
+            if (!creep.memory.initialRoom) {
+                creep.memory.initialRoom = creep.room.name;
             }
-        }
-    
-        if (nextRoom) {
-            // Add the room to the list of explored rooms to avoid revisiting
-            creep.memory.exploredRooms.push(nextRoom);
             
-            return nextRoom;
-        } else {
-            // Mark scouting as complete if all directions have been attempted
-            Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
-
-            return null;
+            if (!creep.memory.availableExits) {
+                // Store available exits from the initial room
+                creep.memory.availableExits = Game.map.describeExits(creep.memory.initialRoom) || {};
+            }
+            
+            if (!creep.memory.exploredRooms) {
+                // Initialize an array to keep track of rooms that have been attempted for scouting
+                creep.memory.exploredRooms = [];
+            }
+            
+            if (!creep.memory.exitOrder) {
+                // Define the order in which exits will be checked based on the clockwise direction
+                creep.memory.exitOrder = ['1', '3', '5', '7']; // Use string keys that match Game.map.describeExits
+            }
+            
+            if (creep.memory.currentExitIndex === undefined) {
+                creep.memory.currentExitIndex = 0; // Start with the first direction in the order
+            }
+            
+            // Increment and loop the index to cycle through directions
+            let attemptedAllDirections = false;
+            let nextRoom = null;
+            let safetyCounter = 0; // Prevent infinite loops
+            
+            while (!nextRoom && !attemptedAllDirections && safetyCounter < 10) {
+                safetyCounter++;
+                
+                const directionKey = creep.memory.exitOrder[creep.memory.currentExitIndex];
+                if (!directionKey) {
+                    // Invalid direction key, move to next index
+                    creep.memory.currentExitIndex = (creep.memory.currentExitIndex + 1) % creep.memory.exitOrder.length;
+                    continue;
+                }
+                
+                nextRoom = creep.memory.availableExits[directionKey];
+                
+                if (!nextRoom || creep.memory.exploredRooms.includes(nextRoom)) {
+                    // If the room is not available or already explored, move to the next direction
+                    creep.memory.currentExitIndex = (creep.memory.currentExitIndex + 1) % creep.memory.exitOrder.length;
+                    nextRoom = null; // Reset nextRoom to null to continue the search
+                    
+                    // Check if we have attempted all directions
+                    attemptedAllDirections = creep.memory.currentExitIndex === 0;
+                }
+            }
+            
+            if (nextRoom) {
+                // Add the room to the list of explored rooms to avoid revisiting
+                creep.memory.exploredRooms.push(nextRoom);
+                return nextRoom;
+            } else {
+                // Mark scouting as complete if all directions have been attempted
+                if (!Memory.rooms[creep.memory.initialRoom]) {
+                    Memory.rooms[creep.memory.initialRoom] = {};
+                }
+                Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
+                return creep.memory.initialRoom; // Return to home room
+            }
+        } catch (error) {
+            console.log(`Error in scout.chooseNextRoom for ${creep.name}: ${error}`);
+            return creep.memory.initialRoom; // Return to home room on error
         }
     },
             
     recordRoomInfo: function(creep) {
+        // Initialize Memory.conquest structure if it doesn't exist
+        if (!Memory.conquest) {
+            Memory.conquest = {
+                claimRooms: {},
+                targetRooms: {},
+                scoutedRooms: {}
+            };
+        }
+        
+        // Initialize room memory if it doesn't exist
+        if (!Memory.rooms[creep.room.name]) {
+            Memory.rooms[creep.room.name] = {
+                mapping: {
+                    sources: { count: 0, id: [] }
+                }
+            };
+            
+            // Find sources in the room and store them
+            const sources = creep.room.find(FIND_SOURCES);
+            Memory.rooms[creep.room.name].mapping.sources = {
+                count: sources.length,
+                id: sources.map(source => source.id)
+            };
+        }
+        
+        // Get sources information safely
+        let sourcesInfo = [];
+        if (Memory.rooms[creep.room.name] && 
+            Memory.rooms[creep.room.name].mapping && 
+            Memory.rooms[creep.room.name].mapping.sources && 
+            Memory.rooms[creep.room.name].mapping.sources.id) {
+            
+            sourcesInfo = Memory.rooms[creep.room.name].mapping.sources.id.map(sourceId => {
+                const source = Game.getObjectById(sourceId);
+                return {
+                    id: sourceId,
+                    type: source && source.energy !== undefined ? 'energy' : 'unknown'
+                };
+            });
+        }
+        
         // Basic room info
         const roomInfo = {
-          name: creep.room.name,
-          owner: creep.room.controller ? creep.room.controller.owner : null,
-          //isHighway: this.isHighwayRoom(creep.room),
-          sources: Memory.rooms[creep.room.name].mapping.sources.id.map(source => ({
-            id: source.id,
-            type: source.energy ? 'energy' : 'unknown' // Add other types as necessary
-          })),
-          terrain: this.analyzeTerrain(creep.room),
-          hasController: !!creep.room.controller,
-          accessibleController: false,
+            name: creep.room.name,
+            owner: creep.room.controller && creep.room.controller.owner ? creep.room.controller.owner.username : null,
+            sources: sourcesInfo,
+            terrain: this.analyzeTerrain(creep.room),
+            hasController: !!creep.room.controller,
+            accessibleController: false,
         };
-
-      
+        
         // Determine if the room is claimable
         if (roomInfo.hasController && !roomInfo.owner) {
-          Memory.conquest.claimRooms[roomInfo.name] = true;
+            Memory.conquest.claimRooms[roomInfo.name] = true;
         }
-
-        // Determine if the room is attack target (check that room owner formatted correctly) 
-        if (roomInfo.hasController && roomInfo.owner !== 'Odd-z') {
-          Memory.conquest.targetRooms[roomInfo.name] = true;
+        
+        // Determine if the room is attack target
+        if (roomInfo.hasController && roomInfo.owner && roomInfo.owner !== 'Odd-z') {
+            Memory.conquest.targetRooms[roomInfo.name] = true;
         }
-      
+        
         // Avoid duplicating info
         if (!Memory.conquest.scoutedRooms[roomInfo.name]) {
-          Memory.conquest.scoutedRooms[roomInfo.name] = roomInfo;
+            Memory.conquest.scoutedRooms[roomInfo.name] = roomInfo;
         }
-      
+        
         console.log(`Scouting report for room ${roomInfo.name}: `, JSON.stringify(roomInfo));
         Game.notify(`Scouting report for room ${roomInfo.name}: ` + JSON.stringify(roomInfo));
-      },
+    },
       
       analyzeTerrain: function(room) {
         const terrain = room.getTerrain();

@@ -9,648 +9,420 @@ var spawner = {
 
 // Phase-based spawning counts
 calculateDesiredCounts: function(room) {
+    if (!room || !Memory.rooms[room.name]) return {};
+    
     const roomMemory = Memory.rooms[room.name];
+    
+    // Check if required memory structures exist
+    if (!roomMemory.phase || !roomMemory.construct || !roomMemory.construct.structureCount || !roomMemory.mapping) {
+        return { harvester: 1, hauler: 1, upgrader: 1, builder: 1 }; // Minimal counts if memory is incomplete
+    }
+    
     const phase = roomMemory.phase.Phase;
     const structureCount = roomMemory.construct.structureCount;
-    //const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-    const linksBuilt = structureCount.links.built;
-    const extractorBuilt = structureCount.extractor.built;
-    const terminalBuilt = structureCount.terminal.built;
-    const scouted = roomMemory.scoutingComplete;
-    const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
-    const claimers = _.filter(Game.creeps, (creep) => creep.memory.role === 'claimer' && creep.memory.home === room.name).length;
-    const scouts = _.filter(Game.creeps, (creep) => creep.memory.role === 'scout' && creep.memory.home === room.name).length;
-    const energySources = roomMemory.mapping.sources.count;
-
-    // Early return if there is only one energy source
-    if (energySources === 1) {
-        return {
-            harvester: 2,
-            hauler: 4,
-            builder: 2,
-            upgrader: 1
-        };
-    }
-
+    const energySources = roomMemory.mapping.sources ? roomMemory.mapping.sources.count : 1;
+    
+    // Get structure counts
+    const linksBuilt = structureCount.links ? structureCount.links.built : 0;
+    const extractorBuilt = structureCount.extractor ? structureCount.extractor.built : 0;
+    const terminalBuilt = structureCount.terminal ? structureCount.terminal.built : 0;
+    const storageBuilt = structureCount.storage ? structureCount.storage.built : 0;
+    
+    // Count construction sites to adjust builder count
+    const constructionSites = room.find(FIND_CONSTRUCTION_SITES).length;
+    
+    // Check for hostiles to adjust defense needs
+    const hostiles = room.find(FIND_HOSTILE_CREEPS, {
+        filter: creep => creep.owner.username !== "Source Keeper"
+    }).length;
+    
+    // Base counts adjusted for energy sources
+    const baseHarvesters = Math.min(energySources * 2, 4); // 2 per source, max 4
+    const baseHaulers = Math.min(energySources * 2, 5);    // 2 per source, max 5
+    
     // Default desired counts
     let desiredCounts = {
-        //harvester: 2,
-        //hauler: 3,
-        //upgrader: 1,
-        //builder: 2,
+        harvester: baseHarvesters,
+        hauler: baseHaulers,
+        upgrader: 1,
+        builder: constructionSites > 0 ? 2 : 1
     };
-
+    
+    // Add defense if needed
+    if (hostiles > 0) {
+        desiredCounts.attacker = Math.min(hostiles, 2);
+        desiredCounts.healer = Math.ceil(hostiles / 2);
+    }
+    
     // Phase-specific adjustments
     switch (phase) {
-        case 1:
-            desiredCounts = { harvester: 2, hauler: 3, upgrader: 1, builder: 4 };
+        case 1: // Early game - focus on building
+            desiredCounts.builder = Math.max(desiredCounts.builder, 3);
             break;
-        case 2:
-            desiredCounts = { harvester: 2, hauler: 3, upgrader: 2, builder: 3 };
+            
+        case 2: // Early expansion
+            desiredCounts.upgrader = 2; // More upgraders to level up faster
             break;
-        case 3:
-            desiredCounts = { harvester: 2, hauler: 4, upgrader: 2, builder: 3 };
+            
+        case 3: // Mid game
+            if (constructionSites > 3) {
+                desiredCounts.builder = 3; // More builders if lots of construction
+            }
             break;
-        case 4:
-            desiredCounts = { harvester: 2, hauler: 5, upgrader: 2, builder: 3 };
+            
+        case 4: // Storage phase
+            if (storageBuilt > 0) {
+                desiredCounts.hauler++; // Extra hauler for storage management
+            }
             break;
-        case 5:
-            desiredCounts = { harvester: 2, hauler: 5, upgrader: 1, builder: 3 };
+            
+        case 5: // Link phase
+            if (linksBuilt > 0) {
+                desiredCounts.hauler = Math.max(2, desiredCounts.hauler - 1); // Links reduce hauler needs
+            }
             break;
-        case 6:
+            
+        case 6: // Terminal phase
             if (extractorBuilt > 0) {
-                if (terminalBuilt < 1) {
-                    desiredCounts = { harvester: 3, hauler: 3, upgrader: 1, builder: 3 };
-                } else {
-                    desiredCounts = { harvester: 3, hauler: 4, upgrader: 1, builder: 2 };
-                }
-            } else {
-                desiredCounts = { harvester: 2, hauler: 3, upgrader: 1, builder: 2 };
+                desiredCounts.harvester++; // Extra harvester for mineral extraction
+            }
+            if (terminalBuilt > 0) {
+                desiredCounts.hauler++; // Extra hauler for terminal management
             }
             break;
+            
         case 7:
+        case 8: // Late game
             if (extractorBuilt > 0 && terminalBuilt > 0) {
-                desiredCounts = { harvester: 3, hauler: 5, upgrader: 1, builder: 2 };
-            } else {
-                desiredCounts = { harvester: 2, hauler: 4, upgrader: 1, builder: 3 };
+                desiredCounts.harvester = Math.max(3, desiredCounts.harvester);
+                desiredCounts.hauler = Math.max(4, desiredCounts.hauler);
             }
-            break;
-        default:
-            desiredCounts = { harvester: 3, hauler: 5, upgrader: 1, builder: 2 };
             break;
     }
-
-    // Final desired counts assignment
-    roomMemory.spawning.desiredCounts = desiredCounts;
+    
+    // Check if we need scouts or claimers
+    const scouted = roomMemory.scoutingComplete;
+    const roomClaimsAvailable = Memory.conquest && Memory.conquest.roomClaimsAvailable ? Memory.conquest.roomClaimsAvailable : 0;
+    
+    if (!scouted) {
+        const scouts = _.filter(Game.creeps, creep => creep.memory.role === 'scout' && creep.memory.home === room.name).length;
+        if (scouts < 1) {
+            desiredCounts.scout = 1;
+        }
+    }
+    
+    if (phase >= 4 && roomClaimsAvailable > 0) {
+        const claimers = _.filter(Game.creeps, creep => creep.memory.role === 'claimer' && creep.memory.home === room.name).length;
+        if (claimers < 1) {
+            desiredCounts.claimer = 1;
+        }
+    }
+    
+    // Store the calculated counts in memory
+    if (roomMemory.spawning) {
+        roomMemory.spawning.desiredCounts = desiredCounts;
+    }
+    
     return desiredCounts;
 },
 
-/*
-calculateDesiredCounts: function(room) {
-    const phase = Memory.rooms[room.name].phase.Phase;
-    const structureCount = Memory.rooms[room.name].construct.structureCount;
-    const totalHostiles = room.find(FIND_HOSTILE_CREEPS).length;
-    const linksBuilt = structureCount.links.built;
-    const extractorBuilt = structureCount.extractor.built;
-    const terminalBuilt = structureCount.terminal.built;
-    const scouted = Memory.rooms[room.name].scoutingComplete;
-    const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
-    const claimers = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_claimer")).length;
-    const scouts = _.filter(Game.creeps, (creep) => creep.name.startsWith(room.name + "_scout")).length;
-    let desiredCounts = {};
 
-
-    // Check the number of energy sources in the room
-    const energySources = room.find(FIND_SOURCES).length;
-
-        // Adjust desired counts if there is only one energy source
-        if (energySources === 1) {
-            return {
-                harvester: 2,
-                hauler: 3,
-                builder: 2,
-                upgrader: 1
-            };
-        }
-
-        /*if (Memory.rooms[room.name].underAttack) {
-    
-            const healersNeeded = Math.ceil(totalHostiles / 2); // 1 healer for every hostile
-            const attackersNeeded = totalHostiles * 2; // 2 attackers for every hostile
-    
-            return {
-                attacker: attackersNeeded,
-                healer: healersNeeded,
-
-                harvester: 2, // Minimal sustaining number during an attack
-                hauler: 2, // Minimal sustaining number
-            };
-
-        } else if (scouted === false && scouts < 1) {
-            //Begin Scouting
-            return {
-                scout: 1,
-            };
-        } else if (scouted === true && roomClaimsAvailable > 0 && claimers < 1 && phase > 3) {                         
-            // Scouting Complete & Can Claim
-            desiredCounts = {
-                claimer: 1
-            };
-
-        } else {   //////////////COMMENT OUT
-            //IMPLEMENT "IF CONSTRUCTION SITES: BUILDER +1"
-            switch (phase) {
-                case 1:
-                    // Phase 1
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 3,
-                        upgrader: 1,
-                        builder: 4,
-                        
-                    };
-                    break;
-                case 2:
-                    // Phase 2
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 3,
-                        upgrader: 2,
-                        builder: 3,
-                        
-                    };
-                    break;
-                case 3:
-                    // Phase 3
-                    desiredCounts = {
-                        harvester: 2, 
-                        hauler: 4,
-                        upgrader: 2,
-                        builder: 3,
-                        
-                    };
-                    break;
-                case 4:
-                    
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 5,
-                        upgrader: 2,
-                        builder: 3,
-                        
-                    };
-                    break;
-
-                case 5:
-                
-                    desiredCounts = {
-                        harvester: 2,
-                        hauler: 5,
-                        upgrader: 1,
-                        builder: 3,
-                        
-                    };
-                
-                    break;
-
-                case 6:
-                
-                    if (extractorBuilt > 0 && terminalBuilt < 1) {
-                        desiredCounts = {
-                            harvester: 3,
-                            hauler: 3,
-                            upgrader: 1,
-                            builder: 3,
-                            
-                        };
-                    } else if (extractorBuilt > 0 && terminalBuilt > 0) {
-                        desiredCounts = {
-                            harvester: 3,
-                            hauler: 4,
-                            upgrader: 1,
-                            builder: 1,
-                            
-                        };
-
-                    } else {
-                        desiredCounts = {
-                            harvester: 2,
-                            hauler: 3,
-                            upgrader: 1,
-                            builder: 2,
-                            
-                        };
-
-                    }
-                    break;
-
-                 case 7:
-                    
-                    if (extractorBuilt > 0 && terminalBuilt > 0) {
-                        desiredCounts = {
-                            harvester: 3,
-                            hauler: 5,
-                            upgrader: 1,
-                            builder: 1,
-                            
-                        };
-
-                    } else {
-                        desiredCounts = {
-                            harvester: 2,
-                            hauler: 4,
-                            upgrader: 1,
-                            builder: 3,
-                            
-                        };
-
-                    }
-                    break;
-                // More as needed
-                default:
-                    desiredCounts = {
-                        harvester: 3,
-                        hauler: 5,
-                        upgrader: 1,
-                        builder: 2,
-                        
-                    };
-                    break;
-            }
-        
-        //console.log(`${totalEnergyRequired}`);
-        //console.log(`${JSON.stringify(desiredCounts)}`);
-        Memory.rooms[room.name].spawning.desiredCounts = desiredCounts;
-        return desiredCounts;
-        
-    },
-*/    
 
 
     manageCreepSpawning: function(room) {
-        const energyAvailable = room.energyAvailable;
-        const phase = Memory.rooms[room.name].phase.Phase;
+        if (!room) return;
         
-        //console.log('MCS Called');
-        
-    
-        const desiredCounts = this.calculateDesiredCounts(room);
-        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.room.name === room.name), (creep) => creep.memory.role);
-        
-    
-        let nextSpawnRole = null;
-        let largestDifference = 0;
-    
-        // Determine which role is most in need of spawning
-        for (const [role, desiredCount] of Object.entries(desiredCounts)) {
-            const currentCount = currentCounts[role] || 0;
-            const difference = desiredCount - currentCount;
-            if (difference > largestDifference) {
-                largestDifference = difference;
-                nextSpawnRole = role; // Store the role to spawn next
-                break; // Found a role to spawn, exit the loop
+        // Check if room memory exists
+        if (!Memory.rooms[room.name] || !Memory.rooms[room.name].phase) {
+            // Only log this error periodically to reduce console spam
+            if (Game.time % 100 === 0) {
+                console.log(`Missing memory for room ${room.name}`);
             }
-        }
-        // Broadcast planned spawn
-        Memory.rooms[room.name].spawning.nextSpawnRole = nextSpawnRole;
-        memories.spawnMode(room, nextSpawnRole);
-
-        // Determine spawn mode and adjust energyToUse based on this mode   
-        let energyToUse = Memory.rooms[room.name].spawning.spawnMode.energyToUse;
-
-    
-        // Check if the available energy meets the requirement for the current spawn mode
-        if (energyAvailable < energyToUse) {
-            //console.log("[manageCreepSpawning] Waiting for more energy.");
             return;
         }
         
-        if (nextSpawnRole) {
-            //console.log(`Calling SCWR with NR: ${nextSpawnRole}, E2U: ${energyToUse}, Ph: ${phase}, Room: ${room}`);
-            this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
+        const energyAvailable = room.energyAvailable;
+        const energyCapacity = room.energyCapacityAvailable;
+        const phase = Memory.rooms[room.name].phase.Phase;
+        
+        // Get construction sites count to prioritize builders when needed
+        const constructionSites = room.find(FIND_CONSTRUCTION_SITES).length;
+        
+        // Get desired and current counts
+        const desiredCounts = this.calculateDesiredCounts(room);
+        
+        // More efficient filtering - do it once and reuse
+        const creepsInRoom = _.filter(Game.creeps, creep => 
+            creep.memory.home === room.name || 
+            (creep.room.name === room.name && !creep.memory.home)
+        );
+        
+        const currentCounts = _.countBy(creepsInRoom, creep => creep.memory.role);
+        
+        // Check for critical shortages first
+        let nextSpawnRole = null;
+        let priority = -1;
+        
+        // Priority order: harvester > hauler > upgrader > builder > others
+        const rolePriorities = {
+            'harvester': 5,
+            'hauler': 4,
+            'upgrader': 3,
+            'builder': constructionSites > 0 ? 4 : 2, // Boost builder priority if construction sites exist
+            'scout': 1,
+            'claimer': 1,
+            'attacker': 1,
+            'healer': 1
+        };
+        
+        // Find the role with the highest priority that needs spawning
+        for (const [role, desiredCount] of Object.entries(desiredCounts)) {
+            const currentCount = currentCounts[role] || 0;
+            const difference = desiredCount - currentCount;
+            const rolePriority = rolePriorities[role] || 0;
+            
+            // If we need this role and it has higher priority than current selection
+            if (difference > 0 && rolePriority > priority) {
+                priority = rolePriority;
+                nextSpawnRole = role;
+            }
         }
+        
+        // If no role needs spawning, we're done
+        if (!nextSpawnRole) return;
+        
+        // Update memory with next spawn role
+        Memory.rooms[room.name].spawning.nextSpawnRole = nextSpawnRole;
+        
+        // Determine spawn mode and energy to use
+        memories.spawnMode(room, nextSpawnRole);
+        let energyToUse = Memory.rooms[room.name].spawning.spawnMode.energyToUse;
+        
+        // Emergency mode - if we have no harvesters or haulers, use whatever energy we have
+        const criticalRoles = ['harvester', 'hauler'];
+        const hasCriticalCreeps = criticalRoles.some(role => (currentCounts[role] || 0) > 0);
+        
+        if (!hasCriticalCreeps && criticalRoles.includes(nextSpawnRole)) {
+            energyToUse = Math.max(energyAvailable, 300); // Use at least 300 energy or whatever we have
+        }
+        
+        // Check if we have enough energy
+        if (energyAvailable < energyToUse) {
+            // Only log this periodically to reduce console spam
+            if (Game.time % 100 === 0 && nextSpawnRole) {
+                console.log(`Waiting for energy to spawn ${nextSpawnRole} in ${room.name} (${energyAvailable}/${energyToUse})`);
+            }
+            return;
+        }
+        
+        // Spawn the creep
+        this.spawnCreepWithRole(nextSpawnRole, energyToUse, phase, room);
     }, 
     
     // Handles spawning after need and energy are determined.
     spawnCreepWithRole: function(role, energyToUse, phase, room) {
-       //console.log(`[spawnCreepWithRole] ${room} Attempting to spawn: ${role} with ${energyToUse} energy`);
-        let spawnMode = Memory.rooms[room.name].spawning.spawnMode.mode;
-        const body = this.getBodyPartsForRole(role, energyToUse, phase, spawnMode);
-        //console.log(`${room} - ${role} , Body: ${body}`);
-
-
-        if (!body) {
-            // Log or handle the situation when not enough energy is available
-           //console.log(`[spawnCreepWithRole] ${room} Waiting for more energy to spawn ${role}.`);
-            return; // Exit the function early
-        }
+        if (!role || !room || !Game.rooms[room.name]) return;
         
-        const name = `${room}_${role}_${Game.time}`;
-       
-        // Find spawns in the specified room
-        const spawns = Game.rooms[room.name].find(FIND_MY_SPAWNS);
-        if (spawns.length === 0) {
-            console.log(`[spawnCreepWithRole] No spawns found in room ${room.name}`);
+        // Get spawn mode from memory
+        const spawnMode = Memory.rooms[room.name].spawning.spawnMode.mode;
+        
+        // Generate body parts based on role, energy, phase, and mode
+        const body = this.getBodyPartsForRole(role, energyToUse, phase, spawnMode);
+        
+        // If no valid body could be generated, exit
+        if (!body || body.length === 0) {
             return;
         }
         
-        const mainSpawn = spawns[0];
-        const backupSpawn = spawns.length > 1 ? spawns[1] : null;
-
-
-        const spawnResult = mainSpawn.spawnCreep(body, name, {
-            memory: { role: role, working: false, home: room.name }
+        // Create a unique name for the creep
+        const name = `${room.name}_${role}_${Game.time}`;
+        
+        // Find available spawns in the room
+        const spawns = Game.rooms[room.name].find(FIND_MY_SPAWNS, {
+            filter: spawn => !spawn.spawning
         });
-
-        if (spawnResult == ERR_BUSY && backupSpawn) {
-            const secondSpawnResult = backupSpawn.spawnCreep(body, name, {
-                memory: { role: role, working: false, home: room.name }
-            });
-
-            if (secondSpawnResult == OK) {
-                // Logging the successful spawn with current counts
-                
-                const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room.name);
-                const upgraders = 
-                _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'upgrader').length;
-                const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
-                const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
-                const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
-                
-                // Count the body parts and prepare output format
-                const counts = _.countBy(body); // Count each type of body part
-                const formattedParts = Object.entries(counts)
-                    .map(([part, count]) => `"${part}": ${count}`)
-                    .join(", ");
-
-                console.log(`Room: ${room.name} SpawnMode: ${spawnMode} Total: ${creepsInRoom.length}`);
-                console.log(`[spawnCreepWithRole] Spawned ${role} with ${formattedParts}`);
-                console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
-                
-            } else {
-                return;
+        
+        if (spawns.length === 0) {
+            // Try to find any spawn, even if busy
+            const allSpawns = Game.rooms[room.name].find(FIND_MY_SPAWNS);
+            if (allSpawns.length === 0) {
+                return; // No spawns in the room
             }
-        } else if (spawnResult == OK) {
-            // Logging the successful spawn with current counts
             
-            const creepsInRoom = _.filter(Game.creeps, (creep) => creep.room.name === room.name);
-            const upgraders = 
-            _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'upgrader').length;
-            const harvesters = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'harvester').length;
-            const builders =  _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'builder').length;
-            const haulers = _.filter(Game.creeps, (creep) => creep.room.name === room.name && creep.memory.role === 'hauler').length;
-            //let spawnMode = Memory.rooms[room.name].spawnMode.mode;
-            // Count the body parts and prepare output format
-            const counts = _.countBy(body); // Count each type of body part
+            // If all spawns are busy, just return and try again next tick
+            return;
+        }
+        
+        // Use the first available spawn
+        const spawn = spawns[0];
+        
+        // Set up memory for the new creep
+        const creepMemory = { 
+            role: role, 
+            working: false, 
+            home: room.name,
+            born: Game.time
+        };
+        
+        // Spawn the creep
+        const spawnResult = spawn.spawnCreep(body, name, {
+            memory: creepMemory
+        });
+        
+        // Handle the spawn result
+        if (spawnResult === OK) {
+            // Log spawn success with minimal output
+            const counts = _.countBy(body);
             const formattedParts = Object.entries(counts)
-                .map(([part, count]) => `"${part}": ${count}`)
-                .join(", ");
-
-            console.log(`Room: ${room.name} SpawnMode: ${spawnMode} Total: ${creepsInRoom.length}`);
-            console.log(`[spawnCreepWithRole] Spawned ${role} with ${formattedParts}`);
-            console.log(`[spawnCreepWithRole] Current Worker Counts - Hv: ${harvesters}, Hl: ${haulers}, B: ${builders}, U: ${upgraders}`);
+                .map(([part, count]) => `${part}:${count}`)
+                .join(",");
             
+            console.log(`Spawned ${role} in ${room.name} [${formattedParts}]`);
             
-        } else {
-            
-            console.log(`[spawnCreepWithRole] Failed to spawn ${role}: ${name}, Error: ${spawnResult}`);
+            // Only log detailed counts every 10 spawns to reduce console spam
+            if (Game.time % 10 === 0) {
+                const creepsInRoom = _.filter(Game.creeps, creep => 
+                    creep.memory.home === room.name || 
+                    (creep.room.name === room.name && !creep.memory.home)
+                );
+                
+                const counts = _.countBy(creepsInRoom, creep => creep.memory.role);
+                console.log(`Room ${room.name} creep counts: ${JSON.stringify(counts)}`);
+            }
+        } 
+        else if (spawnResult !== ERR_BUSY) {
+            // Only log errors other than "busy" and "not enough energy"
+            if (spawnResult !== ERR_NOT_ENOUGH_ENERGY) {
+                if (Game.time % 25 === 0) {
+                    console.log(`Error spawning ${role} in ${room.name}: ${spawnResult}`);
+                }
+            }
         }
     },
     
     getBodyPartsForRole: function(role, energyToUse, phase, spawnMode) {
+        if (!role || energyToUse <= 0) return null;
+        
         const partsCost = BODYPART_COST;
         
-
-        let roleBlueprints;
-
-        if (spawnMode === 'EmPower') {
-           roleBlueprints = {
-                harvester: ["work", "carry", "carry", "move"], // Basic setup for early game
-                upgrader: ["work", "move", "carry"],
-                builder: ["work", "move", "carry"],
-                hauler: ["carry", "move", "move"],
-                //Defensive Units
-                attacker: ["tough", "move", "move", "ranged_attack"],
-                healer: ["move","heal"],
-                //Recon
-                scout: ["move"],
-                claimer: ["claim", "move", "work"],
-            };
-
-
-        } else {
-    
-            // Adjust blueprint based on the phase
-            switch (phase) {
-                case 1:
-                    roleBlueprints = {
-                        harvester: ["work", "carry", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                    //Defensive Units
-                    attacker: ["tough", "move", "move", "ranged_attack"],
-                    healer: ["move","heal"],
-                    //Recon
-                    scout: ["move"],
-                    claimer: ["claim", "move", "work"],
-                };
-                break;
-            case 2:
-                if (energyToUse >= 500) {
-                    roleBlueprints = {
-                        harvester: ["work", "work", "work", "work", "carry", "move"], // More efficient harvesting
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    }
-                } else {
-                    roleBlueprints = {
-                        harvester: ["work", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                }
-                break;
-            case 3:
-                
-                if (energyToUse >= 600) {
-                    
-                    roleBlueprints = {
-                        harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                        upgrader: ["work", "move", "move", "carry"],
-                        builder: ["work", "move", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                    
-                } else {
-                    roleBlueprints = {
-                        harvester: ["work", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                }
-                break;
-
-            case 6:
-
-                if (energyToUse > 300) {
-                    roleBlueprints = {
-                        harvester: ["work", "work", "work", "work", "work", "carry", "move", "move"], 
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                    break;
-                } else {
-                    //EmPower Contingency
-                    roleBlueprints = {
-                        harvester: ["work", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                    break;
-                }
-
-            case 7:
-                if (energyToUse > 300) {
-                    roleBlueprints = {
-                        harvester: ["work", "work", "work", "work", "work", "carry", "move", "move", "move"], 
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                    break;
-                } else {
-                    //EmPower Contingency
-                    roleBlueprints = {
-                        harvester: ["work", "carry", "move"], // Basic setup for early game
-                        upgrader: ["work", "move", "carry"],
-                        builder: ["work", "move", "carry"],
-                        hauler: ["carry", "move", "move"],
-                        //Defensive Units
-                        attacker: ["tough", "move", "move", "ranged_attack"],
-                        healer: ["move","heal"],
-                        //Recon
-                        scout: ["move"],
-                        claimer: ["claim", "move", "work"],
-                    };
-                    break;
-
-                }
-
-            // Additional phases handled by default
-            default:
-                if (energyToUse > 300) {
-                roleBlueprints = {
-                    harvester: ["work", "work", "work", "work", "work", "carry", "move"], // MAX HARVEST
-                    upgrader: ["work", "move", "move", "carry"],
-                    builder: ["work", "move", "move", "carry"],
-                    hauler: ["carry", "move"],
-                    //Defensive Units
-                    attacker: ["tough", "move", "move", "ranged_attack"],
-                    healer: ["move","heal"],
-                    //Recon
-                    scout: ["move"],
-                    claimer: ["claim", "move", "work"],
-                };
-                break;
-                } else {
-                        //EmPower Contingency
-                        roleBlueprints = {
-                            harvester: ["work", "carry", "move"], // Basic setup for early game
-                            upgrader: ["work", "move", "carry"],
-                            builder: ["work", "move", "carry"],
-                            hauler: ["carry", "move", "move"],
-                            //Defensive Units
-                            attacker: ["tough", "move", "move", "ranged_attack"],
-                            healer: ["move","heal"],
-                            //Recon
-                            scout: ["move"],
-                            claimer: ["claim", "move", "work"],
-                        };
-                        break;
-                }
-        }
-}
-    
-        let body = [];
-        let energyUsed = 0;
-    
-        // Calculate the energy cost for the base blueprint
-        const baseCost = roleBlueprints[role].reduce((total, part) => total + partsCost[part], 0);
-       //console.log(`${role} :: ${baseCost}`);
-    
-        if (energyToUse < baseCost) {
-           //console.log(`Insufficient energy to spawn a viable ${role}. Required: ${baseCost}, Available: ${energyToUse}`);
-            return null; // Not enough energy for even a base blueprint
-        }
-
-        // Build the base blueprint
-        roleBlueprints[role].forEach(part => {
-            if (energyUsed + partsCost[part] <= energyToUse) {
-                if (body.length >= 50) {
-                    //Cap at 50 parts
-                    return body; 
-                }
-
-                body.push(part);
-                energyUsed += partsCost[part];
-            }
-        });
-
-        // Function to add parts in a balanced manner
-        const addPartsBalanced = () => {
-            const blueprint = roleBlueprints[role];
-            let added = false;
-    
-            for (let i = 0; i < blueprint.length && energyUsed < energyToUse; i++) {
-                const part = blueprint[i];
-                if (energyUsed + partsCost[part] <= energyToUse) {
-                    if (body.length >= 50) {
-                        //Cap at 50 parts
-                        return added;
-                    }
-                    body.push(part);
-                    energyUsed += partsCost[part];
-                    added = true;
-                    // Cycle through parts in blueprint order for balance
-                    i = (i + 1) % blueprint.length - 1;
-                }
-            }
-    
-            return added;
+        // Define optimal body part ratios for different roles
+        const roleRatios = {
+            harvester: { work: 2, carry: 1, move: 1 },  // Optimized for harvesting
+            upgrader: { work: 1, carry: 1, move: 1 },   // Balanced for upgrading
+            builder: { work: 1, carry: 1, move: 1 },    // Balanced for building
+            hauler: { carry: 2, move: 1 },              // Optimized for carrying
+            attacker: { tough: 1, attack: 2, move: 2 }, // Combat focused
+            healer: { heal: 1, move: 1 },               // Healing focused
+            scout: { move: 1 },                         // Just movement
+            claimer: { claim: 1, move: 1 }              // Claiming focused
         };
-    
-        // Continue adding parts in a balanced way until no more can be added
-        while (addPartsBalanced()) {}
-    
-        return body;
+        
+        // Emergency mode - minimal viable creeps
+        if (spawnMode === 'EmPower' || energyToUse < 300) {
+            const emergencyBlueprints = {
+                harvester: ["work", "carry", "move"],
+                upgrader: ["work", "carry", "move"],
+                builder: ["work", "carry", "move"],
+                hauler: ["carry", "carry", "move"],
+                attacker: ["attack", "move"],
+                healer: ["heal", "move"],
+                scout: ["move"],
+                claimer: ["claim", "move"]
+            };
+            
+            return emergencyBlueprints[role] || ["work", "carry", "move"];
+        }
+        
+        // For normal operation, build creeps based on available energy and role
+        let body = [];
+        let energyRemaining = energyToUse;
+        
+        // Special case for claimer - just needs CLAIM and MOVE
+        if (role === 'claimer') {
+            if (energyRemaining >= BODYPART_COST.claim + BODYPART_COST.move) {
+                return ['claim', 'move'];
+            }
+            return null;
+        }
+        
+        // Special case for scout - just needs MOVE parts
+        if (role === 'scout') {
+            const moveParts = Math.min(Math.floor(energyRemaining / BODYPART_COST.move), 10);
+            return Array(moveParts).fill('move');
+        }
+        
+        // Get the appropriate ratio for this role
+        const ratio = roleRatios[role] || { work: 1, carry: 1, move: 1 };
+        
+        // Calculate the cost of one "unit" of the ratio
+        const unitCost = Object.entries(ratio).reduce((sum, [part, count]) => {
+            return sum + (BODYPART_COST[part] * count);
+        }, 0);
+        
+        // Calculate how many complete units we can build
+        const units = Math.floor(energyRemaining / unitCost);
+        
+        // Build the body array based on the ratio and units
+        if (units > 0) {
+            for (const [part, count] of Object.entries(ratio)) {
+                // Add parts according to ratio, respecting the 50 part limit
+                const partsToAdd = Math.min(units * count, 50 - body.length);
+                body = body.concat(Array(partsToAdd).fill(part));
+                energyRemaining -= partsToAdd * BODYPART_COST[part];
+            }
+        }
+        
+        // If we have energy left, try to add more useful parts
+        if (energyRemaining > 0) {
+            // Prioritize parts based on role
+            let priorityParts = [];
+            
+            switch (role) {
+                case 'harvester':
+                    priorityParts = ['work', 'move', 'carry'];
+                    break;
+                case 'hauler':
+                    priorityParts = ['carry', 'move'];
+                    break;
+                case 'upgrader':
+                case 'builder':
+                    priorityParts = ['work', 'carry', 'move'];
+                    break;
+                case 'attacker':
+                    priorityParts = ['attack', 'move', 'tough'];
+                    break;
+                case 'healer':
+                    priorityParts = ['heal', 'move'];
+                    break;
+                default:
+                    priorityParts = ['move', 'carry', 'work'];
+            }
+            
+            // Add extra parts based on priority until we run out of energy or hit the part limit
+            for (const part of priorityParts) {
+                while (energyRemaining >= BODYPART_COST[part] && body.length < 50) {
+                    body.push(part);
+                    energyRemaining -= BODYPART_COST[part];
+                }
+            }
+        }
+        
+        // Sort body parts to optimize performance (tough first, then non-move parts, then move parts)
+        const sortedBody = [];
+        
+        // Add TOUGH parts first (if any)
+        const toughParts = body.filter(part => part === 'tough');
+        sortedBody.push(...toughParts);
+        
+        // Add non-MOVE and non-TOUGH parts
+        const nonMoveParts = body.filter(part => part !== 'move' && part !== 'tough');
+        sortedBody.push(...nonMoveParts);
+        
+        // Add MOVE parts last for better performance when injured
+        const moveParts = body.filter(part => part === 'move');
+        sortedBody.push(...moveParts);
+        
+        return sortedBody.length > 0 ? sortedBody : null;
     },
 };
 
