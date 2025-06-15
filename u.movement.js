@@ -135,11 +135,21 @@ var movement = {
         
         // Check if path exists in cache and is still valid
         if (Memory.pathCache[pathKey] && 
+            Memory.pathCache[pathKey].path && // Ensure path exists
             Memory.pathCache[pathKey].time + (Memory.pathCache[pathKey].highTraffic ? 50 : 100) > Game.time) {
-            // Deserialize the path
-            path = Room.deserializePath(Memory.pathCache[pathKey].path);
-            useCache = true;
-        } else {
+            try {
+                // Try to deserialize the path with error handling
+                path = Room.deserializePath(Memory.pathCache[pathKey].path);
+                useCache = true;
+            } catch (e) {
+                // If deserialization fails, delete the invalid path
+                delete Memory.pathCache[pathKey];
+                console.log(`Path deserialization error: ${e.message}`);
+            }
+        }
+        
+        // If no valid path from cache, generate a new one
+        if (!path) {
             // Generate new path using PathFinder for better results
             const result = PathFinder.search(creep.pos, { pos: targetPos, range: effectiveRange }, {
                 plainCost: 2,
@@ -150,16 +160,22 @@ var movement = {
             if (!result.path || result.path.length === 0) return; // No path found
             
             path = result.path;
-            const serializedPath = Room.serializePath(path);
             
-            // Check if this path goes through high traffic areas
-            const highTraffic = path.some(pos => this.getTrafficDensity(pos) > 3);
-            
-            Memory.pathCache[pathKey] = { 
-                path: serializedPath, 
-                time: Game.time,
-                highTraffic: highTraffic
-            };
+            try {
+                const serializedPath = Room.serializePath(path);
+                
+                // Check if this path goes through high traffic areas
+                const highTraffic = path.some(pos => this.getTrafficDensity(pos) > 3);
+                
+                Memory.pathCache[pathKey] = { 
+                    path: serializedPath, 
+                    time: Game.time,
+                    highTraffic: highTraffic
+                };
+            } catch (e) {
+                console.log(`Path serialization error: ${e.message}`);
+                // Continue with the path but don't cache it
+            }
         }
         
         // Visualize path if enabled
