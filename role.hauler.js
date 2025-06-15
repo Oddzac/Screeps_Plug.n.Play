@@ -211,17 +211,17 @@ var roleHauler = {
     targets = [];
 
     // Add dropped resources and tombstones with resources to the targets list.
-    droppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
+    let localDroppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
         filter: (r) => (storageBuilt && r.amount > 20) || (!storageBuilt && r.resourceType === RESOURCE_ENERGY && r.amount > 20)
     });
-    const tombstonesWithResources = creep.room.find(FIND_TOMBSTONES, {
+    const localTombstonesWithResources = creep.room.find(FIND_TOMBSTONES, {
         filter: (t) => _.sum(t.store) > 0
     });
-    const ruinssWithResources = creep.room.find(FIND_RUINS, {
+    const localRuinsWithResources = creep.room.find(FIND_RUINS, {
         filter: (t) => _.sum(t.store) > 0
     });
 
-    targets = targets.concat(droppedResources, tombstonesWithResources, ruinssWithResources);
+    targets = targets.concat(localDroppedResources, localTombstonesWithResources, localRuinsWithResources);
 
     // Directly work with the assigned container if specified and valid.
     if (creep.memory.containerId) {
