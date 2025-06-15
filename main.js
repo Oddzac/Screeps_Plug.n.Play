@@ -15,9 +15,9 @@ module.exports.loop = function() {
     //profiler.wrap(function() {
 
         // Reset path cache on first tick after code update to prevent deserialization errors
-        if (!global.lastCodeUpdate || global.lastCodeUpdate < Game.time) {
+        if (!Memory.lastCodeUpdate) {
+            Memory.lastCodeUpdate = Game.time;
             delete Memory.pathCache;
-            global.lastCodeUpdate = Game.time;
             console.log('Code update detected, path cache reset');
         }
 
