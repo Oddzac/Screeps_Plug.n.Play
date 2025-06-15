@@ -15,7 +15,7 @@ module.exports.loop = function() {
     //profiler.wrap(function() {
 
         //Globals
-        
+        giveWay.resetCreepMovement();
         memories.immediateMemory();
         terminals.cleanupOldOrders();
         terminals.globalMarketManagement();

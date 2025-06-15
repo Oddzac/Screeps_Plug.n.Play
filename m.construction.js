@@ -6,44 +6,76 @@ var construction = {
     //placeLinks method - needs to check if there is already a link near given source and ignore if so (continue placing as able)
     
     manageConstruction: function(room) {
+        if (!room) return;
         
-        const spawns = room.find(FIND_MY_SPAWNS);
-        const buildersCount = _.filter(Game.creeps, { memory: { role: 'builder' } }).length;
-        const structureCount = Memory.rooms[room.name].construct.structureCount;
-        const containersBuilt = structureCount.containers.built;
-        const containerSites = structureCount.containers.pending;
-        const storageBuilt = structureCount.storage.built;
-        const storageSites = structureCount.storage.pending;
-        const linksBuilt = structureCount.links.built;
-        const linkSites = structureCount.links.pending;
-        const towersBuilt = structureCount.towers.built; 
-        const towerSites = structureCount.towers.pending;
-
+        // Check if room memory exists
+        if (!Memory.rooms[room.name] || 
+            !Memory.rooms[room.name].construct || 
+            !Memory.rooms[room.name].construct.structureCount ||
+            !Memory.rooms[room.name].phase) {
+            return;
+        }
         
+        // Check if we have builders available
+        const buildersCount = _.filter(Game.creeps, c => c.memory.role === 'builder' && c.memory.home === room.name).length;
         if (buildersCount < 1) {
             return;
         }
-
-        if (this.checkTowersAvailable(room) > 0) {
-            //this.placeTower(room);
+        
+        // Get structure counts
+        const structureCount = Memory.rooms[room.name].construct.structureCount;
+        const phase = Memory.rooms[room.name].phase.Phase;
+        
+        // Check for construction sites - limit total number to avoid CPU waste
+        const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
+        if (constructionSites.length >= 5) {
+            return; // Too many construction sites already
         }
-
-        if (Memory.rooms[room.name].phase.Phase < 2) {
-            this.placeContainersNearSources(room);
-            return;
-        } else if (Memory.rooms[room.name].phase.Phase <3 && containersBuilt > 1) {
-            
-            return;
-        } else if (Memory.rooms[room.name].phase.Phase < 5 && storageBuilt < 1 && storageSites < 1) {
-            this.placeStorage(room);
-            return;
-        } else if (Memory.rooms[room.name].phase.Phase < 6) {
-            if (linksBuilt < 2) {
-                //this.placeLinks(room);
-            }
-            return;
+        
+        // Prioritize construction based on room phase
+        switch (phase) {
+            case 1:
+                // Phase 1: Focus on containers near sources
+                this.placeContainersNearSources(room);
+                break;
+                
+            case 2:
+            case 3:
+                // Phase 2-3: Ensure containers are built, then place extensions
+                if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
+                    this.placeContainersNearSources(room);
+                }
+                break;
+                
+            case 4:
+                // Phase 4: Place storage if needed
+                if (structureCount.storage.built < 1 && structureCount.storage.pending < 1) {
+                    this.placeStorage(room);
+                }
+                break;
+                
+            case 5:
+            case 6:
+                // Phase 5-6: Place links if needed
+                if (structureCount.links.built < 2 && structureCount.links.pending < 1) {
+                    // Uncomment when placeLinks is implemented
+                    // this.placeLinks(room);
+                }
+                
+                // Place towers if available
+                if (this.checkTowersAvailable(room) > 0) {
+                    // Uncomment when placeTower is implemented
+                    // this.placeTower(room);
+                }
+                break;
+                
+            default:
+                // Higher phases: Focus on advanced structures
+                if (this.checkTowersAvailable(room) > 0) {
+                    // this.placeTower(room);
+                }
+                break;
         }
-
     },
     
     removeAllConstructionSites: function(){
@@ -59,7 +91,13 @@ var construction = {
 
     // Count structures - Container, Storage, Extractor, Link, Terminal, Tower
     countStructures: function(room) {
+        if (!room) return;
+        
         // Initialize structure counts if necessary
+        if (!Memory.rooms[room.name]) {
+            Memory.rooms[room.name] = {};
+        }
+        
         if (!Memory.rooms[room.name].construct) {
             Memory.rooms[room.name].construct = {};
         }
@@ -77,69 +115,46 @@ var construction = {
         }
 
         const structuresCount = Memory.rooms[room.name].construct.structureCount;
-        if (!structuresCount.extensions) {
-            structuresCount.extensions = {built: 0, pending: 0};
+        
+        // Ensure all structure types are initialized
+        const structureTypes = ['extensions', 'containers', 'storage', 'extractor', 'links', 'terminal', 'towers'];
+        for (const type of structureTypes) {
+            if (!structuresCount[type]) {
+                structuresCount[type] = {built: 0, pending: 0};
+            }
         }
 
         // Reset structure counts
-        for (let key in structuresCount) {
+        for (const key in structuresCount) {
             structuresCount[key].built = 0;
             structuresCount[key].pending = 0;
         }
 
+        // Use a more efficient approach by grouping structures by type
+        const structures = room.find(FIND_STRUCTURES);
+        const structuresByType = _.groupBy(structures, 'structureType');
+        
         // Count built structures
-        room.find(FIND_STRUCTURES).forEach(structure => {
-            switch (structure.structureType) {
-                case STRUCTURE_EXTENSION:
-                    structuresCount.extensions.built++;
-                    break;
-                case STRUCTURE_CONTAINER:
-                    structuresCount.containers.built++;
-                    break;
-                case STRUCTURE_STORAGE:
-                    structuresCount.storage.built++;
-                    break;
-                case STRUCTURE_EXTRACTOR:
-                    structuresCount.extractor.built++;
-                    break;
-                case STRUCTURE_LINK:
-                    structuresCount.links.built++;
-                    break;
-                case STRUCTURE_TERMINAL:
-                    structuresCount.terminal.built++;
-                    break;
-                case STRUCTURE_TOWER:
-                    structuresCount.towers.built++;
-                    break;
-            }
-        });
+        if (structuresByType[STRUCTURE_EXTENSION]) structuresCount.extensions.built = structuresByType[STRUCTURE_EXTENSION].length;
+        if (structuresByType[STRUCTURE_CONTAINER]) structuresCount.containers.built = structuresByType[STRUCTURE_CONTAINER].length;
+        if (structuresByType[STRUCTURE_STORAGE]) structuresCount.storage.built = structuresByType[STRUCTURE_STORAGE].length;
+        if (structuresByType[STRUCTURE_EXTRACTOR]) structuresCount.extractor.built = structuresByType[STRUCTURE_EXTRACTOR].length;
+        if (structuresByType[STRUCTURE_LINK]) structuresCount.links.built = structuresByType[STRUCTURE_LINK].length;
+        if (structuresByType[STRUCTURE_TERMINAL]) structuresCount.terminal.built = structuresByType[STRUCTURE_TERMINAL].length;
+        if (structuresByType[STRUCTURE_TOWER]) structuresCount.towers.built = structuresByType[STRUCTURE_TOWER].length;
 
+        // Use the same approach for construction sites
+        const sites = room.find(FIND_CONSTRUCTION_SITES);
+        const sitesByType = _.groupBy(sites, 'structureType');
+        
         // Count construction sites
-        room.find(FIND_CONSTRUCTION_SITES).forEach(site => {
-            switch (site.structureType) {
-                case STRUCTURE_EXTENSION:
-                    structuresCount.extensions.pending++;
-                    break;
-                case STRUCTURE_CONTAINER:
-                    structuresCount.containers.pending++;
-                    break;
-                case STRUCTURE_STORAGE:
-                    structuresCount.storage.pending++;
-                    break;
-                case STRUCTURE_EXTRACTOR:
-                    structuresCount.extractor.pending++;
-                    break;
-                case STRUCTURE_LINK:
-                    structuresCount.links.pending++;
-                    break;
-                case STRUCTURE_TERMINAL:
-                    structuresCount.terminal.pending++;
-                    break;
-                case STRUCTURE_TOWER:
-                    structuresCount.towers.pending++;
-                    break;
-            }
-        });
+        if (sitesByType[STRUCTURE_EXTENSION]) structuresCount.extensions.pending = sitesByType[STRUCTURE_EXTENSION].length;
+        if (sitesByType[STRUCTURE_CONTAINER]) structuresCount.containers.pending = sitesByType[STRUCTURE_CONTAINER].length;
+        if (sitesByType[STRUCTURE_STORAGE]) structuresCount.storage.pending = sitesByType[STRUCTURE_STORAGE].length;
+        if (sitesByType[STRUCTURE_EXTRACTOR]) structuresCount.extractor.pending = sitesByType[STRUCTURE_EXTRACTOR].length;
+        if (sitesByType[STRUCTURE_LINK]) structuresCount.links.pending = sitesByType[STRUCTURE_LINK].length;
+        if (sitesByType[STRUCTURE_TERMINAL]) structuresCount.terminal.pending = sitesByType[STRUCTURE_TERMINAL].length;
+        if (sitesByType[STRUCTURE_TOWER]) structuresCount.towers.pending = sitesByType[STRUCTURE_TOWER].length;
     },
 
     cacheRoomStructures: function(room) {
@@ -279,15 +294,34 @@ var construction = {
 
     // Method to place containers near sources
     placeContainersNearSources: function(room) {
-        // Get sources from memory
+        if (!room) return;
+        
+        // Check if room memory exists and has source data
+        if (!Memory.rooms[room.name] || 
+            !Memory.rooms[room.name].mapping || 
+            !Memory.rooms[room.name].mapping.sources || 
+            !Memory.rooms[room.name].mapping.sources.id) {
+            console.log(`No sources found in memory for room ${room.name}`);
+            return;
+        }
+        
         const sourceIds = Memory.rooms[room.name].mapping.sources.id;
         if (!sourceIds || sourceIds.length === 0) {
             console.log(`No sources found in memory for room ${room.name}`);
             return;
         }
 
-        for (let i = 0; i < sourceIds.length; i++) {
-            const source = Game.getObjectById(sourceIds[i]);
+        // Check if we've already placed enough containers
+        const structureCount = Memory.rooms[room.name].construct.structureCount;
+        if (structureCount && 
+            structureCount.containers && 
+            (structureCount.containers.built + structureCount.containers.pending) >= sourceIds.length) {
+            return; // We already have enough containers (one per source)
+        }
+
+        // Find sources that don't have containers nearby
+        for (const sourceId of sourceIds) {
+            const source = Game.getObjectById(sourceId);
             if (!source) continue;
 
             // Check if there's already a container near this source
@@ -325,10 +359,17 @@ var construction = {
                     let score = terrainType === 0 ? 2 : 1;
                     
                     // Check if the position is already occupied
-                    const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
-                    const constructionSites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                    const lookResults = room.lookAt(x, y);
+                    let isOccupied = false;
                     
-                    if (structures.length > 0 || constructionSites.length > 0) continue;
+                    for (const result of lookResults) {
+                        if (result.type === 'structure' || result.type === 'constructionSite') {
+                            isOccupied = true;
+                            break;
+                        }
+                    }
+                    
+                    if (isOccupied) continue;
                     
                     // Update best position if this one is better
                     if (score > bestScore) {
@@ -343,6 +384,7 @@ var construction = {
                 const result = room.createConstructionSite(bestPos, STRUCTURE_CONTAINER);
                 if (result === OK) {
                     console.log(`Placed container construction site near source at ${bestPos}`);
+                    return; // Place one container at a time to avoid overbuilding
                 }
             }
         }

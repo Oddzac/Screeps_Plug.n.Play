@@ -1,70 +1,75 @@
 var utility = require('./u.utilities');
-var movement = require('u.movement');
+var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
 
 var roleUpgrader = {
     run: function(creep) {
+        if (!creep) return;
+        
         // Initialize harvestingTicks if it doesn't exist
         if (!creep.memory.harvestingTicks) {
             creep.memory.harvestingTicks = 0;
         }
 
-        if (Game.cpu.bucket === 10000) {
-            this.genPix(creep);
+        // Generate pixel if CPU bucket is full - only check occasionally to save CPU
+        if (Game.time % 100 === 0 && Game.cpu.bucket >= 10000) {
+            this.genPix();
         }
 
-        // Check if the creep is currently harvesting or needs to start harvesting
-        if(creep.store.getUsedCapacity() === 0 && !creep.memory.harvesting) {
+        // State transitions for harvesting/upgrading
+        if (creep.store.getUsedCapacity() === 0) {
             creep.memory.harvesting = true;
-        }
-
-        // Switch to upgrading if the creep's store is more than 50% full and it has been trying to harvest for more than 10 ticks
-        if (creep.store.getUsedCapacity() > creep.store.getCapacity() * 0.5 && creep.memory.harvestingTicks > 70) {
+            creep.memory.working = false;
+        } else if (creep.store.getFreeCapacity() === 0 || 
+                  (creep.store.getUsedCapacity() > creep.store.getCapacity() * 0.5 && 
+                   creep.memory.harvestingTicks > 50)) {
             creep.memory.harvesting = false;
-            delete creep.memory.sourceId;
-        }
-
-        // If the creep is harvesting but its store is full, switch to not harvesting
-        if (creep.memory.harvesting && creep.store.getFreeCapacity() === 0) {
-            creep.memory.harvesting = false;
-            // Reset harvestingTicks since the creep is now switching tasks
             creep.memory.harvestingTicks = 0;
         }
 
+        // Execute current state
         if (creep.memory.harvesting) {
             utility.harvestEnergy(creep);
-            // Increment the harvestingTicks counter if still harvesting
             creep.memory.harvestingTicks++;
         } else {
             this.upgradeController(creep);
-            // Reset harvestingTicks since the creep is now upgrading
-            creep.memory.harvestingTicks = 0;
         }
+        
+        // Give way to other creeps if needed
         creep.giveWay();
     },
 
     upgradeController: function(creep) {
-        if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+        if (!creep || !creep.room || !creep.room.controller) return;
+        
+        const result = creep.upgradeController(creep.room.controller);
+        
+        if (result === ERR_NOT_IN_RANGE) {
+            movement.moveToWithCache(creep, creep.room.controller, 3);
             creep.say('🔋');
-            movement.moveToWithCache(creep, creep.room.controller.pos);
             creep.memory.working = false;
-        } else {
+        } else if (result === OK) {
             creep.memory.working = true;
+            // Only say something occasionally to reduce CPU usage
+            if (Game.time % 10 === 0) creep.say('⚡');
+        } else {
+            // Handle other error cases
+            creep.memory.working = false;
         }
     },
 
     genPix: function() {
-    if (Game.cpu.bucket >= 10000) { // Ensure there is enough CPU in the bucket
-        const result = Game.cpu.generatePixel();
-        if (result === OK) {
-            console.log('Pixel generated successfully!');
-        } else {
-            console.log('Failed to generate pixel:', result);
+        // Track last pixel generation time to avoid spamming
+        if (!Memory.lastPixelGeneration || Game.time - Memory.lastPixelGeneration > 1000) {
+            if (Game.cpu.bucket >= 10000) {
+                const result = Game.cpu.generatePixel();
+                if (result === OK) {
+                    console.log('Pixel generated successfully!');
+                    Memory.lastPixelGeneration = Game.time;
+                }
+            }
         }
-    } else {
-        console.log('Not enough CPU in the bucket to generate a pixel.');
-    }
-},
+    },
 
   
 };

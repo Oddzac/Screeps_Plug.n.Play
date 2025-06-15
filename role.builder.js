@@ -1,5 +1,5 @@
 var utility = require('./u.utilities');
-var movement = require('u.movement');
+var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
 
 var roleBuilder = {
@@ -264,11 +264,15 @@ var roleBuilder = {
 
 
     performUpgrade: function(creep) {
-        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-            var target = creep.room.controller
-            movement.moveToWithCache(creep, target);
+        if (!creep || !creep.room || !creep.room.controller) return;
+        
+        const result = creep.upgradeController(creep.room.controller);
+        
+        if (result === ERR_NOT_IN_RANGE) {
+            movement.moveToWithCache(creep, creep.room.controller, 3);
             creep.memory.working = false;
-        } else {
+            creep.say('🔋');
+        } else if (result === OK) {
             creep.memory.working = true;
         }
     },
