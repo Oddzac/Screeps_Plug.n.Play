@@ -23,8 +23,8 @@ module.exports.loop = function() {
         // Clean up path cache to prevent memory buildup
         movement.cleanupOldPaths();
         
-        // Visualize traffic patterns every 10 ticks if CPU allows
-        if (Game.cpu.bucket > 8000 && Game.time % 10 === 0) {
+        // Visualize traffic patterns if enabled and CPU allows
+        if (Memory.visualizeTraffic && Game.cpu.bucket > 8000 && Game.time % 10 === 0) {
             giveWay.visualizeTraffic();
         }
         
@@ -267,4 +267,19 @@ global.SPAWN = function(role) {
     const phase = Memory.rooms[room.name].phase.Phase;
     
     spawner.spawnCreepWithRole(role, energyToUse, phase, room);
+}
+
+// Toggle path visualization for debugging
+global.TogglePaths = function() {
+    return movement.togglePathVisualization();
+}
+
+// Toggle traffic visualization for debugging
+global.ToggleTraffic = function(enabled) {
+    if (enabled === undefined) {
+        Memory.visualizeTraffic = !Memory.visualizeTraffic;
+    } else {
+        Memory.visualizeTraffic = !!enabled;
+    }
+    return `Traffic visualization ${Memory.visualizeTraffic ? 'enabled' : 'disabled'}`;
 }
