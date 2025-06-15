@@ -1,6 +1,6 @@
-var utility = require('../utils/utilities');
-var movement = require('../utils/movement');
-var giveWay = require("../utils/giveWay");
+var utility = require('./u.utilities');
+var movement = require('./u.movement');
+var giveWay = require("./u.giveWay");
 
 var roleBuilder = {
     run: function(creep) {

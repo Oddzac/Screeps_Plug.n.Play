@@ -1,7 +1,7 @@
 //TODO
 // Logic to periodically spawn scouts to track changes (possibly in main instead?)
 // If phase > 7 && Spawn1 busy, try Spawn2
-var memories = require('./memories');
+var memories = require('./m.memories');
 
 var spawner = {
 

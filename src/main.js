@@ -1,13 +1,13 @@
-var construction = require('./modules/construction');
-var spawner = require('./modules/spawn');
-var memories = require('./modules/memories');
-var towers = require('./modules/towers');
-var linker = require('./modules/links');
-var terminals = require('./modules/terminal');
-var movement = require('./utils/movement');
-var giveWay = require('./utils/giveWay');
+var construction = require('./m.construction');
+var spawner = require('./m.spawn');
+var memories = require('./m.memories');
+var towers = require('./m.towers');
+var linker = require('./m.links');
+var terminals = require('./m.terminal');
+var movement = require('./u.movement');
+var giveWay = require('./u.giveWay');
 
-//const profiler = require('./utils/screeps-profiler');
+//const profiler = require('u.screeps-profiler');
 
 // This line monkey patches the global prototypes.
 //profiler.enable();

@@ -59,15 +59,15 @@ X Storage Placed
 //TODO
 // 
 
-var roleHarvester = require('../roles/role.harvester');
-var roleUpgrader = require('../roles/role.upgrader');
-var roleBuilder = require('../roles/role.builder');
-var roleHauler = require('../roles/role.hauler');
-var roleAttacker = require('../roles/role.attacker');
-var roleHealer = require('../roles/role.healer');
-var roleClaimer = require('../roles/role.claimer');
-var roleScout = require('../roles/role.scout');
-var movement = require('../utils/movement');
+var roleHarvester = require('./role.harvester');
+var roleUpgrader = require('./role.upgrader');
+var roleBuilder = require('./role.builder');
+var roleHauler = require('./role.hauler');
+var roleAttacker = require('./role.attacker');
+var roleHealer = require('./role.healer');
+var roleClaimer = require('./role.claimer');
+var roleScout = require('./role.scout');
+var movement = require('./u.movement');
 //var spawner = require('a.spawn');
 
 var memories = {

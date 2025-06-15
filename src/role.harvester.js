@@ -2,9 +2,9 @@
 // Phase 1 - Self-Transfer / Drop Energy If Haulers / Deposit Energy If Containers 
 // Phase 2 - Assign Sources
 
-var utility = require('../utils/utilities');
-var movement = require('../utils/movement');
-var giveWay = require("../utils/giveWay");
+var utility = require('./u.utilities');
+var movement = require('./u.movement');
+var giveWay = require("./u.giveWay");
 
 
 var roleHarvester = {

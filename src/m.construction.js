@@ -1,4 +1,4 @@
-var memories = require('./memories');
+var memories = require('./m.memories');
 
 var construction = {
     
