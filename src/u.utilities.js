@@ -22,11 +22,18 @@ var utilities = {
         
         const structureCount = Memory.rooms[creep.room.name].construct.structureCount
         const storage = creep.room.storage;
-        const storageEnergy = creep.room.storage.store[RESOURCE_ENERGY]
+        let storageEnergy = 0;
+        let containerCount = 0;
+        let containersWithEnergy = [];
+        
+        if (storage && storage.store) {
+            storageEnergy = storage.store[RESOURCE_ENERGY];
+        }
+        
         if (!storage) {
-            const containerCount = structureCount.containers.built
+            containerCount = structureCount.containers.built;
             // Attempt to find a container with energy
-            const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
+            containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => (s.structureType === STRUCTURE_CONTAINER) &&
                                 s.store[RESOURCE_ENERGY] > 100 // Only withdraw if sufficient reserve
             });
@@ -111,7 +118,12 @@ var utilities = {
         let bestScore = -Infinity; // Initialize with a very low score
         let bestSource = null;
     
-        sources.forEach(source => {
+        sources.forEach(sourceId => {
+            const source = Game.getObjectById(sourceId);
+            if (!source || !source.pos) {
+                return;
+            }
+            
             // Check for hostiles within 10 tiles of the source
             const hostilesNearSource = source.pos.findInRange(FIND_HOSTILE_CREEPS, 10);
             // Skip this source if any hostiles are found
