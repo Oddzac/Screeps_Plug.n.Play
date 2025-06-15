@@ -1,5 +1,5 @@
 /**
- * Give Way Module - Based on V1king's implementation (12 March 2024)
+ * Give Way Module - Enhanced version with smarter avoidance
  * 
  * Usage:
  * 1. Import this module in your creep role files: var giveWay = require("./u.giveWay");
@@ -7,7 +7,7 @@
  * 
  * This module allows creeps to move out of the way when they're blocking other creeps.
  * It works by having moving creeps mark stationary creeps as "blocking", which
- * causes those creeps to move in a random direction to clear the path.
+ * causes those creeps to move in a smart direction to clear the path.
  */
 
 Creep.prototype.giveWay = function() {
@@ -39,26 +39,54 @@ Creep.prototype.giveWay = function() {
         return;
     }
 
-    // Find a valid direction to move
-    const validDirections = this.getValidMoveDirections();
+    // Find the direction of the creep that wants to pass through
+    const blockingData = this.memory.blocking;
+    let preferredDirection;
+    
+    if (typeof blockingData === 'object' && blockingData.fromPos) {
+        // Calculate preferred direction based on the position of the blocking creep
+        const fromPos = new RoomPosition(
+            blockingData.fromPos.x, 
+            blockingData.fromPos.y, 
+            blockingData.fromPos.roomName
+        );
+        
+        // Get direction from the blocking creep to this creep
+        const dx = this.pos.x - fromPos.x;
+        const dy = this.pos.y - fromPos.y;
+        
+        // Determine the best direction to move (continue in same direction)
+        if (Math.abs(dx) > Math.abs(dy)) {
+            // Moving horizontally
+            preferredDirection = dx > 0 ? RIGHT : LEFT;
+        } else {
+            // Moving vertically
+            preferredDirection = dy > 0 ? BOTTOM : TOP;
+        }
+    }
+
+    // Get valid directions, prioritizing the preferred direction if available
+    const validDirections = this.getSmartMoveDirections(preferredDirection);
+    
     if (validDirections.length > 0) {
-        // Move a random valid direction to get out of their way
-        const randomDirection = validDirections[Math.floor(Math.random() * validDirections.length)];
+        // Move in the best direction to get out of the way
         this.say("💢", true);
-        this.move(randomDirection);
+        this.move(validDirections[0]);
     }
     
     delete this.memory.blocking;
-}
+};
 
 // Taken from Screeps engine source code
 const offsetsByDirection = [, [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
 
 /**
- * Get valid directions for movement that don't lead into walls or other creeps
+ * Get valid directions for movement, prioritizing the preferred direction
  */
-Creep.prototype.getValidMoveDirections = function() {
+Creep.prototype.getSmartMoveDirections = function(preferredDirection) {
+    // First check if the preferred direction is valid
     const validDirections = [];
+    const scoredDirections = [];
     
     // Check all 8 directions
     for (let dir = 1; dir <= 8; dir++) {
@@ -74,6 +102,25 @@ Creep.prototype.getValidMoveDirections = function() {
         // Look for obstacles
         const lookResults = this.room.lookAt(x, y);
         let isValid = true;
+        let score = 0;
+        
+        // Check for roads (prefer moving onto roads)
+        const hasRoad = lookResults.some(result => 
+            result.type === 'structure' && result.structure.structureType === STRUCTURE_ROAD
+        );
+        
+        if (hasRoad) {
+            score += 5; // Prefer roads
+        }
+        
+        // Check for swamp (avoid if possible)
+        const isSwamp = lookResults.some(result => 
+            result.type === 'terrain' && result.terrain === 'swamp'
+        );
+        
+        if (isSwamp) {
+            score -= 3; // Avoid swamps
+        }
         
         for (const result of lookResults) {
             // Check for impassable terrain
@@ -107,8 +154,23 @@ Creep.prototype.getValidMoveDirections = function() {
         }
         
         if (isValid) {
+            // If this is the preferred direction, give it a big score boost
+            if (preferredDirection && dir === preferredDirection) {
+                score += 10;
+            }
+            
+            // Add to valid directions
             validDirections.push(dir);
+            
+            // Add to scored directions for smarter selection
+            scoredDirections.push({ direction: dir, score: score });
         }
+    }
+    
+    // If we have scored directions, sort by score and return the best ones
+    if (scoredDirections.length > 0) {
+        scoredDirections.sort((a, b) => b.score - a.score);
+        return scoredDirections.map(d => d.direction);
     }
     
     return validDirections;
@@ -134,8 +196,15 @@ Creep.prototype.move = function(target) {
                 const blockingCreep = blockingCreeps[0];
                 // Only mark our own creeps as blocking
                 if (blockingCreep && blockingCreep.my) {
-                    // Request that they move away either this tick or the next
-                    blockingCreep.memory.blocking = Game.time + 1;
+                    // Request that they move away with information about our position
+                    blockingCreep.memory.blocking = {
+                        time: Game.time + 1,
+                        fromPos: {
+                            x: this.pos.x,
+                            y: this.pos.y,
+                            roomName: this.pos.roomName
+                        }
+                    };
                 }
             }
         }
@@ -159,6 +228,7 @@ Creep.prototype.moveTo = function() {
     // Call the original moveTo method with all arguments
     return originalMoveTo.apply(this, arguments);
 };
+
 /**
  * Reset the hasMoved flag at the beginning of each tick
  * This should be called in main.js before creep logic runs
@@ -169,6 +239,50 @@ function resetCreepMovement() {
     }
 }
 
+/**
+ * Visualize creep traffic and movement patterns
+ */
+function visualizeTraffic() {
+    for (const roomName in Game.rooms) {
+        const room = Game.rooms[roomName];
+        const visual = room.visual;
+        
+        // Get all creeps in the room
+        const creeps = room.find(FIND_MY_CREEPS);
+        
+        // Create a heatmap of creep positions
+        const heatmap = {};
+        
+        for (const creep of creeps) {
+            const key = `${creep.pos.x},${creep.pos.y}`;
+            heatmap[key] = (heatmap[key] || 0) + 1;
+        }
+        
+        // Visualize the heatmap
+        for (const key in heatmap) {
+            const [x, y] = key.split(',').map(Number);
+            const intensity = Math.min(heatmap[key] * 0.2, 1);
+            visual.circle(x, y, {
+                radius: 0.5,
+                fill: `rgba(255, 0, 0, ${intensity})`,
+                opacity: 0.5
+            });
+        }
+        
+        // Visualize creep movement intentions
+        for (const creep of creeps) {
+            if (creep.memory.blocking) {
+                visual.circle(creep.pos.x, creep.pos.y, {
+                    radius: 0.5,
+                    fill: 'blue',
+                    opacity: 0.5
+                });
+            }
+        }
+    }
+}
+
 module.exports = {
-    resetCreepMovement
+    resetCreepMovement,
+    visualizeTraffic
 };

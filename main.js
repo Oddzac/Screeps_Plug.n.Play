@@ -20,6 +20,14 @@ module.exports.loop = function() {
         terminals.cleanupOldOrders();
         terminals.globalMarketManagement();
         
+        // Clean up path cache to prevent memory buildup
+        movement.cleanupOldPaths();
+        
+        // Visualize traffic patterns every 10 ticks if CPU allows
+        if (Game.cpu.bucket > 8000 && Game.time % 10 === 0) {
+            giveWay.visualizeTraffic();
+        }
+        
         if (Game.time % 10 === 0) {
             console.log(`Bucket CPU: ${Game.cpu.bucket}`);
             
