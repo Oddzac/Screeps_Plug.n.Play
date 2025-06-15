@@ -1,4 +1,3 @@
-
 var utility = require('a.utilities');
 var movement = require('a.movement');
 var giveWay = require("a.giveWay");
@@ -33,8 +32,14 @@ var roleBuilder = {
         priority += completionRatio * 100; // Smaller is better, so we subtract from a base value
     
         // Check if the site is directly adjacent to sources
-        let sources = cMemory.rooms[creep.room.name].mapping.sources.id;
-        let isAdjacentToSource = sources.some(source => site.pos.inRangeTo(source, 2));
+        let sources = Memory.rooms[creep.room.name].mapping.sources.id;
+        let isAdjacentToSource = false;
+        if (sources) {
+            isAdjacentToSource = sources.some(sourceId => {
+                const source = Game.getObjectById(sourceId);
+                return source && site.pos.inRangeTo(source, 2);
+            });
+        }
         priority += isAdjacentToSource ? -500 : 0;
     
         // Prioritize containers or extensions

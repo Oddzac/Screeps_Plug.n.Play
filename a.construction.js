@@ -75,6 +75,10 @@ var construction = {
 // Count structures - Container, Storage, Extractor, Link, Terminal, Tower
 countStructures: function(room) {
     // Initialize structure counts if necessary
+    if (!Memory.rooms[room.name].construct) {
+        Memory.rooms[room.name].construct = {};
+    }
+    
     if (!Memory.rooms[room.name].construct.structureCount) {
         Memory.rooms[room.name].construct.structureCount = {
             extensions: {built: 0, pending: 0},
@@ -103,6 +107,7 @@ countStructures: function(room) {
         switch (structure.structureType) {
             case STRUCTURE_EXTENSION:
                 structuresCount.extensions.built++;
+                break;
             case STRUCTURE_CONTAINER:
                 structuresCount.containers.built++;
                 break;
@@ -129,6 +134,7 @@ countStructures: function(room) {
         switch (site.structureType) {
             case STRUCTURE_EXTENSION:
                 structuresCount.extensions.pending++;
+                break;
             case STRUCTURE_CONTAINER:
                 structuresCount.containers.pending++;
                 break;
@@ -248,7 +254,7 @@ connectExtensionsToStorage: function(roomName) {
                     }
                 });
                 return costs;
-            },
+            }
         });
 
         for (let j = 0; j < path.path.length; j++) {
@@ -257,332 +263,165 @@ connectExtensionsToStorage: function(roomName) {
         }
     }
 },
-   
 
-placeContainersNearSources: function(room) {
-    const spawn = room.find(FIND_MY_SPAWNS)[0];
-    if (!spawn) return;
-
-    const sources = Memory.rooms[room.name].mapping.sources.id;
-    sources.forEach(sourceId => {
-        const source = Game.getObjectById(sourceId);
-        if (!source) return; // In case the source no longer exists
-
-        const path = PathFinder.search(spawn.pos, {pos: source.pos, range: 2}, {
-            plainCost: 2,
-            swampCost: 10,
-            roomCallback: function(roomName) {
-                let costs = new PathFinder.CostMatrix();
-                Game.rooms[roomName].find(FIND_STRUCTURES).forEach(function(struct) {
-                    if (struct.structureType === STRUCTURE_ROAD) {
-                        costs.set(struct.pos.x, struct.pos.y, 1);
-                    } else if (struct.structureType !== STRUCTURE_CONTAINER &&
-                               struct.structureType !== STRUCTURE_RAMPART) {
-                        costs.set(struct.pos.x, struct.pos.y, 0xff);
-                    }
-                });
-                return costs;
-            }
-        });
-
-        if (path.path.length > 0) {
-            let targetTile = path.path[path.path.length - 1];
-            if (!room.lookForAt(LOOK_STRUCTURES, targetTile.x, targetTile.y).length && 
-                !room.lookForAt(LOOK_CONSTRUCTION_SITES, targetTile.x, targetTile.y).length) {
-                room.createConstructionSite(targetTile.x, targetTile.y, STRUCTURE_CONTAINER);
-            }
-        }
-    });
-},
-
-
-placeExtensionsAroundSpawn: function(room) {
-    const spawn = room.find(FIND_MY_SPAWNS)[0];
-    if (!spawn) return;
-
-    // Start with an initial radius. Start from 1 and increase in odd increments.
-    if (!room.memory.construct.extensionRadius) room.memory.construct.extensionRadius = 2;
-
-    let radius = room.memory.construct.extensionRadius;
-    let placed = false;
-    let attempts = 0; // Keep track of attempts to avoid infinite loops
-
-    while (!placed && attempts < 10) { // Limit attempts to prevent infinite loop
-        const angleStep = 2 * Math.PI / (Math.floor(radius * Math.PI)); // Adjust number of segments based on the radius
-        for (let i = 0; i < Math.floor(radius * Math.PI); i++) { // Adjust loop to go through all segments
-            const dx = Math.round(radius * Math.cos(angleStep * i));
-            const dy = Math.round(radius * Math.sin(angleStep * i));
-            const x = spawn.pos.x + dx;
-            const y = spawn.pos.y + dy;
-
-            if (x >= 0 && x < 50 && y >= 0 && y < 50) {
-                const terrain = room.getTerrain().get(x, y);
-                const isObstructed = room.lookForAt(LOOK_STRUCTURES, x, y).length > 0 || 
-                                        room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y).length > 0;
-
-                if (terrain !== TERRAIN_MASK_WALL && !isObstructed) {
-                    const result = room.createConstructionSite(x, y, STRUCTURE_EXTENSION);
-                    if (result === OK) {
-                        console.log(`Extension construction site placed at (${x}, ${y}) with radius ${radius}.`);
-                        room.memory.construct.extensionRadius = 2;
-                        placed = true;
-                        break; // Exit the loop once a site is successfully placed
-                    } else if (result === ERR_FULL) {
-                        console.log('Construction site limit reached, halting extension placement.');
-                        return; // Stop trying to place more if we hit the limit
-                    }
-                }
-            }
-        }
-
-        if (!placed) {
-            radius += 2; // Only increment radius in odd steps if no place was found
-            room.memory.construct.extensionRadius = radius; // Update memory with new radius
-        }
-        attempts++;
-    }
-
-    if (!placed) {
-        console.log('Failed to place new extensions after expanding radius, possibly due to lack of space or game limits.');
-    }
-},
-    
+// Method to place a spawn in a room
 placeSpawn: function(room) {
-    const searchRadius = 5; // Define a search area around the weighted center
-
-    // Calculate weighted center
-    if (!Memory.rooms[room.name].construct.weightedCenter) {
-        memories.findCenterWeighted(room);
-    }
-
-    const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
-    const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
-
-
-    // Generate all possible positions within the search radius
-    let potentialPositions = [];
-    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-            let x = weightedCenterX + dx;
-            let y = weightedCenterY + dy;
-            // Ensure coordinates are within room bounds
-            if (x >= 1 && x <= 48 && y >= 1 && y <= 48) {
-                potentialPositions.push({ x, y });
-            }
-        }
-    }
-
-    // Shuffle the array of potential positions to randomize the order
-    for (let i = potentialPositions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [potentialPositions[i], potentialPositions[j]] = [potentialPositions[j], potentialPositions[i]]; // ES6 array destructuring to swap elements
-    }
-
-    // Iterate through the randomized potential positions
-    for (let pos of potentialPositions) {
-        const terrain = room.getTerrain().get(pos.x, pos.y);
-        if (terrain !== TERRAIN_MASK_WALL) {
-            const look = room.lookAt(pos.x, pos.y);
-            if (!look.some(s => s.type === 'structure' || s.type === 'constructionSite')) {
-                // Check for valid spot
-                const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_SPAWN);
-                if (result === OK) {
-                    console.log(`Spawn placed at (${pos.x},${pos.y}).`);
-                    return; // Exit the function after placing the tower
+    // Find a suitable position for the spawn
+    const center = new RoomPosition(25, 25, room.name);
+    const terrain = room.getTerrain();
+    
+    // Search in a spiral pattern from the center
+    for (let radius = 1; radius <= 10; radius++) {
+        for (let x = center.x - radius; x <= center.x + radius; x++) {
+            for (let y = center.y - radius; y <= center.y + radius; y++) {
+                // Only check positions on the edge of the current radius
+                if (x === center.x - radius || x === center.x + radius || 
+                    y === center.y - radius || y === center.y + radius) {
+                    
+                    // Check if the position is valid for a spawn
+                    if (x >= 0 && x < 50 && y >= 0 && y < 50 && 
+                        terrain.get(x, y) !== TERRAIN_MASK_WALL) {
+                        
+                        const pos = new RoomPosition(x, y, room.name);
+                        const result = room.createConstructionSite(pos, STRUCTURE_SPAWN);
+                        
+                        if (result === OK) {
+                            console.log(`Placed spawn construction site at ${pos}`);
+                            return true;
+                        }
+                    }
                 }
             }
         }
     }
-    console.log("No valid placement found for spawn");
+    
+    console.log(`Failed to place spawn in room ${room.name}`);
+    return false;
 },
 
-placeTower: function(room) {
-    // Count existing towers and tower construction sites in the room
-    const myTowers = room.find(FIND_MY_STRUCTURES, {
-        filter: { structureType: STRUCTURE_TOWER }
-    }).length;
-    const towersPlanned = room.find(FIND_MY_CONSTRUCTION_SITES, {
-        filter: (site) => site.structureType === STRUCTURE_TOWER
-    }).length;
-
-    let searchRadius; // Define a search area around the weighted center
-    let towerMax = 0;
-    // Determine the maximum number of towers allowed based on room's controller level
-    const controllerLevel = room.controller.level;
-    if (controllerLevel >= 3 && controllerLevel < 5) {
-        towerMax = 1; // Levels 3 and 4 can have 1 tower
-        searchRadius = 3;
-    } else if (controllerLevel == 5) {
-        towerMax = 2; // Level 5 can have 2 towers
-        searchRadius = 5;
-    } else if (controllerLevel >= 6) {
-        towerMax = 3; // Level 6+ can have 3 towers (simplify for example)
-        searchRadius = 7;
-    }
-
-    // Check if the current number of towers plus planned towers is greater than or equal to the max
-    if (myTowers + towersPlanned >= towerMax) {
-        //console.log("Maximum number of towers reached or exceeded. No new tower placement attempted.");
-        return; // Exit the function to prevent further tower placement
-    }
-
-
-
-
-    const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
-    const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
-
-
-    // Generate all possible positions within the search radius
-    let potentialPositions = [];
-    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-            let x = weightedCenterX + dx;
-            let y = weightedCenterY + dy;
-            // Ensure coordinates are within room bounds
-            if (x >= 1 && x <= 48 && y >= 1 && y <= 48) {
-                potentialPositions.push({ x, y });
-            }
-        }
-    }
-
-    // Shuffle the array of potential positions to randomize the order
-    for (let i = potentialPositions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [potentialPositions[i], potentialPositions[j]] = [potentialPositions[j], potentialPositions[i]]; // ES6 array destructuring to swap elements
-    }
-
-    // Iterate through the randomized potential positions
-    for (let pos of potentialPositions) {
-        const terrain = room.getTerrain().get(pos.x, pos.y);
-        if (terrain !== TERRAIN_MASK_WALL) {
-            const look = room.lookAt(pos.x, pos.y);
-            if (!look.some(s => s.type === 'structure' || s.type === 'constructionSite')) {
-                // Check for valid spot
-                const result = room.createConstructionSite(pos.x, pos.y, STRUCTURE_TOWER);
-                if (result === OK) {
-                    console.log(`Tower placed at (${pos.x},${pos.y}).`);
-                    return; // Exit the function after placing the tower
-                }
-            }
-        }
-    }
-    console.log("No valid placement found for tower.");
-},
-
-placeStorage: function(room) {
-    // Gather key structures
-    const myStorage= room.find(FIND_MY_STRUCTURES, {
-        filter: { structureType: STRUCTURE_STORAGE }
-    }).length;
-    const spawns = room.find(FIND_MY_SPAWNS);
-    const controller = room.controller;
-    const sources = room.find(FIND_SOURCES);
-
-    if (myStorage > 0) {
-        //console.log(`${myStorage} storage already built`);
+// Method to place containers near sources
+placeContainersNearSources: function(room) {
+    // Get sources from memory
+    const sourceIds = Memory.rooms[room.name].mapping.sources.id;
+    if (!sourceIds || sourceIds.length === 0) {
+        console.log(`No sources found in memory for room ${room.name}`);
         return;
     }
 
-    // Calculate weighted center
-    if (!Memory.rooms[room.name].construct.weightedCenter) {
-        memories.findCenterWeighted(room);
+    for (let i = 0; i < sourceIds.length; i++) {
+        const source = Game.getObjectById(sourceIds[i]);
+        if (!source) continue;
+
+        // Check if there's already a container near this source
+        const nearbyContainers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: { structureType: STRUCTURE_CONTAINER }
+        });
+        
+        const nearbyContainerSites = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
+            filter: { structureType: STRUCTURE_CONTAINER }
+        });
+
+        if (nearbyContainers.length > 0 || nearbyContainerSites.length > 0) {
+            continue; // Skip if there's already a container or site
+        }
+
+        // Find a suitable position for the container
+        const terrain = room.getTerrain();
+        let bestPos = null;
+        let bestScore = -Infinity;
+
+        // Check positions around the source
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue; // Skip the source itself
+                
+                const x = source.pos.x + dx;
+                const y = source.pos.y + dy;
+                
+                if (x < 0 || x >= 50 || y < 0 || y >= 50) continue;
+                
+                const terrainType = terrain.get(x, y);
+                if (terrainType === TERRAIN_MASK_WALL) continue;
+                
+                // Score the position (prefer plains over swamps)
+                let score = terrainType === 0 ? 2 : 1;
+                
+                // Check if the position is already occupied
+                const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
+                const constructionSites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                
+                if (structures.length > 0 || constructionSites.length > 0) continue;
+                
+                // Update best position if this one is better
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestPos = new RoomPosition(x, y, room.name);
+                }
+            }
+        }
+
+        // Place container at the best position
+        if (bestPos) {
+            const result = room.createConstructionSite(bestPos, STRUCTURE_CONTAINER);
+            if (result === OK) {
+                console.log(`Placed container construction site near source at ${bestPos}`);
+            }
+        }
     }
+},
 
-    const weightedCenterX = Memory.rooms[room.name].construct.weightedCenter.x;
-    const weightedCenterY = Memory.rooms[room.name].construct.weightedCenter.y;
+// Method to place storage
+placeStorage: function(room) {
+    // Find a suitable position for storage, preferably near the controller
+    const controller = room.controller;
+    if (!controller) return;
 
-    // Define a search area around the weighted center
-    let searchRadius = 7; // Adjust based on room layout and preferences
-    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-            let x = weightedCenterX + dx;
-            let y = weightedCenterY + dy;
-            // Ensure coordinates are within room bounds
-            if (x < 1 || x > 48 || y < 1 || y > 48) continue;
-            
-            const terrain = room.getTerrain().get(x, y);
-            if (terrain !== TERRAIN_MASK_WALL) {
-                const look = room.lookAt(x, y);
-                if (!look.some(s => s.type === 'structure' || s.type === 'constructionSite')) {
-                    // Check for valid spot
-                    const result = room.createConstructionSite(x, y, STRUCTURE_STORAGE);
-                    if (result === OK) {
-                        console.log(`Storage placed at (${x},${y}).`);
-                        return; // Exit the function after placing the tower
+    // Find the spawn
+    const spawns = room.find(FIND_MY_SPAWNS);
+    if (spawns.length === 0) return;
+    
+    const spawn = spawns[0];
+    
+    // Calculate a position between spawn and controller
+    const midX = Math.floor((spawn.pos.x + controller.pos.x) / 2);
+    const midY = Math.floor((spawn.pos.y + controller.pos.y) / 2);
+    
+    // Search in a spiral pattern from the midpoint
+    const terrain = room.getTerrain();
+    for (let radius = 0; radius <= 5; radius++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+            for (let dy = -radius; dy <= radius; dy++) {
+                // Only check positions on the edge of the current radius
+                if (Math.abs(dx) === radius || Math.abs(dy) === radius) {
+                    const x = midX + dx;
+                    const y = midY + dy;
+                    
+                    // Check if the position is valid
+                    if (x >= 0 && x < 50 && y >= 0 && y < 50 && 
+                        terrain.get(x, y) !== TERRAIN_MASK_WALL) {
+                        
+                        const pos = new RoomPosition(x, y, room.name);
+                        
+                        // Check if the position is already occupied
+                        const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
+                        const constructionSites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                        
+                        if (structures.length === 0 && constructionSites.length === 0) {
+                            const result = room.createConstructionSite(pos, STRUCTURE_STORAGE);
+                            if (result === OK) {
+                                console.log(`Placed storage construction site at ${pos}`);
+                                return true;
+                            }
+                        }
                     }
                 }
             }
         }
     }
-    console.log("No valid placement found for storage");
-},
-
-
-
-//  I'M WORKIN' HERE!!!
-
-placeLinks: function(room) {
-    // Ensure there's a storage structure from which to base link placement
-    const storage = room.storage;
-    if (!storage) return; // Exit if no storage exists in the room
-
-    // Try to place the first link 2 tiles away from the storage
-    const result = this.tryLink(room, storage.pos, 2);
-
-    if (result === OK) {
-        // Proceed to place links near sources, also at a range of 2
-        const sources = room.find(FIND_SOURCES);
-        sources.forEach(source => {
-            this.tryLink(room, source.pos, 2);
-        });
-    }
-},
-
-tryLink: function(room, pos, range) {
-    // Define an area around the position to search for a valid link placement spot
-    for (let dx = -range; dx <= range; dx++) {
-        for (let dy = -range; dy <= range; dy++) {
-            // Skip the center tile and directly adjacent tiles
-            if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) continue;
-
-            let targetPos = new RoomPosition(pos.x + dx, pos.y + dy, room.name);
-
-            // Check if the target position is suitable for construction
-            if (this.isSuitableForConstruction(room, targetPos)) {
-                // Attempt to create a construction site for a link
-                const result = room.createConstructionSite(targetPos, STRUCTURE_LINK);
-                if (result === OK) {
-                    console.log('Link construction site created at', targetPos);
-                    return; // Exit after placing one link to avoid multiple placements in one call
-                }
-            }
-        }
-    }
-},
-
-isSuitableForConstruction: function(room, pos) {
-    const obstructions = room.lookForAt(LOOK_STRUCTURES, pos).concat(room.lookForAt(LOOK_CONSTRUCTION_SITES, pos));
-    if (obstructions.length > 0) return false;
-
-    const terrain = Memory.rooms[room.name].mapping.terrainData[this.getTerrainIndex(pos.x, pos.y)];
-    return terrain !== TERRAIN_MASK_WALL;
-}, 
-
-pathCostMatrix: function(roomName) {
-    if (!Memory.rooms[roomName] || !Memory.rooms[roomName].mapping || !Memory.rooms[roomName].mapping.costMatrix) {
-        console.log('Cost matrix for room not found:', roomName);
-        return new PathFinder.CostMatrix();
-    }
-
-    return PathFinder.CostMatrix.deserialize(Memory.rooms[roomName].mapping.costMatrix);
-},
-
-getTerrainIndex: function(x, y) {
-    return y * 50 + x; // Convert (x, y) position to index in the flat array
-},
     
-    
+    console.log(`Failed to place storage in room ${room.name}`);
+    return false;
+}
 
 };
 

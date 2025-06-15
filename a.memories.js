@@ -121,14 +121,14 @@ var memories = {
                 console.log('Removing claimed room from memory:', roomName);
             }
 
-            // Check for hostiles
-            Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
-                filter: (creep) => creep.owner.username !== "Source Keeper"
-            }).length > 0;
-
+            // Check for hostiles in visible rooms
+            if (Game.rooms[roomName]) {
+                const room = Game.rooms[roomName];
+                Memory.rooms[roomName].underAttack = room.find(FIND_HOSTILE_CREEPS, {
+                    filter: (creep) => creep.owner.username !== "Source Keeper"
+                }).length > 0;
+            }
         }
-
-
     },
 
         
@@ -177,7 +177,7 @@ var memories = {
         //
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
-
+
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {
@@ -220,7 +220,6 @@ var memories = {
                 }
 
                 if (!Memory.rooms[room.name].mapping.terrainData) {
-
                     this.updateRoomTerrainData(room);
                 }
 
@@ -363,18 +362,21 @@ var memories = {
         // Find structures to set weighted center
         const spawns = room.find(FIND_MY_SPAWNS);
         const controller = room.controller;
-        const sources = Memory.rooms[room.name].mapping.sources.id;
+        const sources = room.find(FIND_SOURCES);
 
         // Calculate weighted center
         let sumX = 0, sumY = 0, count = 0;
         spawns.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
-        sumX += controller.pos.x; sumY += controller.pos.y; count++;
+        if (controller) { sumX += controller.pos.x; sumY += controller.pos.y; count++; }
         sources.forEach(s => { sumX += s.pos.x; sumY += s.pos.y; count++; });
-        const weightedCenterX = Math.floor(sumX / count);
-        const weightedCenterY = Math.floor(sumY / count);
-        console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
-        weightedCenter.x = weightedCenterX
-        weightedCenter.y = weightedCenterY
+        
+        if (count > 0) {
+            const weightedCenterX = Math.floor(sumX / count);
+            const weightedCenterY = Math.floor(sumY / count);
+            console.log(`Weighted Center: (${weightedCenterX}, ${weightedCenterY})`);
+            weightedCenter.x = weightedCenterX;
+            weightedCenter.y = weightedCenterY;
+        }
     },
     
     updateRoomTerrainData: function(room) {
@@ -426,7 +428,6 @@ var memories = {
             }
         }
     
-
         Memory.rooms[roomName].mapping.costMatrix = costMatrix.serialize();
     },
 

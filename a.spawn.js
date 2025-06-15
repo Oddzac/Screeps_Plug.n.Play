@@ -18,8 +18,8 @@ calculateDesiredCounts: function(room) {
     const terminalBuilt = structureCount.terminal.built;
     const scouted = roomMemory.scoutingComplete;
     const roomClaimsAvailable = Memory.conquest.roomClaimsAvailable;
-    const claimers = _.filter(Game.creeps, (creep) => creep.memory.role === 'claimer' && creep.memory.home === roomName).length;
-    const scouts = _.filter(Game.creeps, (creep) => creep.memory.role === 'scout' && creep.memory.home === roomName).length;
+    const claimers = _.filter(Game.creeps, (creep) => creep.memory.role === 'claimer' && creep.memory.home === room.name).length;
+    const scouts = _.filter(Game.creeps, (creep) => creep.memory.role === 'scout' && creep.memory.home === room.name).length;
     const energySources = roomMemory.mapping.sources.count;
 
     // Early return if there is only one energy source
@@ -275,7 +275,7 @@ calculateDesiredCounts: function(room) {
         
     
         const desiredCounts = this.calculateDesiredCounts(room);
-        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.memory.home === room.name), (creep) => creep.memory.role);
+        const currentCounts = _.countBy(_.filter(Game.creeps, (creep) => creep.room.name === room.name), (creep) => creep.memory.role);
         
     
         let nextSpawnRole = null;
@@ -329,17 +329,22 @@ calculateDesiredCounts: function(room) {
        
         // Find spawns in the specified room
         const spawns = Game.rooms[room.name].find(FIND_MY_SPAWNS);
+        if (spawns.length === 0) {
+            console.log(`[spawnCreepWithRole] No spawns found in room ${room.name}`);
+            return;
+        }
+        
         const mainSpawn = spawns[0];
-        const backupSpawn = spawns[1];
+        const backupSpawn = spawns.length > 1 ? spawns[1] : null;
 
 
         const spawnResult = mainSpawn.spawnCreep(body, name, {
-            memory: { role: role, working: false }
+            memory: { role: role, working: false, home: room.name }
         });
 
-        if (spawnResult == ERR_BUSY) {
+        if (spawnResult == ERR_BUSY && backupSpawn) {
             const secondSpawnResult = backupSpawn.spawnCreep(body, name, {
-                memory: { role: role, working: false }
+                memory: { role: role, working: false, home: room.name }
             });
 
             if (secondSpawnResult == OK) {
