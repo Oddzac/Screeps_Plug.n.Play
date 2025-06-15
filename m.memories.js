@@ -67,7 +67,7 @@ var roleAttacker = require('./role.attacker');
 var roleHealer = require('./role.healer');
 var roleClaimer = require('./role.claimer');
 var roleScout = require('./role.scout');
-var movement = require('./u.movement');
+var movement = require('./src/u.movement');
 //var spawner = require('a.spawn');
 
 var memories = {
