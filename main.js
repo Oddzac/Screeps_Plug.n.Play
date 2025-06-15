@@ -14,21 +14,11 @@ var giveWay = require('./u.giveWay');
 module.exports.loop = function() {
     //profiler.wrap(function() {
 
-        // Reset path cache on first tick after code update to prevent deserialization errors
-        if (!Memory.lastCodeUpdate) {
-            Memory.lastCodeUpdate = Game.time;
-            delete Memory.pathCache;
-            console.log('Code update detected, path cache reset');
-        }
-
         //Globals
         giveWay.resetCreepMovement();
         memories.immediateMemory();
         terminals.cleanupOldOrders();
         terminals.globalMarketManagement();
-        
-        // Clean up path cache to prevent memory buildup
-        movement.cleanupOldPaths();
         
         // Visualize traffic patterns if enabled and CPU allows
         if (Memory.visualizeTraffic && Game.cpu.bucket > 8000 && Game.time % 10 === 0) {
@@ -245,11 +235,6 @@ global.Connect = function(roomName, pointA, pointB) {
 
 
 global.Refresh = function() {
-    // Reset path cache to fix any deserialization issues
-    delete Memory.pathCache;
-    console.log('Path cache reset');
-    
-    movement.cleanupOldPaths();
     memories.immediateMemory();
     memories.shortTerm();
     memories.longTerm();
@@ -292,10 +277,4 @@ global.ToggleTraffic = function(enabled) {
         Memory.visualizeTraffic = !!enabled;
     }
     return `Traffic visualization ${Memory.visualizeTraffic ? 'enabled' : 'disabled'}`;
-}
-
-// Reset path cache to fix deserialization errors
-global.ResetPaths = function() {
-    delete Memory.pathCache;
-    return 'Path cache has been reset';
 }
