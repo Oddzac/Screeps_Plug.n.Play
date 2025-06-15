@@ -7,14 +7,23 @@ var construction = {
         
         // Check if room memory exists
         if (!Memory.rooms[room.name] || 
-            !Memory.rooms[room.name].construct || 
-            !Memory.rooms[room.name].construct.structureCount ||
             !Memory.rooms[room.name].phase) {
+            console.log(`Room ${room.name} missing memory or phase information`);
             return;
         }
         
+        // Initialize construct if it doesn't exist
+        if (!Memory.rooms[room.name].construct) {
+            Memory.rooms[room.name].construct = {};
+        }
+        
+        // Initialize structureCount if it doesn't exist
+        if (!Memory.rooms[room.name].construct.structureCount) {
+            this.countStructures(room);
+        }
+        
         // Check if we have builders available
-        const buildersCount = _.filter(Game.creeps, c => c.memory.role === 'builder' && c.memory.home === room.name).length;
+        const buildersCount = _.filter(Game.creeps, c => c.memory.role === 'builder' && (c.memory.home === room.name || !c.memory.home)).length;
         if (buildersCount < 1) {
             return;
         }
@@ -23,6 +32,11 @@ var construction = {
         const structureCount = Memory.rooms[room.name].construct.structureCount;
         const phase = Memory.rooms[room.name].phase.Phase;
         
+        // Log current phase and structure counts for debugging
+        if (Game.time % 100 === 0) {
+            console.log(`Room ${room.name} Phase: ${phase}, Extensions: ${structureCount.extensions.built}/${structureCount.extensions.pending}`);
+        }
+        
         // Check for construction sites - limit total number to avoid CPU waste
         const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
         if (constructionSites.length >= 5) {
@@ -30,6 +44,17 @@ var construction = {
         }
         
         // Prioritize construction based on room phase
+        console.log(`Room ${room.name} - Managing construction for phase ${phase}`);
+        
+        // Always check for extensions first if available
+        const extensionsAvailable = this.checkExtensionsAvailable(room);
+        if (extensionsAvailable > 0) {
+            console.log(`Room ${room.name} - Attempting to place extensions (${extensionsAvailable} available)`);
+            if (this.placeExtensions(room)) {
+                return; // Successfully placed an extension
+            }
+        }
+        
         switch (phase) {
             case 1:
                 // Phase 1: Focus on containers near sources
@@ -41,8 +66,6 @@ var construction = {
                 // Phase 2-3: Ensure containers are built, then place extensions
                 if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
                     this.placeContainersNearSources(room);
-                } else if (this.checkExtensionsAvailable(room) > 0) {
-                    this.placeExtensions(room);
                 }
                 break;
                 
@@ -50,8 +73,6 @@ var construction = {
                 // Phase 4: Place storage if needed
                 if (structureCount.storage.built < 1 && structureCount.storage.pending < 1) {
                     this.placeStorage(room);
-                } else if (this.checkExtensionsAvailable(room) > 0) {
-                    this.placeExtensions(room);
                 }
                 break;
                 
@@ -66,19 +87,12 @@ var construction = {
                 else if (this.checkTowersAvailable(room) > 0) {
                     this.placeTower(room);
                 }
-                
-                // Place extensions if available
-                else if (this.checkExtensionsAvailable(room) > 0) {
-                    this.placeExtensions(room);
-                }
                 break;
                 
             default:
                 // Higher phases: Focus on advanced structures
                 if (this.checkTowersAvailable(room) > 0) {
                     this.placeTower(room);
-                } else if (this.checkExtensionsAvailable(room) > 0) {
-                    this.placeExtensions(room);
                 }
                 break;
         }
@@ -184,13 +198,23 @@ var construction = {
         const extensionsLimits = [0, 0, 5, 10, 20, 30, 40, 50, 60]; // Indexed by controller level
         const controllerLevel = room.controller.level;
 
+        // Ensure structure count exists
+        if (!Memory.rooms[room.name].construct || !Memory.rooms[room.name].construct.structureCount) {
+            this.countStructures(room);
+        }
+
         // Get current number of extensions and extension construction sites
-        const extensions = Memory.rooms[room.name].construct.structureCount.extensions.built;
-        const extensionSites = Memory.rooms[room.name].construct.structureCount.extensions.pending;
+        const extensions = Memory.rooms[room.name].construct.structureCount.extensions.built || 0;
+        const extensionSites = Memory.rooms[room.name].construct.structureCount.extensions.pending || 0;
         const totalExtensions = extensions + extensionSites;
 
         // Calculate the number of extensions that can still be built
         const extensionsAvailable = extensionsLimits[controllerLevel] - totalExtensions;
+
+        // Log for debugging
+        if (Game.time % 100 === 0) {
+            console.log(`Room ${room.name} - Extensions: ${extensions} built, ${extensionSites} pending, ${extensionsAvailable} available`);
+        }
 
         return extensionsAvailable;
     },
@@ -606,9 +630,23 @@ var construction = {
         const extensionsAvailable = this.checkExtensionsAvailable(room);
         if (extensionsAvailable <= 0) return false;
         
+        // Log for debugging
+        console.log(`Room ${room.name} can build ${extensionsAvailable} more extensions`);
+        
         // Get the weighted center of the room or use spawn as reference
         let centerX, centerY;
-        if (Memory.rooms[room.name].construct.weightedCenter) {
+        
+        // Initialize construct.weightedCenter if it doesn't exist
+        if (!Memory.rooms[room.name].construct.weightedCenter) {
+            Memory.rooms[room.name].construct = {
+                ...Memory.rooms[room.name].construct,
+                weightedCenter: {}
+            };
+        }
+        
+        if (Memory.rooms[room.name].construct.weightedCenter && 
+            Memory.rooms[room.name].construct.weightedCenter.x !== undefined && 
+            Memory.rooms[room.name].construct.weightedCenter.y !== undefined) {
             centerX = Memory.rooms[room.name].construct.weightedCenter.x;
             centerY = Memory.rooms[room.name].construct.weightedCenter.y;
         } else {
@@ -616,6 +654,12 @@ var construction = {
             if (!spawn) return false;
             centerX = spawn.pos.x;
             centerY = spawn.pos.y;
+            
+            // Store the center position for future use
+            Memory.rooms[room.name].construct.weightedCenter = {
+                x: centerX,
+                y: centerY
+            };
         }
         
         // Define extension patterns - these are offsets from the center
