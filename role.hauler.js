@@ -297,11 +297,71 @@ var roleHauler = {
     
 
     deliverResources: function(creep) {
-
-        const storageBuilt = Memory.rooms[creep.room.name].storageBuilt > 0;
+        const storageBuilt = creep.room.storage !== undefined;
         let target;
         let targets = [];
 
+        // Check if we should help builders or upgraders when spawn energy is full
+        const spawnsAndExtensions = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: s => (s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_EXTENSION) &&
+                        s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        });
+        
+        // Check if nextSpawnRole is null
+        const roomMemory = Memory.rooms[creep.room.name];
+        const noNextSpawnRole = !roomMemory.spawning || !roomMemory.spawning.nextSpawnRole;
+        
+        // If spawn is full and no next spawn role, check for construction sites or upgraders
+        if (spawnsAndExtensions.length === 0 && noNextSpawnRole && 
+            creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0 && 
+            creep.memory.task !== 'linkHauler' && creep.memory.task !== 'terminalHauler') {
+            
+            // Check for construction sites
+            const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+            if (constructionSites.length > 0) {
+                // Find builders to help
+                const builders = creep.room.find(FIND_MY_CREEPS, {
+                    filter: c => c.memory.role === 'builder' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                });
+                
+                if (builders.length > 0) {
+                    // Find the closest builder
+                    const builder = creep.pos.findClosestByPath(builders);
+                    if (builder) {
+                        creep.memory.helpingRole = 'builder';
+                        creep.memory.helpingId = builder.id;
+                        // Transfer energy to the builder
+                        if (creep.transfer(builder, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                            movement.moveToWithCache(creep, builder);
+                            creep.say('🔄👷');
+                            return;
+                        }
+                    }
+                }
+            } else {
+                // No construction sites, help upgraders
+                const upgraders = creep.room.find(FIND_MY_CREEPS, {
+                    filter: c => c.memory.role === 'upgrader' && c.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                });
+                
+                if (upgraders.length > 0) {
+                    // Find the closest upgrader
+                    const upgrader = creep.pos.findClosestByPath(upgraders);
+                    if (upgrader) {
+                        creep.memory.helpingRole = 'upgrader';
+                        creep.memory.helpingId = upgrader.id;
+                        // Transfer energy to the upgrader
+                        if (creep.transfer(upgrader, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                            movement.moveToWithCache(creep, upgrader);
+                            creep.say('🔄⬆️');
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we're not helping builders or upgraders, proceed with normal delivery
         switch (creep.memory.task) {
             case 'spawnHauler':
                 // Prioritize spawns and extensions first, then towers, by their need for energy.
@@ -327,95 +387,97 @@ var roleHauler = {
                 break;
 
             case 'terminalHauler':
-              /*  if (creep.store[RESOURCE_ENERGY] > 49 && creep.room.storage.store[RESOURCE_ENERGY] <= 5000) {
-                    target = creep.room.storage
-                } else { */
-                    target = creep.room.terminal
-               // }
+                target = creep.room.terminal;
                 break;
 
             case 'linkHauler':
                 //linkHaulers only deposit energy into storage
-                target = creep.room.storage
+                target = creep.room.storage;
                 break;
 
-
             default:
-    // Check if storage is built and has free capacity
-    if (storageBuilt && creep.room.storage && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-        target = creep.room.storage;
-    } else {
-        // Check for spawns, extensions, and towers with free capacity
-        targets = creep.room.find(FIND_MY_STRUCTURES, {
-            filter: structure => (
-                (structure.structureType === STRUCTURE_SPAWN || 
-                structure.structureType === STRUCTURE_EXTENSION ||
-                structure.structureType === STRUCTURE_TOWER) &&
-                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            )
-        }).map(structure => ({
-            structure: structure,
-            priority: this.getDeliveryPriority(structure)
-        }));
+                // Check if storage is built and has free capacity
+                if (storageBuilt && creep.room.storage.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                    target = creep.room.storage;
+                } else {
+                    // Check for spawns, extensions, and towers with free capacity
+                    targets = creep.room.find(FIND_MY_STRUCTURES, {
+                        filter: structure => (
+                            (structure.structureType === STRUCTURE_SPAWN || 
+                            structure.structureType === STRUCTURE_EXTENSION ||
+                            structure.structureType === STRUCTURE_TOWER) &&
+                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                        )
+                    }).map(structure => ({
+                        structure: structure,
+                        priority: this.getDeliveryPriority(structure)
+                    }));
 
-        // Sort targets by priority (lower number means higher priority) and then by distance
-        if (targets.length > 0) {
-            targets.sort((a, b) => a.priority - b.priority || 
-                creep.pos.getRangeTo(a.structure) - creep.pos.getRangeTo(b.structure));
-            target = targets[0].structure;
-        } else {
-            // If spawns, extensions, and towers are full or not present, find containers
-            // When looking for containers, exclude the assigned container
-            const assignedContainerId = creep.memory.containerId;
-            let containers = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return structure.structureType === STRUCTURE_CONTAINER &&
-                        structure.id !== assignedContainerId &&
-                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                    // Sort targets by priority (lower number means higher priority) and then by distance
+                    if (targets.length > 0) {
+                        targets.sort((a, b) => a.priority - b.priority || 
+                            creep.pos.getRangeTo(a.structure) - creep.pos.getRangeTo(b.structure));
+                        target = targets[0].structure;
+                    } else {
+                        // If spawns, extensions, and towers are full or not present, find containers
+                        // When looking for containers, exclude the assigned container
+                        const assignedContainerId = creep.memory.containerId;
+                        let containers = creep.room.find(FIND_STRUCTURES, {
+                            filter: (structure) => {
+                                return structure.structureType === STRUCTURE_CONTAINER &&
+                                    structure.id !== assignedContainerId &&
+                                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                            }
+                        });
+
+                        // Find the container closest to the room's controller
+                        if (containers.length > 0) {
+                            let controller = creep.room.controller;
+                            target = controller ? controller.pos.findClosestByPath(containers) : null;
+                        }
+                    }
                 }
-            });
-
-            // Find the container closest to the room's controller
-            if (containers.length > 0) {
-                let controller = creep.room.controller;
-                target = controller ? controller.pos.findClosestByPath(containers) : null;
-            }
-        }
-    }
-    break;
+                break;
         }
     
         if (target) {
             this.transferResources(creep, target);
         } else {
-            if (!creep.memory.home) {
-                // Try to parse the room name from the creep's name
-                const nameParts = creep.name.split('_');
-                if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
-                    // Validate if the room exists in the game
-                    creep.memory.home = nameParts[0];
-                } else {
-                    // Fallback to the current room if parsing fails or room is not accessible
-                    creep.memory.home = creep.room.name;
+            // If we have energy but no target, try to help builders or upgraders
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+                // This is a second check in case the first one didn't find any targets
+                // but we still want to help builders or upgraders
+                this.waitNear(creep);
+            } else {
+                // No energy, just wait
+                if (!creep.memory.home) {
+                    // Try to parse the room name from the creep's name
+                    const nameParts = creep.name.split('_');
+                    if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
+                        // Validate if the room exists in the game
+                        creep.memory.home = nameParts[0];
+                    } else {
+                        // Fallback to the current room if parsing fails or room is not accessible
+                        creep.memory.home = creep.room.name;
+                    }
                 }
+                
+                const homeRoom = Game.rooms[creep.memory.home];
+                if (!homeRoom) {
+                    console.log('Home room not accessible:', creep.memory.home);
+                    return;
+                }
+                
+                // Retrieve spawns in the home room
+                const spawns = homeRoom.find(FIND_MY_SPAWNS);
+                if (spawns.length === 0) {
+                    console.log('No spawns found in home room:', creep.memory.home);
+                    return;
+                }
+                
+                const spawn = spawns[0]; // Get the first spawn
+                movement.moveToWithCache(creep, spawn);
             }
-            
-            const homeRoom = Game.rooms[creep.memory.home];
-            if (!homeRoom) {
-                console.log('Home room not accessible:', creep.memory.home);
-                return;
-            }
-            
-            // Retrieve spawns in the home room
-            const spawns = homeRoom.find(FIND_MY_SPAWNS);
-            if (spawns.length === 0) {
-                console.log('No spawns found in home room:', creep.memory.home);
-                return;
-            }
-            
-            const spawn = spawns[0]; // Get the first spawn
-            movement.moveToWithCache(creep, spawn);
-
         }
     },
 
