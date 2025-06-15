@@ -12,7 +12,7 @@ var roleUpgrader = {
         }
 
         // Generate pixel if CPU bucket is full - only check occasionally to save CPU
-        if (Game.time % 100 === 0 && Game.cpu.bucket >= 10000) {
+        if (Game.time % 20 === 0 && Game.cpu.bucket >= 10000) {
             this.genPix();
         }
 

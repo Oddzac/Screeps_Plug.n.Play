@@ -457,6 +457,77 @@ var roleHauler = {
     },               
 
     waitNear: function(creep) {
+        // Check if we should help builders or upgraders
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+            // Check if spawn is at full capacity
+            const spawnsAndExtensions = creep.room.find(FIND_MY_STRUCTURES, {
+                filter: s => (s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_EXTENSION) &&
+                            s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            });
+            
+            // Check if nextSpawnRole is null
+            const roomMemory = Memory.rooms[creep.room.name];
+            const noNextSpawnRole = !roomMemory.spawning || !roomMemory.spawning.nextSpawnRole;
+            
+            if (spawnsAndExtensions.length === 0 && noNextSpawnRole) {
+                // Check for construction sites
+                const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                if (constructionSites.length > 0) {
+                    // Find builders to help
+                    const builders = creep.room.find(FIND_MY_CREEPS, {
+                        filter: c => c.memory.role === 'builder'
+                    });
+                    
+                    if (builders.length > 0) {
+                        // Find the closest builder
+                        const builder = creep.pos.findClosestByPath(builders);
+                        if (builder) {
+                            // Transfer energy to the builder
+                            if (creep.transfer(builder, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                                movement.moveToWithCache(creep, builder);
+                                creep.say('🔄👷');
+                                return;
+                            }
+                        }
+                    } else {
+                        // If no builders, go to the construction site directly
+                        const site = creep.pos.findClosestByPath(constructionSites);
+                        if (site) {
+                            movement.moveToWithCache(creep, site);
+                            creep.say('🏗️');
+                            return;
+                        }
+                    }
+                } else {
+                    // No construction sites, help upgraders
+                    const upgraders = creep.room.find(FIND_MY_CREEPS, {
+                        filter: c => c.memory.role === 'upgrader'
+                    });
+                    
+                    if (upgraders.length > 0) {
+                        // Find the closest upgrader
+                        const upgrader = creep.pos.findClosestByPath(upgraders);
+                        if (upgrader) {
+                            // Transfer energy to the upgrader
+                            if (creep.transfer(upgrader, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                                movement.moveToWithCache(creep, upgrader);
+                                creep.say('🔄⬆️');
+                                return;
+                            }
+                        }
+                    } else {
+                        // If no upgraders, go to the controller
+                        if (creep.room.controller) {
+                            movement.moveToWithCache(creep, creep.room.controller);
+                            creep.say('⬆️');
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Default waiting behavior if we can't help builders or upgraders
         let waitLocation;
     
         // Check for containerId and linkId in memory to set waitLocation near them
@@ -477,35 +548,34 @@ var roleHauler = {
             }
         }
     
-    // Use room storage as a fallback wait location
-    if (!waitLocation) {
+        // Use room storage as a fallback wait location
+        if (!waitLocation) {
+            let home = creep.memory.home;  // Retrieve the home room name stored in memory
+            let depotFlagName = `${home} - DEPOT`; // Construct the flag's name by appending 'Depot'
+            let depotFlag = Game.flags[depotFlagName];  // Get the flag object
 
-        let home = creep.memory.home;  // Retrieve the home room name stored in memory
-        let depotFlagName = `${home} - DEPOT`; // Construct the flag's name by appending 'Depot'
-        let depotFlag = Game.flags[depotFlagName];  // Get the flag object
-
-        if (depotFlag) {
-            waitLocation = depotFlag.pos;
-        } else {
-            const storage = creep.room.storage;
-            if (storage) {
-                waitLocation = storage.pos;
+            if (depotFlag) {
+                waitLocation = depotFlag.pos;
             } else {
-                // Fallback to the room controller if no storage is available
-                if (creep.room.controller) {
-                    waitLocation = creep.room.controller.pos;
+                const storage = creep.room.storage;
+                if (storage) {
+                    waitLocation = storage.pos;
+                } else {
+                    // Fallback to the room controller if no storage is available
+                    if (creep.room.controller) {
+                        waitLocation = creep.room.controller.pos;
+                    }
                 }
             }
         }
-    }
 
-    if (waitLocation) {
-        movement.moveToWithCache(creep, waitLocation, 2);
-        creep.say('⌛');
-    } else {
-        console.log(`No valid waitLocation found for creep ${creep.name} in room ${creep.room.name}`);
-    }
-},
+        if (waitLocation) {
+            movement.moveToWithCache(creep, waitLocation, 2);
+            creep.say('⌛');
+        } else {
+            console.log(`No valid waitLocation found for creep ${creep.name} in room ${creep.room.name}`);
+        }
+    },
     
 };
 
