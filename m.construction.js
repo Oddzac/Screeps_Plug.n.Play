@@ -2,9 +2,6 @@ var memories = require('./m.memories');
 
 var construction = {
     
-    //TODO
-    //placeLinks method - needs to check if there is already a link near given source and ignore if so (continue placing as able)
-    
     manageConstruction: function(room) {
         if (!room) return;
         
@@ -44,6 +41,8 @@ var construction = {
                 // Phase 2-3: Ensure containers are built, then place extensions
                 if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
                     this.placeContainersNearSources(room);
+                } else if (this.checkExtensionsAvailable(room) > 0) {
+                    this.placeExtensions(room);
                 }
                 break;
                 
@@ -51,6 +50,8 @@ var construction = {
                 // Phase 4: Place storage if needed
                 if (structureCount.storage.built < 1 && structureCount.storage.pending < 1) {
                     this.placeStorage(room);
+                } else if (this.checkExtensionsAvailable(room) > 0) {
+                    this.placeExtensions(room);
                 }
                 break;
                 
@@ -58,21 +59,26 @@ var construction = {
             case 6:
                 // Phase 5-6: Place links if needed
                 if (structureCount.links.built < 2 && structureCount.links.pending < 1) {
-                    // Uncomment when placeLinks is implemented
-                    // this.placeLinks(room);
+                    this.placeLinks(room);
                 }
                 
                 // Place towers if available
-                if (this.checkTowersAvailable(room) > 0) {
-                    // Uncomment when placeTower is implemented
-                    // this.placeTower(room);
+                else if (this.checkTowersAvailable(room) > 0) {
+                    this.placeTower(room);
+                }
+                
+                // Place extensions if available
+                else if (this.checkExtensionsAvailable(room) > 0) {
+                    this.placeExtensions(room);
                 }
                 break;
                 
             default:
                 // Higher phases: Focus on advanced structures
                 if (this.checkTowersAvailable(room) > 0) {
-                    // this.placeTower(room);
+                    this.placeTower(room);
+                } else if (this.checkExtensionsAvailable(room) > 0) {
+                    this.placeExtensions(room);
                 }
                 break;
         }
@@ -190,16 +196,16 @@ var construction = {
     },
 
     checkTowersAvailable: function(room) {
-        // Maximum extensions allowed by controller level
+        // Maximum towers allowed by controller level
         const towersLimits = [0, 0, 0, 1, 1, 2, 2, 3, 6]; // Indexed by controller level
         const controllerLevel = room.controller.level;
 
-        // Get current number of extensions and extension construction sites
+        // Get current number of towers and tower construction sites
         const towers = Memory.rooms[room.name].construct.structureCount.towers.built;
         const towerSites = Memory.rooms[room.name].construct.structureCount.towers.pending;
         const totalTowers = towers + towerSites;
 
-        // Calculate the number of extensions that can still be built
+        // Calculate the number of towers that can still be built
         const towersAvailable = towersLimits[controllerLevel] - totalTowers;
 
         return towersAvailable;
@@ -440,6 +446,222 @@ var construction = {
         }
         
         console.log(`Failed to place storage in room ${room.name}`);
+        return false;
+    },
+
+    // Method to place towers
+    placeTower: function(room) {
+        // Find a suitable position for the tower
+        const spawn = room.find(FIND_MY_SPAWNS)[0];
+        if (!spawn) return false;
+        
+        // Try to place tower near spawn for better defense
+        const terrain = room.getTerrain();
+        
+        // Search in a spiral pattern from the spawn
+        for (let radius = 2; radius <= 5; radius++) {
+            for (let x = spawn.pos.x - radius; x <= spawn.pos.x + radius; x++) {
+                for (let y = spawn.pos.y - radius; y <= spawn.pos.y + radius; y++) {
+                    // Only check positions on the edge of the current radius
+                    if (Math.abs(x - spawn.pos.x) === radius || Math.abs(y - spawn.pos.y) === radius) {
+                        // Check if the position is valid
+                        if (x >= 0 && x < 50 && y >= 0 && y < 50 && 
+                            terrain.get(x, y) !== TERRAIN_MASK_WALL) {
+                            
+                            const pos = new RoomPosition(x, y, room.name);
+                            
+                            // Check if the position is already occupied
+                            const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
+                            const constructionSites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                            
+                            if (structures.length === 0 && constructionSites.length === 0) {
+                                const result = room.createConstructionSite(pos, STRUCTURE_TOWER);
+                                if (result === OK) {
+                                    console.log(`Placed tower construction site at ${pos}`);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        console.log(`Failed to place tower in room ${room.name}`);
+        return false;
+    },
+
+    // Method to place links
+    placeLinks: function(room) {
+        // Check if we have sources and storage
+        const sources = room.find(FIND_SOURCES);
+        const storage = room.storage;
+        
+        if (!storage || sources.length === 0) return false;
+        
+        // First, try to place a link near storage if there isn't one already
+        const storageLinks = storage.pos.findInRange(FIND_STRUCTURES, 2, {
+            filter: { structureType: STRUCTURE_LINK }
+        });
+        
+        const storageLinkSites = storage.pos.findInRange(FIND_CONSTRUCTION_SITES, 2, {
+            filter: { structureType: STRUCTURE_LINK }
+        });
+        
+        // If no storage link exists or is being built, place one
+        if (storageLinks.length === 0 && storageLinkSites.length === 0) {
+            const terrain = room.getTerrain();
+            
+            // Find a suitable position near storage
+            for (let dx = -2; dx <= 2; dx++) {
+                for (let dy = -2; dy <= 2; dy++) {
+                    if (dx === 0 && dy === 0) continue; // Skip the storage itself
+                    
+                    const x = storage.pos.x + dx;
+                    const y = storage.pos.y + dy;
+                    
+                    if (x < 0 || x >= 50 || y < 0 || y >= 50) continue;
+                    if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+                    
+                    const pos = new RoomPosition(x, y, room.name);
+                    
+                    // Check if position is free
+                    const lookResults = room.lookAt(x, y);
+                    let isOccupied = false;
+                    
+                    for (const result of lookResults) {
+                        if (result.type === 'structure' || result.type === 'constructionSite') {
+                            isOccupied = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isOccupied) {
+                        const result = room.createConstructionSite(pos, STRUCTURE_LINK);
+                        if (result === OK) {
+                            console.log(`Placed storage link construction site at ${pos}`);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Then try to place links near sources that don't have one
+        for (const source of sources) {
+            const sourceLinks = source.pos.findInRange(FIND_STRUCTURES, 2, {
+                filter: { structureType: STRUCTURE_LINK }
+            });
+            
+            const sourceLinkSites = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 2, {
+                filter: { structureType: STRUCTURE_LINK }
+            });
+            
+            // If this source already has a link or construction site, skip it
+            if (sourceLinks.length > 0 || sourceLinkSites.length > 0) continue;
+            
+            // Find a suitable position for the link
+            const terrain = room.getTerrain();
+            
+            for (let dx = -2; dx <= 2; dx++) {
+                for (let dy = -2; dy <= 2; dy++) {
+                    if (dx === 0 && dy === 0) continue; // Skip the source itself
+                    
+                    const x = source.pos.x + dx;
+                    const y = source.pos.y + dy;
+                    
+                    if (x < 0 || x >= 50 || y < 0 || y >= 50) continue;
+                    if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+                    
+                    const pos = new RoomPosition(x, y, room.name);
+                    
+                    // Check if position is free
+                    const lookResults = room.lookAt(x, y);
+                    let isOccupied = false;
+                    
+                    for (const result of lookResults) {
+                        if (result.type === 'structure' || result.type === 'constructionSite') {
+                            isOccupied = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isOccupied) {
+                        const result = room.createConstructionSite(pos, STRUCTURE_LINK);
+                        if (result === OK) {
+                            console.log(`Placed source link construction site at ${pos}`);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false;
+    },
+
+    // Method to place extensions in an efficient pattern
+    placeExtensions: function(room) {
+        // Check if we can build more extensions
+        const extensionsAvailable = this.checkExtensionsAvailable(room);
+        if (extensionsAvailable <= 0) return false;
+        
+        // Get the weighted center of the room or use spawn as reference
+        let centerX, centerY;
+        if (Memory.rooms[room.name].construct.weightedCenter) {
+            centerX = Memory.rooms[room.name].construct.weightedCenter.x;
+            centerY = Memory.rooms[room.name].construct.weightedCenter.y;
+        } else {
+            const spawn = room.find(FIND_MY_SPAWNS)[0];
+            if (!spawn) return false;
+            centerX = spawn.pos.x;
+            centerY = spawn.pos.y;
+        }
+        
+        // Define extension patterns - these are offsets from the center
+        const patterns = [
+            // Flower pattern
+            [
+                {x: 0, y: -2}, {x: 1, y: -1}, {x: 2, y: 0}, {x: 1, y: 1}, {x: 0, y: 2},
+                {x: -1, y: 1}, {x: -2, y: 0}, {x: -1, y: -1}
+            ],
+            // Outer ring
+            [
+                {x: 0, y: -3}, {x: 1, y: -3}, {x: 2, y: -2}, {x: 3, y: -1}, {x: 3, y: 0},
+                {x: 3, y: 1}, {x: 2, y: 2}, {x: 1, y: 3}, {x: 0, y: 3}, {x: -1, y: 3},
+                {x: -2, y: 2}, {x: -3, y: 1}, {x: -3, y: 0}, {x: -3, y: -1}, {x: -2, y: -2},
+                {x: -1, y: -3}
+            ]
+        ];
+        
+        const terrain = room.getTerrain();
+        
+        // Try each pattern
+        for (const pattern of patterns) {
+            for (const offset of pattern) {
+                const x = centerX + offset.x;
+                const y = centerY + offset.y;
+                
+                // Check if position is valid
+                if (x < 2 || x > 47 || y < 2 || y > 47) continue;
+                if (terrain.get(x, y) === TERRAIN_MASK_WALL) continue;
+                
+                const pos = new RoomPosition(x, y, room.name);
+                
+                // Check if position is free
+                const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
+                const constructionSites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                
+                if (structures.length === 0 && constructionSites.length === 0) {
+                    const result = room.createConstructionSite(pos, STRUCTURE_EXTENSION);
+                    if (result === OK) {
+                        console.log(`Placed extension construction site at ${pos}`);
+                        return true;
+                    }
+                }
+            }
+        }
+        
         return false;
     }
 };

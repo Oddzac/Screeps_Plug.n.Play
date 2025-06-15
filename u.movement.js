@@ -1,141 +1,158 @@
-/**
- * Movement Module - Simplified pathfinding with traffic management
- */
+// TODO
 
+
+//////////////////////////////
 var movement = {
-    // Traffic density tracking
-    trafficMap: {},
-    
-    // Path visualization settings
-    visualizePaths: false,
-    
+
+// PATH CACHING AND MOVEMENT
+//
+//
+//
+//
+
+
+
+
+
+
     // Main Pathfinding Call
-    moveToWithCache: function(creep, target, range = 1) {
-        if (!creep || !target) return ERR_INVALID_ARGS;
-        
-        const targetPos = (target instanceof RoomPosition) ? target : target.pos;
-        if (!targetPos) return ERR_INVALID_TARGET;
-        
-        // Initialize home room if not set
-        if (!creep.memory.home) {
-            const nameParts = creep.name.split('_');
-            if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
-                creep.memory.home = nameParts[0];
-            } else {
-                creep.memory.home = creep.room.name;
-            }
-        }
-        
-        // Update traffic map
-        this.updateTrafficMap(creep.pos);
-        
-        // Use direct moveTo with traffic-aware cost matrix
-        return creep.moveTo(targetPos, {
-            range: range,
-            reusePath: 20,
-            costCallback: (roomName, costMatrix) => {
-                return this.applyTrafficCosts(roomName, costMatrix);
-            },
-            visualizePathStyle: this.visualizePaths ? {
-                fill: 'transparent',
-                stroke: '#ffffff',
-                lineStyle: 'dashed',
-                strokeWidth: .15,
-                opacity: .1
-            } : undefined
-        });
-    },
-    
-    // Update traffic density map
-    updateTrafficMap: function(pos) {
-        const key = `${pos.roomName}_${pos.x}_${pos.y}`;
-        
-        if (!this.trafficMap[key]) {
-            this.trafficMap[key] = { count: 0, lastUpdate: Game.time };
-        } else {
-            this.trafficMap[key].count++;
-            this.trafficMap[key].lastUpdate = Game.time;
-        }
-        
-        // Clean up old traffic data every 100 ticks
-        if (Game.time % 100 === 0) {
-            for (const key in this.trafficMap) {
-                if (Game.time - this.trafficMap[key].lastUpdate > 100) {
-                    delete this.trafficMap[key];
-                }
-            }
-        }
-    },
-    
-    // Get traffic density at position
-    getTrafficDensity: function(pos) {
-        const key = `${pos.roomName}_${pos.x}_${pos.y}`;
-        return this.trafficMap[key] ? this.trafficMap[key].count : 0;
-    },
-    
-    // Clean up old paths - no longer needed with direct moveTo
-    cleanupOldPaths: function() {
-        // This is now a no-op since we're not using path cache
+moveToWithCache: function(creep, target, range = 1) {
+    const targetPos = (target instanceof RoomPosition) ? target : target.pos;
+    if (!targetPos) {
         return;
-    },
+    }
+    // Initialize home room
+    if (!creep.memory.home) {
+        const nameParts = creep.name.split('_');
+        if (nameParts.length > 1 && Game.rooms[nameParts[0]]) {
+            creep.memory.home = nameParts[0];
+        } else {
+            creep.memory.home = creep.room.name;
+        }
+    }
+
+    const homeRoom = Game.rooms[creep.memory.home];
+    if (!homeRoom) {
+        console.log('Home room not accessible:', creep.memory.home);
+        return;
+    }
+
+    this.findCachedPath(creep, { pos: targetPos, range: range });
+   
+},
+
+cleanupOldPaths: function(roomName) {
+    const pathCache = Memory.pathCache;
+    if (!pathCache) return;
+
+    const pathKeys = Object.keys(pathCache);
+    for (const pathKey of pathKeys) {
+        if (pathCache[pathKey].time + 50 < Game.time) {
+            delete pathCache[pathKey]; // Delete paths older than 100 ticks
+        }
+    }
+},
+
+// Utility method to generate a unique key for caching paths
+generatePathKey: function(fromPos, toPos, range) {
+    return `${fromPos.roomName}_${fromPos.x},${fromPos.y}_${toPos.x},${toPos.y}_${range}`;
+},
     
-    // Apply traffic costs to a cost matrix
-    applyTrafficCosts: function(roomName, costMatrix) {
-        if (!costMatrix) return;
-        
-        const room = Game.rooms[roomName];
-        if (!room) return costMatrix;
-        
-        // Apply traffic density costs
-        for (const key in this.trafficMap) {
-            if (key.startsWith(roomName)) {
-                const parts = key.split('_');
-                if (parts.length >= 3) {
-                    const x = parseInt(parts[1]);
-                    const y = parseInt(parts[2]);
-                    if (!isNaN(x) && !isNaN(y)) {
-                        const traffic = this.trafficMap[key].count;
-                        
-                        // Only increase cost if it's not already impassable
-                        if (costMatrix.get(x, y) < 0xff) {
-                            // Increase cost based on traffic density
-                            const additionalCost = Math.min(traffic * 5, 30);
-                            costMatrix.set(x, y, costMatrix.get(x, y) + additionalCost);
-                        }
-                    }
-                }
+// Method for creep movement using cached paths
+findCachedPath: function(creep, target, defaultRange = 1) {
+    const targetPos = target.pos || target; 
+    const effectiveRange = target.range !== undefined ? target.range : defaultRange;
+    const pathKey = this.generatePathKey(creep.pos, targetPos, effectiveRange); 
+    const roomName = creep.room.name;
+
+    if (!Memory.pathCache) Memory.pathCache = {};
+
+    this.cleanupOldPaths(roomName);
+
+    let path, moveResult;
+    if (Memory.pathCache[pathKey] && Memory.pathCache[pathKey].time + 100 > Game.time) {
+        // Deserialize the path
+        path = Room.deserializePath(Memory.pathCache[pathKey].path);
+    } else {
+        // Generate new path
+        path = creep.pos.findPathTo(targetPos, {
+            range: effectiveRange,
+            ignoreCreeps: true,
+        });
+        const serializedPath = Room.serializePath(path);
+        Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
+    }
+
+    // Identify the next position on the path
+    if (path && path.length > 0) {
+        const nextPos = new RoomPosition(path[0].x, path[0].y, roomName);
+
+        // Look for creeps at the next position
+        const creepsAtNextPos = nextPos.lookFor(LOOK_CREEPS);
+
+        // Check if any of the creeps are working
+        const isBlocking = creepsAtNextPos.some(c => c.memory.working);
+
+        if (isBlocking) {
+            // Handle next position is blocked by working creep
+            creep.say("👀");
+            // Generate new path
+            path = creep.pos.findPathTo(targetPos, {
+                range: effectiveRange,
+                ignoreCreeps: false,
+            });
+            const serializedPath = Room.serializePath(path);
+            Memory.pathCache[pathKey] = { path: serializedPath, time: Game.time };
+
+        } else {
+            // Execute movement
+            moveResult = creep.moveByPath(path);
+            if (moveResult !== OK) {
+                // Clear the cache if the path is invalid and find a new path immediately
+                delete Memory.pathCache[pathKey];
             }
         }
-        
-        // Add structure costs
-        room.find(FIND_STRUCTURES).forEach(function(struct) {
-            if (struct.structureType === STRUCTURE_ROAD) {
-                // Favor roads
-                costMatrix.set(struct.pos.x, struct.pos.y, 1);
-            } else if (struct.structureType !== STRUCTURE_CONTAINER &&
-                    (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
-                // Avoid non-walkable structures
-                costMatrix.set(struct.pos.x, struct.pos.y, 0xff);
-            }
-        });
-        
-        // Add construction site costs
-        room.find(FIND_CONSTRUCTION_SITES).forEach(function(site) {
-            if (site.structureType !== STRUCTURE_ROAD && 
-                site.structureType !== STRUCTURE_CONTAINER && 
-                site.structureType !== STRUCTURE_RAMPART) {
-                costMatrix.set(site.pos.x, site.pos.y, 0xff);
-            }
-        });
-        
-        return costMatrix;
-    },
-    
-    // Toggle path visualization
-    togglePathVisualization: function() {
-        this.visualizePaths = !this.visualizePaths;
-        return `Path visualization ${this.visualizePaths ? 'enabled' : 'disabled'}`;
     }
+},
+
+
+// Optional: Method to generate and cache room cost matrices for more efficient pathfinding
+getCostMatrix: function(roomName) {
+    if (!Memory.costMatrices) Memory.costMatrices = {};
+    if (Memory.costMatrices[roomName] && Memory.costMatrices[roomName].time + 10000 > Game.time) {
+        return PathFinder.CostMatrix.deserialize(Memory.costMatrices[roomName].matrix);
+    } else {
+        const room = Game.rooms[roomName];
+        let costs = new PathFinder.CostMatrix();
+
+        if (room) { // Check if the room is visible
+            room.find(FIND_STRUCTURES).forEach(function(struct) {
+                if (struct.structureType === STRUCTURE_ROAD) {
+                    // Favor roads
+                    costs.set(struct.pos.x, struct.pos.y, 1);
+                } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                        (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
+                    // Avoid non-walkable structures
+                    costs.set(struct.pos.x, struct.pos.y, 0xff);
+                }
+            });
+        } else {
+            
+//            console.log('getCostMatrix: Room not visible', roomName);
+            
+        }
+
+        Memory.costMatrices[roomName] = {
+            matrix: costs.serialize(),
+            time: Game.time
+        };
+        return costs;
+    }
+},
+
+
+
+
 };
 
-module.exports = movement;
+module.exports = movement 
