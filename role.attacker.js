@@ -3,7 +3,7 @@
 // Target structures that impede path
 // Squad composition
 
-var movement = require('./src/u.movement');
+var movement = require('u.movement');
 
 var roleAttacker = {
 

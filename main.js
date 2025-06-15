@@ -4,7 +4,7 @@ var memories = require('./m.memories');
 var towers = require('./m.towers');
 var linker = require('./m.links');
 var terminals = require('./m.terminal');
-var movement = require('./src/u.movement');
+var movement = require('./u.movement');
 var giveWay = require('./u.giveWay');
 
 //const profiler = require('u.screeps-profiler');
@@ -67,11 +67,12 @@ module.exports.loop = function() {
             }
 
 
-            // Count the number of harvesters and haulers specifically in this room
-            const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester' && creep.memory.home === roomName);
-            const haulers = _.filter(Game.creeps, (creep) => creep.memory.role === 'hauler' && creep.memory.home === roomName);
-            // Check the number of energy sources in the room
-            const energySources = Memory.rooms[room.name].mapping.sources.count;
+                // Check the number of energy sources in the room
+            const roomMemory = Memory.rooms[room.name];
+            if (!roomMemory || !roomMemory.mapping || !roomMemory.mapping.sources) continue;
+            
+            const energySources = roomMemory.mapping.sources.count;
+            
             // Find available spawns in the room
             const availableSpawn = room.find(FIND_MY_SPAWNS, {
                 filter: (spawn) => !spawn.spawning
@@ -140,36 +141,52 @@ global.Connect = function(roomName, pointA, pointB) {
 
     // Function to resolve point names to actual RoomPosition objects
     function resolvePoint(room, pointName) {
+        if (!room) return null;
+        
         switch (pointName) {
             case 'controller':
-                return room.controller.pos;
+                return room.controller ? room.controller.pos : null;
+                
             case 'storage':
                 return room.storage ? room.storage.pos : null;
+                
             case 'spawn': // Assuming you want to connect to the first spawn
-                let spawns = room.find(FIND_MY_SPAWNS);
+                const spawns = room.find(FIND_MY_SPAWNS);
                 return spawns.length > 0 ? spawns[0].pos : null;
+                
             case 'extractor':
-                let extractors = room.find(FIND_STRUCTURES, {
+                const extractors = room.find(FIND_STRUCTURES, {
                     filter: { structureType: STRUCTURE_EXTRACTOR }
                 });
                 return extractors.length > 0 ? extractors[0].pos : null;
+                
             case 'terminal':
-                let terminals = room.find(FIND_STRUCTURES, {
+                const terminals = room.find(FIND_STRUCTURES, {
                     filter: { structureType: STRUCTURE_TERMINAL }
                 });
-            return terminals.length > 0 ? terminals[0].pos : null;
+                return terminals.length > 0 ? terminals[0].pos : null;
+                
             // Handling sources dynamically, assuming 'source1', 'source2', ...
             default:
                 if (pointName.startsWith('source')) {
-                    let index = parseInt(pointName.slice(6)) - 1; // Convert 'source1' to 0, 'source2' to 1, etc.
-                    let sources = Memory.rooms[room.name].mapping.sources.id;
+                    const index = parseInt(pointName.slice(6)) - 1; // Convert 'source1' to 0, 'source2' to 1, etc.
+                    
+                    if (!Memory.rooms[room.name] || 
+                        !Memory.rooms[room.name].mapping || 
+                        !Memory.rooms[room.name].mapping.sources || 
+                        !Memory.rooms[room.name].mapping.sources.id) {
+                        console.log(`Source data not available for room ${room.name}`);
+                        return null;
+                    }
+                    
+                    const sources = Memory.rooms[room.name].mapping.sources.id;
                     if (index >= 0 && index < sources.length) {
-                        return sources[index].pos;
+                        const source = Game.getObjectById(sources[index]);
+                        return source ? source.pos : null;
                     }
                 }
                 console.log(`Unrecognized point: ${pointName}`);
                 return null;
-            
         }
     }
 

@@ -1,5 +1,5 @@
 var utility = require('./u.utilities');
-var movement = require('./src/u.movement');
+var movement = require('u.movement');
 var giveWay = require("./u.giveWay");
 
 var roleBuilder = {

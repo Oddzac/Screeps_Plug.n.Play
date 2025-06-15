@@ -67,16 +67,14 @@ var roleAttacker = require('./role.attacker');
 var roleHealer = require('./role.healer');
 var roleClaimer = require('./role.claimer');
 var roleScout = require('./role.scout');
-var movement = require('./src/u.movement');
+var movement = require('./u.movement');
 //var spawner = require('a.spawn');
 
 var memories = {
     
     immediateMemory: function() {
-        
         this.memInit();
-
-
+        this.cleanupMemory();
 
         const roomsControlled = Object.values(Game.rooms).filter(room => room.controller && room.controller.my).length;
         const roomsAvailableToClaim = Game.gcl.level - roomsControlled;
@@ -86,18 +84,9 @@ var memories = {
             Memory.conquest.roomClaimsAvailable = roomsAvailableToClaim;
         }
         
-        //Dearly departed, we are gathered here today... (clear creep names)
-        for (var name in Memory.creeps) {
-            if (!Game.creeps[name]) {
-                delete Memory.creeps[name];
-                console.log('Clearing creep memory:', name);
-            }
-        } 
-        
-        
         //Assign Creep roles
-        for (var name in Game.creeps) {
-            var creep = Game.creeps[name];
+        for (const name in Game.creeps) {
+            const creep = Game.creeps[name];
             switch (creep.memory.role) {
                 case 'harvester': roleHarvester.run(creep); break;
                 case 'upgrader': roleUpgrader.run(creep); break;
@@ -110,8 +99,6 @@ var memories = {
                 // No default case needed 
             }
         }
-
-        
 
         for (const roomName in Memory.conquest.claimRooms) {
             // Check if the Game object has the room, and if so, whether you own the controller
@@ -130,14 +117,62 @@ var memories = {
             }
         }
     },
+    
+    cleanupMemory: function() {
+        // Clean up creep memory
+        for (const name in Memory.creeps) {
+            if (!Game.creeps[name]) {
+                delete Memory.creeps[name];
+                console.log('Clearing creep memory:', name);
+            }
+        }
+        
+        // Clean up path cache - remove old paths
+        if (Memory.pathCache) {
+            const currentTime = Game.time;
+            for (const pathKey in Memory.pathCache) {
+                if (Memory.pathCache[pathKey].time + 100 < currentTime) {
+                    delete Memory.pathCache[pathKey];
+                }
+            }
+        }
+        
+        // Clean up cost matrices that are too old
+        if (Memory.costMatrices) {
+            const currentTime = Game.time;
+            for (const roomName in Memory.costMatrices) {
+                if (Memory.costMatrices[roomName].time + 10000 < currentTime) {
+                    delete Memory.costMatrices[roomName];
+                }
+            }
+        }
+        
+        // Clean up room memory for rooms that no longer exist or are not visible
+        for (const roomName in Memory.rooms) {
+            // Keep memory for rooms we own or have visibility of
+            if (Game.rooms[roomName]) continue;
+            
+            // For rooms we can't see, keep minimal data and clean up the rest
+            if (Memory.rooms[roomName]) {
+                // Keep essential data like sources, but clean up temporary data
+                if (Memory.rooms[roomName].spawning) {
+                    Memory.rooms[roomName].spawning.nextSpawnRole = null;
+                }
+            }
+        }
+    },
 
         
     //Initialize Memory
     memInit: function() {
-        // GLOBAL MEM
-        //
-        //
+        // Initialize global memory structures
         if (!Memory.rooms) Memory.rooms = {};
+        
+        // Initialize path cache
+        if (!Memory.pathCache) Memory.pathCache = {};
+        
+        // Initialize cost matrices
+        if (!Memory.costMatrices) Memory.costMatrices = {};
 
         // Conquest - Attack, Claim, Scout targets
         if (!Memory.conquest) {
@@ -146,9 +181,8 @@ var memories = {
                 targetRooms: {},
                 scoutedRooms: {},
                 roomClaimsAvailable: 0,
-            }
+            };
         }
-
 
         // Market Data
         if (!Memory.marketData) {
@@ -158,7 +192,7 @@ var memories = {
                 resources: {},
             };
 
-            //Populate all resources
+            // Populate all resources
             RESOURCES_ALL.forEach(resource => {
                 Memory.marketData.resources[resource] = {
                     avgPrice: 0,
@@ -170,13 +204,13 @@ var memories = {
             });
         }
         
-        
-    
-        // LOCAL MEM
-        //
-        //
+        // Initialize room memory for each visible room
         Object.keys(Game.rooms).forEach(roomName => {
             const room = Game.rooms[roomName];
+            if (!room) return;
+            
+            // Skip rooms without controllers or that we don't own
+            if (!room.controller) return;
 
             // Initialize room memory object if it doesn't exist
             if (!Memory.rooms[roomName]) {
@@ -184,6 +218,7 @@ var memories = {
                     phase: {Phase: 1, RCL: room.controller.level},
                     underAttack: false,
                     scoutingComplete: false,
+                    signed: false,
                     spawning: {
                         nextSpawnRole: null,
                         spawnMode: {mode: null, energyToUse: 0},
@@ -200,35 +235,51 @@ var memories = {
                             terminal: {built: 0, pending: 0},
                             towers: {built: 0, pending: 0},
                         },
+                        weightedCenter: {x: 0, y: 0}
                     },
-                    //weightedCenter: {x: 0, y: 0},
                     mapping: {
-                        //sources: {},
-                        //terrainData: {},
-                        //costMatrix: {},
+                        sources: {},
+                        terrainData: {},
+                        costMatrix: {}
                     }
-
-                    
                 };
+            }
 
-                if (!Memory.rooms[room.name].mapping.sources) {
-                    const sources = room.find(FIND_SOURCES);
-                    Memory.rooms[room.name].mapping.sources = {
-                        count: sources.length,
-                        id: sources.map(source => source.id)
-                    };
-                }
+            // Ensure all required memory structures exist
+            const roomMem = Memory.rooms[roomName];
+            
+            // Initialize sources data if missing
+            if (!roomMem.mapping.sources || !roomMem.mapping.sources.id) {
+                const sources = room.find(FIND_SOURCES);
+                roomMem.mapping.sources = {
+                    count: sources.length,
+                    id: sources.map(source => source.id)
+                };
+            }
 
-                if (!Memory.rooms[room.name].mapping.terrainData) {
-                    this.updateRoomTerrainData(room);
-                }
+            // Initialize terrain data if missing
+            if (!roomMem.mapping.terrainData) {
+                this.updateRoomTerrainData(room);
+            }
 
-                if (!Memory.rooms[room.name].construct.weightedCenter) {
-                    this.findCenterWeighted(room);
-                }
+            // Initialize weighted center if missing
+            if (!roomMem.construct.weightedCenter) {
+                this.findCenterWeighted(room);
+            }
+            
+            // Ensure structure counts are initialized
+            if (!roomMem.construct.structureCount) {
+                roomMem.construct.structureCount = {
+                    extensions: {built: 0, pending: 0},
+                    containers: {built: 0, pending: 0},
+                    storage: {built: 0, pending: 0},
+                    extractor: {built: 0, pending: 0},
+                    links: {built: 0, pending: 0},
+                    terminal: {built: 0, pending: 0},
+                    towers: {built: 0, pending: 0},
+                };
             }
         });
-    
     },
     
 
@@ -256,94 +307,124 @@ var memories = {
 
 
     updateRoomPhase: function(room) {
-        // Update the current RCL in memory (useful for tracking progress and phase changes)
-        Memory.rooms[room.name].phase.RCL = room.controller.level;
-
-        // Update the Phase property directly
-        Memory.rooms[room.name].phase.Phase = room.controller.level;
-
-
-
-        /*
-                        
-        const structureCount = Memory.rooms[room.name].construct.structureCount;
+        if (!room || !room.controller) return;
+        
+        // Update the current RCL in memory
+        const rcl = room.controller.level;
+        const roomMemory = Memory.rooms[room.name];
+        
+        if (!roomMemory || !roomMemory.phase) return;
+        
+        // Store previous phase for transition detection
+        const previousPhase = roomMemory.phase.Phase;
+        
+        // Update RCL in memory
+        roomMemory.phase.RCL = rcl;
+        
+        // Update phase based on RCL and structure requirements
+        const structureCount = roomMemory.construct.structureCount;
         const containersBuilt = structureCount.containers.built;
         const storageBuilt = structureCount.storage.built;
         const extractorBuilt = structureCount.extractor.built;
-        const linksBuilt = structureCount.extractor.built;
+        const linksBuilt = structureCount.links.built;
         const terminalBuilt = structureCount.terminal.built;
         const towersBuilt = structureCount.towers.built;
-
-        currentPhase.Phase = rcl;
-    
-        switch (currentPhase) {
+        
+        let newPhase = rcl; // Default to RCL as phase
+        let transitioned = false;
+        
+        // Phase transition logic with proper comparison operators
+        switch (previousPhase) {
             case 1:
                 // Phase 1 to Phase 2 transition: RCL reaches 2
-                if (rcl = 2) {
-                    Memory.rooms[room.name].phase.Phase = 2;
-                    console.log(`Room ${room.name} has advanced to Phase 2.`);
-                    transitioned = true;
+                if (rcl >= 2) {
+                    newPhase = 2;
+                    transitioned = (previousPhase !== newPhase);
                 }
                 break;
             case 2:
-                // Phase 2 to Phase 3 transition: RCL reaches 3, and containers are built
-                if (rcl = 3) {
-                    Memory.rooms[room.name].phase.Phase = 3;
-                    console.log(`Room ${room.name} has advanced to Phase 3.`);
-                    transitioned = true;
+                // Phase 2 to Phase 3 transition: RCL reaches 3
+                if (rcl >= 3) {
+                    newPhase = 3;
+                    transitioned = (previousPhase !== newPhase);
                 }
                 break;
             case 3:
-                // Phase 3 to Phase 4 transition: RCL reaches 4, and a tower is built
-                if (rcl = 4) {
-                    Memory.rooms[room.name].phase.Phase = 4;
-                    console.log(`Room ${room.name} has advanced to Phase 4.`);
-                    transitioned = true;
+                // Phase 3 to Phase 4 transition: RCL reaches 4
+                if (rcl >= 4) {
+                    newPhase = 4;
+                    transitioned = (previousPhase !== newPhase);
                 }
                 break;
             case 4:
-                // Phase 4 to Phase 5 transition: RCL reaches 5, and storage is built
-                if (rcl = 5) {
-                    Memory.rooms[room.name].phase.Phase = 5;
-                    console.log(`Room ${room.name} has advanced to Phase 5.`);
-                    transitioned = true;
+                // Phase 4 to Phase 5 transition: RCL reaches 5
+                if (rcl >= 5) {
+                    newPhase = 5;
+                    transitioned = (previousPhase !== newPhase);
                 }
                 break;
-
             case 5:
-                if (rcl = 6) {
-                    Memory.rooms[room.name].phase.Phase = 6;
-                    console.log(`Room ${room.name} has advanced to Phase 6.`);
-                    transitioned = true;
+                if (rcl >= 6) {
+                    newPhase = 6;
+                    transitioned = (previousPhase !== newPhase);
                 }
                 break;
             case 6:
-                if (rcl = 7) {
-                    Memory.rooms[room.name].phase.Phase = 7;
-                    console.log(`Room ${room.name} has advanced to Phase 7.`);
-                    transitioned = true;
+                if (rcl >= 7) {
+                    newPhase = 7;
+                    transitioned = (previousPhase !== newPhase);
                 }
                 break;
-
-            // Further phases as necessary...
-            default:
+            case 7:
+                if (rcl >= 8) {
+                    newPhase = 8;
+                    transitioned = (previousPhase !== newPhase);
+                }
                 break;
-
+            default:
+                newPhase = rcl;
+                break;
         }
-    
-        // Additional actions upon phase transition
+        
+        // Update phase in memory
+        roomMemory.phase.Phase = newPhase;
+        
+        // Log phase transition and perform actions
         if (transitioned) {
-            // Perform specific actions like adjusting spawn priorities, placing new construction sites, etc.
-            this.handlePhaseTransitionActions(room);
+            console.log(`Room ${room.name} has advanced to Phase ${newPhase}.`);
+            this.handlePhaseTransitionActions(room, newPhase);
         }
     },
     
-    
-    handlePhaseTransitionActions: function(room) {
-        // Placeholder for actions to perform upon entering a new phase
-        console.log(`Performing transition actions for Room ${room.name}.`);
-
-*/
+    handlePhaseTransitionActions: function(room, newPhase) {
+        if (!room) return;
+        
+        console.log(`Performing transition actions for Room ${room.name} to Phase ${newPhase}.`);
+        
+        // Phase-specific actions
+        switch (newPhase) {
+            case 2:
+                // Phase 2 actions - focus on extensions and containers
+                break;
+            case 3:
+                // Phase 3 actions - focus on tower placement
+                break;
+            case 4:
+                // Phase 4 actions - focus on storage
+                break;
+            case 5:
+                // Phase 5 actions - links
+                break;
+            case 6:
+                // Phase 6 actions - terminal and extractor
+                break;
+            case 7:
+                // Phase 7 actions - more advanced structures
+                break;
+            case 8:
+                // Phase 8 actions - end game structures
+                break;
+        }
     },
         
 
