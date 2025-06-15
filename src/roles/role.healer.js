@@ -2,7 +2,7 @@
 // Squad composition
 // When conquering - Stay with squad (no retreat)
 
-var movement = require('a.movement');
+var movement = require('../utils/movement');
 var roleHealer = {
 
     run: function(creep) {

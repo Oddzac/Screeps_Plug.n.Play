@@ -3,7 +3,8 @@
 // Target structures that impede path
 // Squad composition
 
-var movement = require('a.movement');
+var movement = require('../utils/movement');
+
 var roleAttacker = {
 
     run: function(creep) {
