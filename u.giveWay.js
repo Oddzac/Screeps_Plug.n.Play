@@ -24,7 +24,7 @@ Creep.prototype.giveWay = function() {
     
     // Check if we're in a traffic jam (multiple creeps around us)
     const surroundingCreeps = this.pos.findInRange(FIND_MY_CREEPS, 1).length - 1; // -1 to exclude self
-    const isInTrafficJam = surroundingCreeps >= 2;
+    const isInTrafficJam = surroundingCreeps >= 3;
     
     // If we're in a traffic jam and not working, consider moving even without a blocking request
     if (isInTrafficJam && !this.memory.working && !this.memory.blocking && Game.time % 5 === 0) {
