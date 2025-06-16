@@ -67,6 +67,10 @@ var construction = {
                 if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
                     this.placeContainersNearSources(room);
                 }
+                // Place towers if available
+                else if (this.checkTowersAvailable(room) > 0) {
+                    this.placeTower(room);
+                }
                 break;
                 
             case 4:
