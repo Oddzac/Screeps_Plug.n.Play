@@ -3,6 +3,94 @@ var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
 
 var roleBuilder = {
+    // Override the default giveWay behavior for builders
+    builderGiveWay: function(creep) {
+        // Don't move if fatigued
+        if (creep.fatigue > 0) {
+            return;
+        }
+        
+        // We can't block others when we're actively moving
+        if (creep.hasMoved) {
+            delete creep.memory.blocking;
+            return;
+        }
+        
+        // Check if we're in a traffic jam (multiple creeps around us)
+        const surroundingCreeps = creep.pos.findInRange(FIND_MY_CREEPS, 1).length - 1; // -1 to exclude self
+        const isInTrafficJam = surroundingCreeps >= 2;
+        
+        // If we're in a traffic jam, consider moving even without a blocking request
+        if (isInTrafficJam && !creep.memory.blocking && Game.time % 5 === 0) {
+            // Find a random direction to move to alleviate traffic
+            const validDirections = creep.getSmartMoveDirections();
+            if (validDirections.length > 0) {
+                creep.say("🚶", true);
+                creep.move(validDirections[Math.floor(Math.random() * validDirections.length)]);
+                return;
+            }
+        }
+        
+        // No request to move
+        if (!creep.memory.blocking) {
+            return;
+        }
+        
+        // It's an old request that has timed out
+        if (typeof creep.memory.blocking === 'number' && Game.time > creep.memory.blocking) {
+            delete creep.memory.blocking;
+            return;
+        }
+
+        // Always respond to blocking requests, even when working
+        // Find the direction of the creep that wants to pass through
+        const blockingData = creep.memory.blocking;
+        let preferredDirection;
+        
+        if (typeof blockingData === 'object' && blockingData.fromPos) {
+            // Calculate preferred direction based on the position of the blocking creep
+            const fromPos = new RoomPosition(
+                blockingData.fromPos.x, 
+                blockingData.fromPos.y, 
+                blockingData.fromPos.roomName
+            );
+            
+            // Get direction from the blocking creep to this creep
+            const dx = creep.pos.x - fromPos.x;
+            const dy = creep.pos.y - fromPos.y;
+            
+            // Determine the best direction to move (continue in same direction)
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // Moving horizontally
+                preferredDirection = dx > 0 ? RIGHT : LEFT;
+            } else {
+                // Moving vertically
+                preferredDirection = dy > 0 ? BOTTOM : TOP;
+            }
+        }
+
+        // Get valid directions, prioritizing the preferred direction if available
+        const validDirections = creep.getSmartMoveDirections(preferredDirection, isInTrafficJam);
+        
+        if (validDirections.length > 0) {
+            // Move in the best direction to get out of the way
+            creep.say("💢", true);
+            creep.move(validDirections[0]);
+        } else if (isInTrafficJam) {
+            // If we're in a traffic jam and can't find a good direction, try any valid direction
+            const directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
+            for (const dir of directions) {
+                const result = creep.move(dir);
+                if (result === OK) {
+                    creep.say("🏃", true);
+                    break;
+                }
+            }
+        }
+        
+        delete creep.memory.blocking;
+    },
+    
     run: function(creep) {
         if(creep.memory.harvesting && creep.store.getFreeCapacity() === 0) {
             creep.memory.harvesting = false;
@@ -65,7 +153,8 @@ var roleBuilder = {
             }
             this.performTask(creep);
         }
-        creep.giveWay();
+        // Use our custom giveWay implementation that always responds to blocking requests
+        this.builderGiveWay(creep);
     },
     
     registerEnergyRequest: function(creep) {
