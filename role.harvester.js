@@ -111,6 +111,16 @@ var roleHarvester = {
                     break; // Exit after attempting to transfer the first found resource
                 }
             }
+        } else {
+            // If no valid targets found (all are full), drop the energy
+            // This prevents the harvester from getting stuck
+            creep.drop(RESOURCE_ENERGY);
+            creep.say('⏬');
+            
+            // Move toward controller to avoid clogging the source
+            if (creep.room.controller) {
+                movement.moveToWithCache(creep, creep.room.controller, 3);
+            }
         }
     },
     
