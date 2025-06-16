@@ -91,9 +91,9 @@ var roleHauler = {
             return false;
         }
         
-        // Find the oldest unassigned request
-        let oldestRequest = null;
-        let oldestTime = Game.time;
+        // Prioritize requests based on task and working status
+        let bestRequest = null;
+        let bestScore = -Infinity;
         
         for (const requestId in Memory.rooms[creep.room.name].energyRequests) {
             const request = Memory.rooms[creep.room.name].energyRequests[requestId];
@@ -101,17 +101,39 @@ var roleHauler = {
             // Skip if already assigned
             if (request.assignedTo) continue;
             
-            // Find the oldest request
-            if (request.timestamp < oldestTime) {
-                oldestTime = request.timestamp;
-                oldestRequest = request;
+            // Calculate priority score (lower is better)
+            let score = 0;
+            
+            // Prioritize by task type
+            if (request.task === 'building') score += 10;
+            else if (request.task === 'repairing') score += 20;
+            else if (request.task === 'upgrading') score += 30;
+            
+            // Prioritize builders who are actively working
+            if (request.working === true) score -= 50;
+            
+            // Factor in distance (closer is better)
+            const targetCreep = Game.getObjectById(requestId);
+            if (targetCreep) {
+                const distance = creep.pos.getRangeTo(targetCreep);
+                score += distance * 2; // Distance penalty
+            }
+            
+            // Factor in request age (older is better)
+            const age = Game.time - request.timestamp;
+            score -= age * 0.5;
+            
+            // Update best request if this one has a better score
+            if (score > bestScore) {
+                bestScore = score;
+                bestRequest = request;
             }
         }
         
-        if (oldestRequest) {
+        if (bestRequest) {
             // Assign this hauler to the request
-            Memory.rooms[creep.room.name].energyRequests[oldestRequest.id].assignedTo = creep.id;
-            creep.memory.assignedRequest = oldestRequest.id;
+            Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedTo = creep.id;
+            creep.memory.assignedRequest = bestRequest.id;
             return true;
         }
         
@@ -139,13 +161,14 @@ var roleHauler = {
             return false;
         }
         
+        // Check if the builder is still working on the same task
+        if (request.task && targetCreep.memory.task !== request.task) {
+            // Builder changed tasks, update the request
+            Memory.rooms[roomName].energyRequests[requestId].task = targetCreep.memory.task;
+        }
+        
         // Move to target and transfer energy
         if (creep.pos.isNearTo(targetCreep)) {
-            const transferAmount = Math.min(
-                creep.store.getUsedCapacity(RESOURCE_ENERGY),
-                targetCreep.store.getFreeCapacity(RESOURCE_ENERGY)
-            );
-            
             const result = creep.transfer(targetCreep, RESOURCE_ENERGY);
             
             if (result === OK) {
@@ -160,8 +183,18 @@ var roleHauler = {
                 return true;
             }
         } else {
-            creep.say('🚚');
-            movement.moveToWithCache(creep, targetCreep);
+            // Check if the builder has moved significantly since last update
+            const lastUpdated = request.lastUpdated || 0;
+            const timeSinceUpdate = Game.time - lastUpdated;
+            
+            // If it's been a while since the position was updated, move to the actual builder position
+            if (timeSinceUpdate > 10) {
+                creep.say('🔍');
+                movement.moveToWithCache(creep, targetCreep);
+            } else {
+                creep.say('🚚');
+                movement.moveToWithCache(creep, targetCreep);
+            }
             return true;
         }
         

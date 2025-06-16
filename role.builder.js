@@ -7,20 +7,48 @@ var roleBuilder = {
         if(creep.memory.harvesting && creep.store.getFreeCapacity() === 0) {
             creep.memory.harvesting = false;
             delete creep.memory.sourceId;
+            delete creep.memory.waitStartTime;
             this.assignTask(creep);
             // Register energy request as soon as we start building
             this.registerEnergyRequest(creep);
         } else if(!creep.memory.harvesting && creep.store[RESOURCE_ENERGY] === 0) {
-            creep.memory.harvesting = true;
-            delete creep.memory.task; // Clear task when harvesting
-            // Clear any existing energy request when we're not building
-            this.clearRequest(creep);
+            // Check if there are haulers in the room
+            const haulers = _.filter(Game.creeps, c => c.memory.role === 'hauler' && c.room.name === creep.room.name).length;
+            
+            // If no haulers, go harvest immediately
+            if (haulers === 0) {
+                creep.memory.harvesting = true;
+                delete creep.memory.task;
+                delete creep.memory.waitStartTime;
+                this.clearRequest(creep);
+            } else {
+                // Start waiting timer if not already set
+                if (!creep.memory.waitStartTime) {
+                    creep.memory.waitStartTime = Game.time;
+                    // Register energy request
+                    this.registerEnergyRequest(creep);
+                    creep.say('⏳');
+                }
+                
+                // Check if we've waited long enough
+                if (Game.time - creep.memory.waitStartTime > 30) {
+                    creep.memory.harvesting = true;
+                    delete creep.memory.task;
+                    delete creep.memory.waitStartTime;
+                    this.clearRequest(creep);
+                    creep.say('⌛');
+                } else {
+                    // Stay near the work site while waiting
+                    this.waitNearWorksite(creep);
+                    return; // Skip the rest of the function
+                }
+            }
         }
     
         if(creep.memory.harvesting) {
             utility.harvestEnergy(creep);
         } else {
-            // Register energy request when below 75% capacity while working
+            // Register energy request when below 90% capacity while working
             if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.90) {
                 this.registerEnergyRequest(creep);
             }
@@ -35,12 +63,15 @@ var roleBuilder = {
             Memory.rooms[creep.room.name].energyRequests = {};
         }
         
-        // Create or update request
+        // Create or update request with additional information
         Memory.rooms[creep.room.name].energyRequests[creep.id] = {
             id: creep.id,
             pos: {x: creep.pos.x, y: creep.pos.y, roomName: creep.room.name},
             amount: creep.store.getFreeCapacity(RESOURCE_ENERGY),
-            timestamp: Game.time
+            timestamp: Game.time,
+            task: creep.memory.task || 'unknown',
+            working: creep.memory.working || false,
+            lastUpdated: Game.time
         };
     },
     
@@ -156,6 +187,18 @@ var roleBuilder = {
         if (!creep.memory.task) {
             this.assignTask(creep);
         }
+        
+        // Update position in energy request if it exists
+        if (Memory.rooms[creep.room.name].energyRequests && 
+            Memory.rooms[creep.room.name].energyRequests[creep.id]) {
+            Memory.rooms[creep.room.name].energyRequests[creep.id].pos = {
+                x: creep.pos.x, 
+                y: creep.pos.y, 
+                roomName: creep.room.name
+            };
+            Memory.rooms[creep.room.name].energyRequests[creep.id].lastUpdated = Game.time;
+        }
+        
         // Execute based on assigned task
         switch(creep.memory.task) {
             case "repairing":                
@@ -170,7 +213,6 @@ var roleBuilder = {
             case "awayTeam":
                 this.performAway(creep);
                 break;
-
         }
     },
 
@@ -303,7 +345,63 @@ var roleBuilder = {
             creep.memory.working = true;
         }
     },
-
+    
+    waitNearWorksite: function(creep) {
+        let target = null;
+        
+        // Find the appropriate target based on the creep's task
+        switch(creep.memory.task) {
+            case "building":
+                // Find the construction site the creep was working on
+                const sites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                if (sites.length > 0) {
+                    // Use the same prioritization logic as in performBuild
+                    let prioritizedSites = sites.map(site => {
+                        let priority = 0;
+                        if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK].includes(site.structureType)) {
+                            priority -= 700;
+                        }
+                        let completionPercentage = site.progress / site.progressTotal;
+                        priority += (1 - completionPercentage) * 100;
+                        return { site, priority };
+                    }).sort((a, b) => a.priority - b.priority);
+                    
+                    target = prioritizedSites[0].site;
+                }
+                break;
+                
+            case "repairing":
+                // Find the structure the creep was repairing
+                const priorities = [STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_STORAGE];
+                const priorityTarget = creep.room.find(FIND_STRUCTURES, {
+                    filter: s => priorities.includes(s.structureType) && s.hits < s.hitsMax
+                })[0];
+                
+                if (priorityTarget) {
+                    target = priorityTarget;
+                } else {
+                    const damagedStructures = creep.room.find(FIND_STRUCTURES, {
+                        filter: s => s.hits < s.hitsMax
+                    });
+                    if (damagedStructures.length > 0) {
+                        target = damagedStructures[0];
+                    }
+                }
+                break;
+                
+            case "upgrading":
+                target = creep.room.controller;
+                break;
+        }
+        
+        // If we found a target, wait near it
+        if (target) {
+            if (creep.pos.getRangeTo(target) > 3) {
+                movement.moveToWithCache(creep, target, 3);
+            }
+            creep.say('⏳' + (30 - (Game.time - creep.memory.waitStartTime)));
+        }
+    }
 };
 
 module.exports = roleBuilder;
