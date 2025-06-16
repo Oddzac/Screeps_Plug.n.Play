@@ -27,7 +27,7 @@ var marketManager = {
 
         //Daily
         if (Game.time % 28800 === 0) {
-            
+            this.updateResourceNeeds();
         }
         
     },
@@ -60,7 +60,21 @@ var marketManager = {
         }
 
         const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+        
+        // Safeguard: Check if we have any terminals
+        if (!terminals || terminals.length === 0) {
+            console.log('No terminals available in any room. Cannot proceed with market operations.');
+            return;
+        }
+        
         const masterTerminal = terminals[0];
+        
+        // Safeguard: Check if masterTerminal has a room
+        if (!masterTerminal.room) {
+            console.log('Master terminal has no room. Cannot proceed with market operations.');
+            return;
+        }
+        
         const MAX_CREDIT_SPEND_RATIO = 0.01; // Max spend ratio (1% of total credits)
         const DISCOUNT_THRESHOLD = 0.50; // Listings must be at least 50% below average price
         
@@ -69,8 +83,20 @@ var marketManager = {
             console.log('Insufficient credits to consider purchases.');
             return;
         }
-    
-        Object.keys(Memory.marketData.resources).forEach(resource => {
+        
+        // Get prioritized resources
+        const priorityList = this.prioritizeResources();
+        
+        // Create a set of priority resources for quick lookup
+        const priorityResources = new Set(priorityList.map(p => p.resource));
+        
+        // Combine priority resources with other resources
+        const resourcesInOrder = [
+            ...priorityList.map(p => p.resource),
+            ...Object.keys(Memory.marketData.resources).filter(r => !priorityResources.has(r))
+        ];
+        
+        resourcesInOrder.forEach(resource => {
             const resourceData = Memory.marketData.resources[resource];
             const avgPrice = resourceData.avgPrice;
             const maxPriceToPay = avgPrice * (1 - DISCOUNT_THRESHOLD);
@@ -88,16 +114,29 @@ var marketManager = {
                 let maxAmountCanBuy = Math.floor(maxSpend / orderToBuy.price);
                 let amountToBuy = maxAmountCanBuy;
                 let transactionCost, totalCost;
+                
+                // Safeguard: Check if orderToBuy has a roomName
+                if (!orderToBuy.roomName) {
+                    console.log(`[Error] Order ${orderToBuy.id} has no roomName. Skipping.`);
+                    return;
+                }
+                
                 // Adjust amountToBuy based on available energy for transport
-                do {
-                    transactionCost = Game.market.calcTransactionCost(amountToBuy, masterTerminal.room.name, orderToBuy.roomName);
-                    totalCost = orderToBuy.price * amountToBuy + transactionCost;
-                    if (totalCost > maxSpend || transactionCost > masterTerminal.store[RESOURCE_ENERGY]) {
-                        amountToBuy--;  // Decrease the amount to buy if over limits
-                    } else {
-                        break; // If within budget, proceed
-                    }
-                } while (amountToBuy > 0);
+                try {
+                    do {
+                        transactionCost = Game.market.calcTransactionCost(amountToBuy, masterTerminal.room.name, orderToBuy.roomName);
+                        totalCost = orderToBuy.price * amountToBuy + transactionCost;
+                        if (totalCost > maxSpend || transactionCost > masterTerminal.store[RESOURCE_ENERGY]) {
+                            amountToBuy--;  // Decrease the amount to buy if over limits
+                        } else {
+                            break; // If within budget, proceed
+                        }
+                    } while (amountToBuy > 0);
+                } catch (e) {
+                    console.log(`[Error] Failed to calculate transaction cost: ${e}. Skipping purchase.`);
+                    return;
+                }
+                
                 if (amountToBuy > 0) {
                    if (!orderToBuy || !Game.market.getOrderById(orderToBuy.id)) {
                        console.log(`[Error] The order ID ${orderToBuy.id} is not valid or the order has been removed.`);
@@ -150,9 +189,37 @@ var marketManager = {
             return;
         }
 
+        // Initialize resource needs if not already done
+        if (!Memory.resourceNeeds) {
+            this.initResourceNeeds();
+        }
+
         let threshold;
         for (const resourceType in terminal.store) {
-            threshold = resourceType === RESOURCE_ENERGY ? 10000 : 0;
+            // Check if this is a resource we want to keep
+            let keepAmount = 0;
+            
+            // Check basic resources
+            if (Memory.resourceNeeds.basic[resourceType]) {
+                keepAmount = Memory.resourceNeeds.basic[resourceType];
+            }
+            
+            // Check lab resources
+            if (Memory.resourceNeeds.labs[resourceType]) {
+                keepAmount = Math.max(keepAmount, Memory.resourceNeeds.labs[resourceType]);
+            }
+            
+            // Check boost resources
+            if (Memory.resourceNeeds.boosts[resourceType]) {
+                keepAmount = Math.max(keepAmount, Memory.resourceNeeds.boosts[resourceType]);
+            }
+            
+            // Default threshold for energy
+            if (resourceType === RESOURCE_ENERGY) {
+                keepAmount = Math.max(keepAmount, 10000);
+            }
+            
+            threshold = keepAmount;
 
             if (terminal.store[resourceType] > threshold) {
                 this.prepareToSell(room, resourceType, terminal.store[resourceType] - threshold);
@@ -186,6 +253,127 @@ var marketManager = {
         
         console.log(`Trade executed for ${resourceType}. Credits earned: ${creditsEarned}`);
         this.updatePL();
+    },
+    
+    // Define essential resources for different RCL levels
+    initResourceNeeds: function() {
+        if (!Memory.resourceNeeds) {
+            Memory.resourceNeeds = {
+                // Basic resources needed at all levels
+                basic: {
+                    [RESOURCE_ENERGY]: 10000,
+                    [RESOURCE_OXYGEN]: 1000,
+                    [RESOURCE_HYDROGEN]: 1000,
+                    [RESOURCE_UTRIUM]: 1000,
+                    [RESOURCE_LEMERGIUM]: 1000,
+                    [RESOURCE_KEANIUM]: 1000,
+                    [RESOURCE_ZYNTHIUM]: 1000,
+                    [RESOURCE_CATALYST]: 1000
+                },
+                // Resources for specific purposes
+                labs: {},
+                boosts: {},
+                // Track what's reserved for specific purposes
+                reserved: {}
+            };
+        }
+    },
+    
+    // Update resource needs based on current RCL
+    updateResourceNeeds: function() {
+        this.initResourceNeeds();
+        
+        // Update needs based on current RCL
+        const myRooms = Object.values(Game.rooms).filter(r => r.controller && r.controller.my);
+        const maxRCL = Math.max(...myRooms.map(r => r.controller.level), 0);
+        
+        // Adjust resource needs based on RCL
+        if (maxRCL >= 6) {
+            // Labs are available at RCL 6
+            Memory.resourceNeeds.labs = {
+                // Common lab reactions
+                [RESOURCE_HYDROXIDE]: 1000,  // OH: O + H
+                [RESOURCE_ZYNTHIUM_KEANITE]: 500,  // ZK: Z + K
+                [RESOURCE_UTRIUM_LEMERGITE]: 500,  // UL: U + L
+            };
+            
+            // Basic boosts
+            Memory.resourceNeeds.boosts = {
+                [RESOURCE_CATALYZED_GHODIUM_ACID]: 500,  // GH2O: Upgrade controller
+                [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: 500,  // ZH2O: Dismantle
+                [RESOURCE_CATALYZED_LEMERGIUM_ACID]: 500,  // LH2O: Heal
+                [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: 500,  // KO: Ranged attack
+                [RESOURCE_CATALYZED_UTRIUM_ACID]: 500,  // UH2O: Attack
+            };
+        }
+        
+        console.log(`Updated resource needs for RCL ${maxRCL}`);
+    },
+    
+    // Prioritize resources based on current needs
+    prioritizeResources: function() {
+        if (!Memory.resourceNeeds) {
+            this.initResourceNeeds();
+        }
+        
+        // Create a priority list of resources to buy
+        let priorityList = [];
+        
+        // First, check what we're missing from our basic needs
+        const terminals = _.filter(Game.structures, s => s.structureType === STRUCTURE_TERMINAL);
+        if (terminals.length === 0) return [];
+        
+        const masterTerminal = terminals[0];
+        if (!masterTerminal || !masterTerminal.room) return [];
+        
+        // Check basic resources
+        for (const resource in Memory.resourceNeeds.basic) {
+            const needed = Memory.resourceNeeds.basic[resource];
+            const current = masterTerminal.store[resource] || 0;
+            if (current < needed) {
+                priorityList.push({
+                    resource: resource,
+                    priority: 1,
+                    amount: needed - current
+                });
+            }
+        }
+        
+        // Check lab resources if we have labs
+        const myRooms = Object.values(Game.rooms).filter(r => r.controller && r.controller.my);
+        const hasLabs = myRooms.some(r => r.find(FIND_MY_STRUCTURES, {filter: s => s.structureType === STRUCTURE_LAB}).length > 0);
+        
+        if (hasLabs) {
+            for (const resource in Memory.resourceNeeds.labs) {
+                const needed = Memory.resourceNeeds.labs[resource];
+                const current = masterTerminal.store[resource] || 0;
+                if (current < needed) {
+                    priorityList.push({
+                        resource: resource,
+                        priority: 2,
+                        amount: needed - current
+                    });
+                }
+            }
+            
+            // Check boost resources
+            for (const resource in Memory.resourceNeeds.boosts) {
+                const needed = Memory.resourceNeeds.boosts[resource];
+                const current = masterTerminal.store[resource] || 0;
+                if (current < needed) {
+                    priorityList.push({
+                        resource: resource,
+                        priority: 3,
+                        amount: needed - current
+                    });
+                }
+            }
+        }
+        
+        // Sort by priority (lower number = higher priority)
+        priorityList.sort((a, b) => a.priority - b.priority);
+        
+        return priorityList;
     },
 
     adjustPrices: function() {
@@ -259,6 +447,7 @@ var marketManager = {
     },
     
 
+
     updateMarketPrices: function() {
         const resources = Object.keys(Memory.marketData.resources);
         resources.forEach(resource => {
@@ -307,6 +496,7 @@ var marketManager = {
         });
     },
     
+
 
 
 
