@@ -6,8 +6,7 @@ var construction = {
         if (!room) return;
         
         // Check if room memory exists
-        if (!Memory.rooms[room.name] || 
-            !Memory.rooms[room.name].phase) {
+        if (!Memory.rooms[room.name] || !Memory.rooms[room.name].phase) {
             console.log(`Room ${room.name} missing memory or phase information`);
             return;
         }
@@ -17,23 +16,17 @@ var construction = {
             Memory.rooms[room.name].construct = {};
         }
         
-        // Initialize structureCount if it doesn't exist
-        if (!Memory.rooms[room.name].construct.structureCount) {
+        // Update structure counts once per 20 ticks to save CPU
+        if (Game.time % 20 === 0 || !Memory.rooms[room.name].construct.structureCount) {
             this.countStructures(room);
         }
         
-        // Check if we have builders available
-        const buildersCount = _.filter(Game.creeps, c => c.memory.role === 'builder' && (c.memory.home === room.name || !c.memory.home)).length;
-        if (buildersCount < 1) {
-            return;
-        }
-        
-        // Get structure counts
+        // Get structure counts and phase
         const structureCount = Memory.rooms[room.name].construct.structureCount;
         const phase = Memory.rooms[room.name].phase.Phase;
         
-        // Log current phase and structure counts for debugging
-        if (Game.time % 100 === 0) {
+        // Log current phase and structure counts for debugging (less frequently)
+        if (Game.time % 500 === 0) {
             console.log(`Room ${room.name} Phase: ${phase}, Extensions: ${structureCount.extensions.built}/${structureCount.extensions.pending}`);
         }
         
@@ -43,63 +36,192 @@ var construction = {
             return; // Too many construction sites already
         }
         
-        // Prioritize construction based on room phase
-        console.log(`Room ${room.name} - Managing construction for phase ${phase}`);
-        
-        // Always check for extensions first if available
-        const extensionsAvailable = this.checkExtensionsAvailable(room);
-        if (extensionsAvailable > 0) {
-            console.log(`Room ${room.name} - Attempting to place extensions (${extensionsAvailable} available)`);
-            if (this.placeExtensions(room)) {
-                return; // Successfully placed an extension
-            }
+        // Check if we have builders available - only check if we're going to build something
+        const buildersCount = _.filter(Game.creeps, c => c.memory.role === 'builder' && (c.memory.home === room.name || !c.memory.home)).length;
+        if (buildersCount < 1) {
+            return;
         }
         
+        // Determine what to build next based on phase and priorities
+        let buildTarget = this.determineBuildTarget(room, phase, structureCount);
+        
+        // Execute the appropriate build function if we have a target
+        if (buildTarget) {
+            this[buildTarget.function](room);
+        }
+    },
+    
+    // Helper function to determine what to build next based on phase and priorities
+    determineBuildTarget: function(room, phase, structureCount) {
+        // Check for extensions first - they're always useful
+        const extensionsAvailable = this.checkExtensionsAvailable(room);
+        if (extensionsAvailable > 0) {
+            return { function: 'placeExtensions', priority: 100 };
+        }
+        
+        // Create an array of possible build targets with priorities
+        let buildTargets = [];
+        
+        // Add potential build targets based on phase
         switch (phase) {
             case 1:
                 // Phase 1: Focus on containers near sources
-                this.placeContainersNearSources(room);
+                if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
+                    buildTargets.push({ function: 'placeContainersNearSources', priority: 90 });
+                }
                 break;
                 
             case 2:
             case 3:
-                // Phase 2-3: Ensure containers are built, then place extensions
+                // Phase 2-3: Ensure containers are built, then place towers
                 if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
-                    this.placeContainersNearSources(room);
+                    buildTargets.push({ function: 'placeContainersNearSources', priority: 90 });
                 }
+                
                 // Place towers if available
-                else if (this.checkTowersAvailable(room) > 0) {
-                    this.placeTower(room);
+                if (this.checkTowersAvailable(room) > 0) {
+                    buildTargets.push({ function: 'placeTower', priority: 80 });
                 }
+                
+                // Add roads between key structures
+                buildTargets.push({ function: 'placeRoads', priority: 70 });
                 break;
                 
             case 4:
                 // Phase 4: Place storage if needed
                 if (structureCount.storage.built < 1 && structureCount.storage.pending < 1) {
-                    this.placeStorage(room);
+                    buildTargets.push({ function: 'placeStorage', priority: 90 });
                 }
+                
+                // Place towers if available
+                if (this.checkTowersAvailable(room) > 0) {
+                    buildTargets.push({ function: 'placeTower', priority: 80 });
+                }
+                
+                // Add roads between key structures
+                buildTargets.push({ function: 'placeRoads', priority: 70 });
                 break;
                 
             case 5:
             case 6:
                 // Phase 5-6: Place links if needed
                 if (structureCount.links.built < 2 && structureCount.links.pending < 1) {
-                    this.placeLinks(room);
+                    buildTargets.push({ function: 'placeLinks', priority: 90 });
                 }
                 
                 // Place towers if available
-                else if (this.checkTowersAvailable(room) > 0) {
-                    this.placeTower(room);
+                if (this.checkTowersAvailable(room) > 0) {
+                    buildTargets.push({ function: 'placeTower', priority: 80 });
                 }
+                
+                // Add roads between key structures
+                buildTargets.push({ function: 'placeRoads', priority: 70 });
                 break;
                 
             default:
                 // Higher phases: Focus on advanced structures
                 if (this.checkTowersAvailable(room) > 0) {
-                    this.placeTower(room);
+                    buildTargets.push({ function: 'placeTower', priority: 90 });
                 }
+                
+                // Add roads between key structures
+                buildTargets.push({ function: 'placeRoads', priority: 80 });
                 break;
         }
+        
+        // Sort by priority (highest first) and return the top target
+        buildTargets.sort((a, b) => b.priority - a.priority);
+        return buildTargets.length > 0 ? buildTargets[0] : null;
+    },
+    
+    // New method to place roads between key structures
+    placeRoads: function(room) {
+        // Check if we've recently placed roads to avoid excessive CPU usage
+        if (Memory.rooms[room.name].lastRoadPlacement && 
+            Game.time - Memory.rooms[room.name].lastRoadPlacement < 1000) {
+            return false;
+        }
+        
+        // Find key structures to connect
+        const spawn = room.find(FIND_MY_SPAWNS)[0];
+        if (!spawn) return false;
+        
+        const sources = room.find(FIND_SOURCES);
+        const controller = room.controller;
+        const storage = room.storage;
+        
+        // Place roads between spawn and sources
+        for (const source of sources) {
+            if (this.placeRoadBetween(room, spawn.pos, source.pos)) {
+                Memory.rooms[room.name].lastRoadPlacement = Game.time;
+                return true;
+            }
+        }
+        
+        // Place road between spawn and controller
+        if (controller && this.placeRoadBetween(room, spawn.pos, controller.pos)) {
+            Memory.rooms[room.name].lastRoadPlacement = Game.time;
+            return true;
+        }
+        
+        // Place road between spawn and storage if it exists
+        if (storage && this.placeRoadBetween(room, spawn.pos, storage.pos)) {
+            Memory.rooms[room.name].lastRoadPlacement = Game.time;
+            return true;
+        }
+        
+        return false;
+    },
+    
+    // Helper method to place a road between two positions
+    placeRoadBetween: function(room, pos1, pos2) {
+        // Find path between positions
+        const path = PathFinder.search(pos1, { pos: pos2, range: 1 }, {
+            plainCost: 2,
+            swampCost: 10,
+            roomCallback: function(roomName) {
+                let room = Game.rooms[roomName];
+                if (!room) return;
+                let costs = new PathFinder.CostMatrix;
+                
+                // Favor existing roads
+                room.find(FIND_STRUCTURES).forEach(function(struct) {
+                    if (struct.structureType === STRUCTURE_ROAD) {
+                        costs.set(struct.pos.x, struct.pos.y, 1);
+                    } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                            (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
+                        costs.set(struct.pos.x, struct.pos.y, 0xff);
+                    }
+                });
+                return costs;
+            }
+        });
+        
+        // Check if path is valid
+        if (path.incomplete) return false;
+        
+        // Place road construction sites along the path
+        // Only place one road per call to avoid excessive CPU usage
+        for (let i = 0; i < path.path.length; i++) {
+            const pos = path.path[i];
+            
+            // Check if there's already a road or construction site here
+            const structures = room.lookForAt(LOOK_STRUCTURES, pos);
+            const hasRoad = structures.some(s => s.structureType === STRUCTURE_ROAD);
+            if (hasRoad) continue;
+            
+            const sites = room.lookForAt(LOOK_CONSTRUCTION_SITES, pos);
+            const hasRoadSite = sites.some(s => s.structureType === STRUCTURE_ROAD);
+            if (hasRoadSite) continue;
+            
+            // Place road construction site
+            const result = room.createConstructionSite(pos, STRUCTURE_ROAD);
+            if (result === OK) {
+                return true; // Successfully placed one road
+            }
+        }
+        
+        return false;
     },
     
     removeAllConstructionSites: function(){
@@ -140,14 +262,17 @@ var construction = {
 
         const structuresCount = Memory.rooms[room.name].construct.structureCount;
         
-        // Ensure all structure types are initialized
-        const structureTypes = ['extensions', 'containers', 'storage', 'extractor', 'links', 'terminal', 'towers'];
-        for (const type of structureTypes) {
-            if (!structuresCount[type]) {
-                structuresCount[type] = {built: 0, pending: 0};
-            }
-        }
-
+        // Define mapping between structure types and memory keys
+        const structureTypeMap = {
+            [STRUCTURE_EXTENSION]: 'extensions',
+            [STRUCTURE_CONTAINER]: 'containers',
+            [STRUCTURE_STORAGE]: 'storage',
+            [STRUCTURE_EXTRACTOR]: 'extractor',
+            [STRUCTURE_LINK]: 'links',
+            [STRUCTURE_TERMINAL]: 'terminal',
+            [STRUCTURE_TOWER]: 'towers'
+        };
+        
         // Reset structure counts
         for (const key in structuresCount) {
             structuresCount[key].built = 0;
@@ -158,42 +283,53 @@ var construction = {
         const structures = room.find(FIND_STRUCTURES);
         const structuresByType = _.groupBy(structures, 'structureType');
         
-        // Count built structures
-        if (structuresByType[STRUCTURE_EXTENSION]) structuresCount.extensions.built = structuresByType[STRUCTURE_EXTENSION].length;
-        if (structuresByType[STRUCTURE_CONTAINER]) structuresCount.containers.built = structuresByType[STRUCTURE_CONTAINER].length;
-        if (structuresByType[STRUCTURE_STORAGE]) structuresCount.storage.built = structuresByType[STRUCTURE_STORAGE].length;
-        if (structuresByType[STRUCTURE_EXTRACTOR]) structuresCount.extractor.built = structuresByType[STRUCTURE_EXTRACTOR].length;
-        if (structuresByType[STRUCTURE_LINK]) structuresCount.links.built = structuresByType[STRUCTURE_LINK].length;
-        if (structuresByType[STRUCTURE_TERMINAL]) structuresCount.terminal.built = structuresByType[STRUCTURE_TERMINAL].length;
-        if (structuresByType[STRUCTURE_TOWER]) structuresCount.towers.built = structuresByType[STRUCTURE_TOWER].length;
+        // Count built structures using the mapping
+        for (const type in structureTypeMap) {
+            if (structuresByType[type]) {
+                structuresCount[structureTypeMap[type]].built = structuresByType[type].length;
+            }
+        }
 
         // Use the same approach for construction sites
         const sites = room.find(FIND_CONSTRUCTION_SITES);
         const sitesByType = _.groupBy(sites, 'structureType');
         
-        // Count construction sites
-        if (sitesByType[STRUCTURE_EXTENSION]) structuresCount.extensions.pending = sitesByType[STRUCTURE_EXTENSION].length;
-        if (sitesByType[STRUCTURE_CONTAINER]) structuresCount.containers.pending = sitesByType[STRUCTURE_CONTAINER].length;
-        if (sitesByType[STRUCTURE_STORAGE]) structuresCount.storage.pending = sitesByType[STRUCTURE_STORAGE].length;
-        if (sitesByType[STRUCTURE_EXTRACTOR]) structuresCount.extractor.pending = sitesByType[STRUCTURE_EXTRACTOR].length;
-        if (sitesByType[STRUCTURE_LINK]) structuresCount.links.pending = sitesByType[STRUCTURE_LINK].length;
-        if (sitesByType[STRUCTURE_TERMINAL]) structuresCount.terminal.pending = sitesByType[STRUCTURE_TERMINAL].length;
-        if (sitesByType[STRUCTURE_TOWER]) structuresCount.towers.pending = sitesByType[STRUCTURE_TOWER].length;
+        // Count construction sites using the mapping
+        for (const type in structureTypeMap) {
+            if (sitesByType[type]) {
+                structuresCount[structureTypeMap[type]].pending = sitesByType[type].length;
+            }
+        }
+        
+        // Store the last update time
+        Memory.rooms[room.name].construct.lastStructureCount = Game.time;
     },
 
     cacheRoomStructures: function(room) {
-        if (!Memory.rooms[room.name] || !Memory.rooms[room.name].lastUpdate || Game.time - Memory.rooms[room.name].lastUpdate > 50) {
-            // Update every 50 ticks or if the room structure is not in memory
-            Memory.rooms[room.name] = {
-                structures: {},
+        if (!Memory.rooms[room.name]) {
+            Memory.rooms[room.name] = {};
+        }
+        
+        // Initialize or update the structures cache
+        if (!Memory.rooms[room.name].structuresCache || 
+            !Memory.rooms[room.name].structuresCache.lastUpdate || 
+            Game.time - Memory.rooms[room.name].structuresCache.lastUpdate > 50) {
+            
+            // Create or reset the structures cache
+            Memory.rooms[room.name].structuresCache = {
+                byType: {},
                 lastUpdate: Game.time
             };
-            room.find(FIND_STRUCTURES).forEach(struct => {
-                if (!Memory.rooms[room.name].structures[struct.structureType]) {
-                    Memory.rooms[room.name].structures[struct.structureType] = [];
-                }
-                Memory.rooms[room.name].structures[struct.structureType].push(struct.id);
-            });
+            
+            // Group structures by type
+            const structures = room.find(FIND_STRUCTURES);
+            const structuresByType = _.groupBy(structures, 'structureType');
+            
+            // Store structure IDs by type
+            for (const type in structuresByType) {
+                Memory.rooms[room.name].structuresCache.byType[type] = 
+                    structuresByType[type].map(s => s.id);
+            }
         }
     },
 
