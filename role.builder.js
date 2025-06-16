@@ -8,6 +8,8 @@ var roleBuilder = {
             creep.memory.harvesting = false;
             delete creep.memory.sourceId;
             delete creep.memory.waitStartTime;
+            // Clear cached target site when switching from harvesting
+            delete creep.memory.targetSiteId;
             this.assignTask(creep);
             // Register energy request as soon as we start building
             this.registerEnergyRequest(creep);
@@ -20,6 +22,8 @@ var roleBuilder = {
                 creep.memory.harvesting = true;
                 delete creep.memory.task;
                 delete creep.memory.waitStartTime;
+                // Clear cached target site when switching to harvesting
+                delete creep.memory.targetSiteId;
                 this.clearRequest(creep);
             } else {
                 // Start waiting timer if not already set
@@ -35,6 +39,8 @@ var roleBuilder = {
                     creep.memory.harvesting = true;
                     delete creep.memory.task;
                     delete creep.memory.waitStartTime;
+                    // Clear cached target site when switching to harvesting
+                    delete creep.memory.targetSiteId;
                     this.clearRequest(creep);
                     creep.say('⌛');
                 } else {
@@ -164,6 +170,9 @@ var roleBuilder = {
         const awayTeamCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'awayTeam');
         const repairingBuildersCount = _.sum(Game.creeps, (c) => c.memory.role === 'builder' && c.memory.task === 'repairing');
     
+        // Store the previous task to detect changes
+        const previousTask = creep.memory.task;
+        
         if(repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
             creep.say("🛠️");
             creep.memory.task = "repairing";
@@ -178,6 +187,11 @@ var roleBuilder = {
         } else {
             creep.say("⚡");
             creep.memory.task = "upgrading";
+        }
+        
+        // If the task has changed, clear the cached target site
+        if (previousTask && previousTask !== creep.memory.task) {
+            delete creep.memory.targetSiteId;
         }
         
         this.performTask(creep);
@@ -291,35 +305,62 @@ var roleBuilder = {
     },
     
     performBuild: function(creep) {
-        let constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-    
-        let prioritizedSites = constructionSites.map(site => {
-            let priority = 0;
-    
-            // Prioritize containers, towers, and extensions
-            if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK].includes(site.structureType)) {
-                priority -= 700; // High priority
+        let targetSite = null;
+        
+        // Check if we already have a cached target site
+        if (creep.memory.targetSiteId) {
+            targetSite = Game.getObjectById(creep.memory.targetSiteId);
+            
+            // If the target no longer exists or is complete, clear it
+            if (!targetSite) {
+                delete creep.memory.targetSiteId;
             }
-    
-            // Next, prioritize based on completion percentage, closer to completion is higher
-            let completionPercentage = site.progress / site.progressTotal;
-            priority += (1 - completionPercentage) * 100; // Subtracting to prioritize higher completion rates
-    
-            // Finally, check for proximity to sources, walls, and swamps
-            let isNearImportantFeatures = site.pos.findInRange(FIND_SOURCES, 2).length > 0 || 
-                                          site.pos.findInRange(FIND_STRUCTURES, 2, {filter: s => s.structureType === STRUCTURE_WALL}).length > 0 ||
-                                          site.room.lookForAtArea(LOOK_TERRAIN, site.pos.y - 1, site.pos.x - 1, site.pos.y + 1, site.pos.x + 1, true).some(t => t.terrain === 'swamp');
-            if (isNearImportantFeatures) {
-                priority -= 300; // Increase priority for being near sources, walls, or swamps
+        }
+        
+        // If we don't have a valid target site, find a new one
+        if (!targetSite) {
+            let constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+            
+            if (constructionSites.length === 0) {
+                // If no construction sites, consider repairing or upgrading
+                delete creep.memory.targetSiteId;
+                this.performRepair(creep) || this.performUpgrade(creep);
+                return;
             }
-    
-            return {
-                site,
-                priority
-            };
-        }).sort((a, b) => a.priority - b.priority); // Sort by priority, higher first
-    
-        let targetSite = prioritizedSites.length > 0 ? prioritizedSites[0].site : null;
+            
+            let prioritizedSites = constructionSites.map(site => {
+                let priority = 0;
+        
+                // Prioritize containers, towers, and extensions
+                if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK].includes(site.structureType)) {
+                    priority -= 700; // High priority
+                }
+        
+                // Next, prioritize based on completion percentage, closer to completion is higher
+                let completionPercentage = site.progress / site.progressTotal;
+                priority += (1 - completionPercentage) * 100; // Subtracting to prioritize higher completion rates
+        
+                // Finally, check for proximity to sources, walls, and swamps
+                let isNearImportantFeatures = site.pos.findInRange(FIND_SOURCES, 2).length > 0 || 
+                                              site.pos.findInRange(FIND_STRUCTURES, 2, {filter: s => s.structureType === STRUCTURE_WALL}).length > 0 ||
+                                              site.room.lookForAtArea(LOOK_TERRAIN, site.pos.y - 1, site.pos.x - 1, site.pos.y + 1, site.pos.x + 1, true).some(t => t.terrain === 'swamp');
+                if (isNearImportantFeatures) {
+                    priority -= 300; // Increase priority for being near sources, walls, or swamps
+                }
+        
+                return {
+                    site,
+                    priority
+                };
+            }).sort((a, b) => a.priority - b.priority); // Sort by priority, higher first
+        
+            targetSite = prioritizedSites.length > 0 ? prioritizedSites[0].site : null;
+            
+            // Cache the target site ID in memory
+            if (targetSite) {
+                creep.memory.targetSiteId = targetSite.id;
+            }
+        }
     
         if (targetSite) {
             // Check if the creep is standing on a road
@@ -348,6 +389,7 @@ var roleBuilder = {
             }
         } else {
             // If no construction sites, consider repairing or upgrading
+            delete creep.memory.targetSiteId;
             this.performRepair(creep) || this.performUpgrade(creep);
         }
     },
@@ -410,21 +452,33 @@ var roleBuilder = {
         // Find the appropriate target based on the creep's task
         switch(creep.memory.task) {
             case "building":
-                // Find the construction site the creep was working on
-                const sites = creep.room.find(FIND_CONSTRUCTION_SITES);
-                if (sites.length > 0) {
-                    // Use the same prioritization logic as in performBuild
-                    let prioritizedSites = sites.map(site => {
-                        let priority = 0;
-                        if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK].includes(site.structureType)) {
-                            priority -= 700;
+                // Check if we have a cached target site
+                if (creep.memory.targetSiteId) {
+                    target = Game.getObjectById(creep.memory.targetSiteId);
+                }
+                
+                // If no cached target or it no longer exists, find a new one
+                if (!target) {
+                    const sites = creep.room.find(FIND_CONSTRUCTION_SITES);
+                    if (sites.length > 0) {
+                        // Use the same prioritization logic as in performBuild
+                        let prioritizedSites = sites.map(site => {
+                            let priority = 0;
+                            if ([STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK].includes(site.structureType)) {
+                                priority -= 700;
+                            }
+                            let completionPercentage = site.progress / site.progressTotal;
+                            priority += (1 - completionPercentage) * 100;
+                            return { site, priority };
+                        }).sort((a, b) => a.priority - b.priority);
+                        
+                        target = prioritizedSites[0].site;
+                        
+                        // Cache the target site ID
+                        if (target) {
+                            creep.memory.targetSiteId = target.id;
                         }
-                        let completionPercentage = site.progress / site.progressTotal;
-                        priority += (1 - completionPercentage) * 100;
-                        return { site, priority };
-                    }).sort((a, b) => a.priority - b.priority);
-                    
-                    target = prioritizedSites[0].site;
+                    }
                 }
                 break;
                 
