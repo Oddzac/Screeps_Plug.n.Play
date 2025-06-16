@@ -21,7 +21,7 @@ var roleBuilder = {
             utility.harvestEnergy(creep);
         } else {
             // Register energy request when below 75% capacity while working
-            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.75) {
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.90) {
                 this.registerEnergyRequest(creep);
             }
             this.performTask(creep);
