@@ -322,6 +322,23 @@ var roleBuilder = {
         let targetSite = prioritizedSites.length > 0 ? prioritizedSites[0].site : null;
     
         if (targetSite) {
+            // Check if the creep is standing on a road
+            const isOnRoad = creep.pos.lookFor(LOOK_STRUCTURES).some(s => s.structureType === STRUCTURE_ROAD);
+            
+            // If we're on a road and within range to build, find a better position
+            if (isOnRoad && creep.pos.inRangeTo(targetSite, 3)) {
+                // Find positions around the construction site that aren't roads
+                const positions = this.findNonRoadPositionsNearTarget(creep, targetSite);
+                
+                if (positions.length > 0) {
+                    // Move to the best non-road position
+                    creep.say('🚶‍♂️');
+                    movement.moveToWithCache(creep, positions[0]);
+                    return;
+                }
+            }
+            
+            // Build if in range, otherwise move to target
             if (creep.build(targetSite) === ERR_NOT_IN_RANGE) {
                 movement.moveToWithCache(creep, targetSite);
                 creep.memory.working = false;
@@ -333,6 +350,47 @@ var roleBuilder = {
             // If no construction sites, consider repairing or upgrading
             this.performRepair(creep) || this.performUpgrade(creep);
         }
+    },
+    
+    // Helper function to find non-road positions near a target
+    findNonRoadPositionsNearTarget: function(creep, target) {
+        const positions = [];
+        const range = 3; // Build range
+        
+        // Check positions in a square around the target
+        for (let x = Math.max(0, target.pos.x - range); x <= Math.min(49, target.pos.x + range); x++) {
+            for (let y = Math.max(0, target.pos.y - range); y <= Math.min(49, target.pos.y + range); y++) {
+                // Skip positions that are too far (outside the build range)
+                const pos = new RoomPosition(x, y, target.pos.roomName);
+                if (!pos.inRangeTo(target, range)) continue;
+                
+                // Skip the position if it's a road or has a creep
+                const hasRoad = pos.lookFor(LOOK_STRUCTURES).some(s => s.structureType === STRUCTURE_ROAD);
+                const hasCreep = pos.lookFor(LOOK_CREEPS).length > 0;
+                const isWall = pos.lookFor(LOOK_TERRAIN)[0] === 'wall';
+                
+                if (!hasRoad && !hasCreep && !isWall) {
+                    // Calculate score based on distance to target and terrain
+                    let score = pos.getRangeTo(target); // Lower is better
+                    
+                    // Prefer plain terrain over swamp
+                    if (pos.lookFor(LOOK_TERRAIN)[0] === 'swamp') {
+                        score += 2;
+                    }
+                    
+                    positions.push({
+                        pos: pos,
+                        score: score
+                    });
+                }
+            }
+        }
+        
+        // Sort positions by score (lower is better)
+        positions.sort((a, b) => a.score - b.score);
+        
+        // Return the positions
+        return positions.map(p => p.pos);
     },
 
 
@@ -396,11 +454,66 @@ var roleBuilder = {
         
         // If we found a target, wait near it
         if (target) {
-            if (creep.pos.getRangeTo(target) > 3) {
+            // Check if the creep is standing on a road
+            const isOnRoad = creep.pos.lookFor(LOOK_STRUCTURES).some(s => s.structureType === STRUCTURE_ROAD);
+            
+            // If on a road, try to move off
+            if (isOnRoad) {
+                this.moveOffRoad(creep, target);
+            } else if (creep.pos.getRangeTo(target) > 3) {
                 movement.moveToWithCache(creep, target, 3);
             }
+            
             creep.say('⏳' + (30 - (Game.time - creep.memory.waitStartTime)));
         }
+    },
+    
+    // Helper function to move a creep off a road while staying in range of the target
+    moveOffRoad: function(creep, target) {
+        // Check all adjacent positions
+        const directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
+        
+        // Shuffle directions to add randomness
+        for (let i = directions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [directions[i], directions[j]] = [directions[j], directions[i]];
+        }
+        
+        for (const direction of directions) {
+            // Calculate the new position
+            const dx = [0, 1, 1, 1, 0, -1, -1, -1][direction - 1];
+            const dy = [-1, -1, 0, 1, 1, 1, 0, -1][direction - 1];
+            const newX = creep.pos.x + dx;
+            const newY = creep.pos.y + dy;
+            
+            // Skip if out of bounds
+            if (newX < 0 || newX > 49 || newY < 0 || newY > 49) {
+                continue;
+            }
+            
+            const newPos = new RoomPosition(newX, newY, creep.room.name);
+            
+            // Check if the new position is in range of the target
+            if (!newPos.inRangeTo(target, 3)) {
+                continue;
+            }
+            
+            // Check if the new position has a road or is blocked
+            const structures = creep.room.lookForAt(LOOK_STRUCTURES, newX, newY);
+            const hasRoad = structures.some(s => s.structureType === STRUCTURE_ROAD);
+            const hasCreep = creep.room.lookForAt(LOOK_CREEPS, newX, newY).length > 0;
+            const terrain = Game.map.getRoomTerrain(creep.room.name);
+            const isWall = terrain.get(newX, newY) === TERRAIN_MASK_WALL;
+            
+            // If the position is valid, move there
+            if (!hasRoad && !hasCreep && !isWall) {
+                creep.move(direction);
+                creep.say('🚶');
+                return true;
+            }
+        }
+        
+        return false;
     }
 };
 

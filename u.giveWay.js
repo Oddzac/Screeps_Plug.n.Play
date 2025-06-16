@@ -22,20 +22,39 @@ Creep.prototype.giveWay = function() {
         return;
     }
     
+    // Check if we're in a traffic jam (multiple creeps around us)
+    const surroundingCreeps = this.pos.findInRange(FIND_MY_CREEPS, 1).length - 1; // -1 to exclude self
+    const isInTrafficJam = surroundingCreeps >= 2;
+    
+    // If we're in a traffic jam and not working, consider moving even without a blocking request
+    if (isInTrafficJam && !this.memory.working && !this.memory.blocking && Game.time % 5 === 0) {
+        // Find a random direction to move to alleviate traffic
+        const validDirections = this.getSmartMoveDirections();
+        if (validDirections.length > 0) {
+            this.say("🚶", true);
+            this.move(validDirections[Math.floor(Math.random() * validDirections.length)]);
+            return;
+        }
+    }
+    
     // No request to move
     if (!this.memory.blocking) {
         return;
     }
     
     // It's an old request that has timed out
-    if (Game.time > this.memory.blocking) {
+    if (typeof this.memory.blocking === 'number' && Game.time > this.memory.blocking) {
         delete this.memory.blocking;
         return;
     }
 
     // Check if the creep is working - don't interrupt important tasks
-    if (this.memory.working) {
-        delete this.memory.blocking;
+    // But if we're in a traffic jam, move anyway after a few ticks of being blocked
+    const blockingTime = typeof this.memory.blocking === 'object' ? 
+        this.memory.blocking.time - Game.time : 0;
+    
+    if (this.memory.working && blockingTime < 3) {
+        // Only stay put if we haven't been blocking for too long
         return;
     }
 
@@ -66,12 +85,23 @@ Creep.prototype.giveWay = function() {
     }
 
     // Get valid directions, prioritizing the preferred direction if available
-    const validDirections = this.getSmartMoveDirections(preferredDirection);
+    // If we're in a traffic jam, be more willing to use swamps
+    const validDirections = this.getSmartMoveDirections(preferredDirection, isInTrafficJam);
     
     if (validDirections.length > 0) {
         // Move in the best direction to get out of the way
         this.say("💢", true);
         this.move(validDirections[0]);
+    } else if (isInTrafficJam) {
+        // If we're in a traffic jam and can't find a good direction, try any valid direction
+        const directions = [TOP, TOP_RIGHT, RIGHT, BOTTOM_RIGHT, BOTTOM, BOTTOM_LEFT, LEFT, TOP_LEFT];
+        for (const dir of directions) {
+            const result = this.move(dir);
+            if (result === OK) {
+                this.say("🏃", true);
+                break;
+            }
+        }
     }
     
     delete this.memory.blocking;
@@ -82,8 +112,10 @@ const offsetsByDirection = [, [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1],
 
 /**
  * Get valid directions for movement, prioritizing the preferred direction
+ * @param {number} preferredDirection - The preferred direction to move in
+ * @param {boolean} isTrafficJam - Whether we're in a traffic jam situation
  */
-Creep.prototype.getSmartMoveDirections = function(preferredDirection) {
+Creep.prototype.getSmartMoveDirections = function(preferredDirection, isTrafficJam = false) {
     // First check if the preferred direction is valid
     const validDirections = [];
     const scoredDirections = [];
@@ -113,14 +145,22 @@ Creep.prototype.getSmartMoveDirections = function(preferredDirection) {
             score += 5; // Prefer roads
         }
         
-        // Check for swamp (avoid if possible)
+        // Check for swamp (avoid if possible, but less penalty in traffic jams)
         const isSwamp = lookResults.some(result => 
             result.type === 'terrain' && result.terrain === 'swamp'
         );
         
         if (isSwamp) {
-            score -= 3; // Avoid swamps
+            // Reduce swamp penalty in traffic jams to encourage using alternative paths
+            score -= isTrafficJam ? 1 : 3;
         }
+        
+        // Check for creeps nearby (avoid crowded areas)
+        const nearbyPos = new RoomPosition(x, y, this.room.name);
+        const nearbyCreeps = nearbyPos.findInRange(FIND_MY_CREEPS, 1).length;
+        
+        // Penalize positions with many nearby creeps
+        score -= nearbyCreeps * 2;
         
         for (const result of lookResults) {
             // Check for impassable terrain
@@ -148,7 +188,19 @@ Creep.prototype.getSmartMoveDirections = function(preferredDirection) {
             
             // Check for other creeps
             if (result.type === 'creep') {
-                isValid = false;
+                // In traffic jams, we might want to swap positions with other creeps
+                if (isTrafficJam) {
+                    const otherCreep = result.creep;
+                    // If the other creep is also stuck and not working, consider it valid
+                    // but with a penalty
+                    if (otherCreep.my && !otherCreep.memory.working) {
+                        score -= 5;
+                    } else {
+                        isValid = false;
+                    }
+                } else {
+                    isValid = false;
+                }
                 break;
             }
         }
@@ -158,6 +210,9 @@ Creep.prototype.getSmartMoveDirections = function(preferredDirection) {
             if (preferredDirection && dir === preferredDirection) {
                 score += 10;
             }
+            
+            // Add randomness to break ties and prevent predictable patterns
+            score += Math.random() * 0.5;
             
             // Add to valid directions
             validDirections.push(dir);
