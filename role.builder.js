@@ -8,17 +8,48 @@ var roleBuilder = {
             creep.memory.harvesting = false;
             delete creep.memory.sourceId;
             this.assignTask(creep);
+            // Register energy request as soon as we start building
+            this.registerEnergyRequest(creep);
         } else if(!creep.memory.harvesting && creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.harvesting = true;
             delete creep.memory.task; // Clear task when harvesting
+            // Clear any existing energy request when we're not building
+            this.clearRequest(creep);
         }
     
         if(creep.memory.harvesting) {
             utility.harvestEnergy(creep);
         } else {
+            // Register energy request when below 75% capacity while working
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.75) {
+                this.registerEnergyRequest(creep);
+            }
             this.performTask(creep);
         }
         creep.giveWay();
+    },
+    
+    registerEnergyRequest: function(creep) {
+        // Initialize the energy request registry if it doesn't exist
+        if (!Memory.rooms[creep.room.name].energyRequests) {
+            Memory.rooms[creep.room.name].energyRequests = {};
+        }
+        
+        // Create or update request
+        Memory.rooms[creep.room.name].energyRequests[creep.id] = {
+            id: creep.id,
+            pos: {x: creep.pos.x, y: creep.pos.y, roomName: creep.room.name},
+            amount: creep.store.getFreeCapacity(RESOURCE_ENERGY),
+            timestamp: Game.time
+        };
+    },
+    
+    clearRequest: function(creep) {
+        // Clear the request when no longer needed
+        if (Memory.rooms[creep.room.name].energyRequests && 
+            Memory.rooms[creep.room.name].energyRequests[creep.id]) {
+            delete Memory.rooms[creep.room.name].energyRequests[creep.id];
+        }
     },
 
     

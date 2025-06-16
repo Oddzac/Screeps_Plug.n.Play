@@ -6,11 +6,9 @@ var giveWay = require("./u.giveWay");
 
 var roleHauler = {
     run: function(creep) {
-
-
-
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
+            delete creep.memory.assignedRequest;
 
         } else if (creep.memory.task === 'linkHauler' || creep.memory.task === 'spawnHauler' && creep.store.getUsedCapacity() > 0) {
             creep.memory.isCollecting = false;
@@ -19,7 +17,7 @@ var roleHauler = {
             creep.memory.isCollecting = false;
         }
 
-        this.signRoom (creep);
+        this.signRoom(creep);
 
         if (Game.time % 50 === 0 && creep.memory.task !== 'spawnHauler' && creep.memory.task !== 'linkHauler') {
             this.assignCollectionTask(creep);
@@ -32,9 +30,142 @@ var roleHauler = {
             this.assignCollectionTarget(creep);
             
         } else {
+            // First check if we need to deliver to spawn structures
+            if (this.deliverToSpawnStructures(creep)) {
+                return;
+            }
+            
+            // Then check if we're assigned to a builder request
+            if (creep.memory.assignedRequest && this.deliverAssignedRequest(creep)) {
+                return;
+            }
+            
+            // Then check for new builder energy requests
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0 && this.checkForEnergyRequests(creep)) {
+                return;
+            }
+            
+            // Finally, proceed with normal resource delivery
             this.deliverResources(creep);
         }
         creep.giveWay();
+    },
+    
+    deliverToSpawnStructures: function(creep) {
+        // First try to fill spawns
+        const spawns = creep.room.find(FIND_MY_SPAWNS, {
+            filter: s => s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        });
+        
+        if (spawns.length > 0) {
+            const spawn = creep.pos.findClosestByPath(spawns);
+            if (creep.transfer(spawn, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                creep.say('🏠');
+                movement.moveToWithCache(creep, spawn);
+            }
+            return true;
+        }
+        
+        // Then try to fill extensions
+        const extensions = creep.room.find(FIND_MY_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_EXTENSION && 
+                         s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        });
+        
+        if (extensions.length > 0) {
+            const extension = creep.pos.findClosestByPath(extensions);
+            if (creep.transfer(extension, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                creep.say('🏠');
+                movement.moveToWithCache(creep, extension);
+            }
+            return true;
+        }
+        
+        // No spawn structures need energy
+        return false;
+    },
+    
+    checkForEnergyRequests: function(creep) {
+        // Check for energy requests
+        if (!Memory.rooms[creep.room.name].energyRequests) {
+            return false;
+        }
+        
+        // Find the oldest unassigned request
+        let oldestRequest = null;
+        let oldestTime = Game.time;
+        
+        for (const requestId in Memory.rooms[creep.room.name].energyRequests) {
+            const request = Memory.rooms[creep.room.name].energyRequests[requestId];
+            
+            // Skip if already assigned
+            if (request.assignedTo) continue;
+            
+            // Find the oldest request
+            if (request.timestamp < oldestTime) {
+                oldestTime = request.timestamp;
+                oldestRequest = request;
+            }
+        }
+        
+        if (oldestRequest) {
+            // Assign this hauler to the request
+            Memory.rooms[creep.room.name].energyRequests[oldestRequest.id].assignedTo = creep.id;
+            creep.memory.assignedRequest = oldestRequest.id;
+            return true;
+        }
+        
+        return false;
+    },
+    
+    deliverAssignedRequest: function(creep) {
+        const requestId = creep.memory.assignedRequest;
+        const roomName = creep.room.name;
+        
+        // Check if request still exists
+        if (!Memory.rooms[roomName].energyRequests || 
+            !Memory.rooms[roomName].energyRequests[requestId]) {
+            delete creep.memory.assignedRequest;
+            return false;
+        }
+        
+        const request = Memory.rooms[roomName].energyRequests[requestId];
+        const targetCreep = Game.getObjectById(requestId);
+        
+        // If target creep no longer exists, clear request
+        if (!targetCreep) {
+            delete Memory.rooms[roomName].energyRequests[requestId];
+            delete creep.memory.assignedRequest;
+            return false;
+        }
+        
+        // Move to target and transfer energy
+        if (creep.pos.isNearTo(targetCreep)) {
+            const transferAmount = Math.min(
+                creep.store.getUsedCapacity(RESOURCE_ENERGY),
+                targetCreep.store.getFreeCapacity(RESOURCE_ENERGY)
+            );
+            
+            const result = creep.transfer(targetCreep, RESOURCE_ENERGY);
+            
+            if (result === OK) {
+                creep.say('🔋');
+                // Clear the assignment but keep the request active if they still need more
+                if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                    delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+                } else {
+                    delete Memory.rooms[roomName].energyRequests[requestId];
+                }
+                delete creep.memory.assignedRequest;
+                return true;
+            }
+        } else {
+            creep.say('🚚');
+            movement.moveToWithCache(creep, targetCreep);
+            return true;
+        }
+        
+        return true;
     },
 
     signRoom: function(creep) {
