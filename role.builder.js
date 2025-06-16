@@ -11,8 +11,10 @@ var roleBuilder = {
             // Clear cached target site when switching from harvesting
             delete creep.memory.targetSiteId;
             this.assignTask(creep);
-            // Register energy request as soon as we start building
-            this.registerEnergyRequest(creep);
+            // Register energy request as soon as we start building (but not for repairing)
+            if (creep.memory.task !== "repairing") {
+                this.registerEnergyRequest(creep);
+            }
         } else if(!creep.memory.harvesting && creep.store[RESOURCE_ENERGY] === 0) {
             // Check if there are haulers in the room
             const haulers = _.filter(Game.creeps, c => c.memory.role === 'hauler' && c.room.name === creep.room.name).length;
@@ -29,8 +31,10 @@ var roleBuilder = {
                 // Start waiting timer if not already set
                 if (!creep.memory.waitStartTime) {
                     creep.memory.waitStartTime = Game.time;
-                    // Register energy request
-                    this.registerEnergyRequest(creep);
+                    // Register energy request (but not for repairing)
+                    if (creep.memory.task !== "repairing") {
+                        this.registerEnergyRequest(creep);
+                    }
                     creep.say('⏳');
                 }
                 
@@ -54,8 +58,9 @@ var roleBuilder = {
         if(creep.memory.harvesting) {
             utility.harvestEnergy(creep);
         } else {
-            // Register energy request when below 90% capacity while working
-            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.90) {
+            // Register energy request when below 90% capacity while working (but not for repairing)
+            if (creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.90 && 
+                creep.memory.task !== "repairing") {
                 this.registerEnergyRequest(creep);
             }
             this.performTask(creep);
@@ -176,6 +181,8 @@ var roleBuilder = {
         if(repairingBuildersCount < 1 && structuresNeedingRepair.length > 0) { // Limit builders focused on maintenance 
             creep.say("🛠️");
             creep.memory.task = "repairing";
+            // Clear any energy requests when switching to repair task
+            this.clearRequest(creep);
         } else if (awayTeamCount < 1 && spawnSites > 0) {
             creep.say("🗺️");
             creep.memory.task = "awayTeam";
@@ -264,6 +271,9 @@ var roleBuilder = {
     },
     
     performRepair: function(creep) {
+        // Clear any existing energy request when repairing
+        this.clearRequest(creep);
+        
         let priorities = [STRUCTURE_TOWER, STRUCTURE_SPAWN,STRUCTURE_EXTENSION, STRUCTURE_STORAGE];
         let priorityRepairTarget = creep.room.find(FIND_STRUCTURES, {
             filter: (structure) => priorities.includes(structure.structureType) && structure.hits < structure.hitsMax
@@ -296,11 +306,21 @@ var roleBuilder = {
                 // If no structures need repair, check for construction sites or upgrade
                 let constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
                 if (constructionSites.length > 0) {
+                    // Switch to building task
+                    creep.memory.task = "building";
                     this.performBuild(creep);
                 } else {
+                    // Switch to upgrading task
+                    creep.memory.task = "upgrading";
                     this.performUpgrade(creep);
                 }
             }
+        }
+        
+        // When out of energy, go harvest directly instead of waiting for haulers
+        if (creep.store[RESOURCE_ENERGY] === 0) {
+            creep.memory.harvesting = true;
+            delete creep.memory.waitStartTime;
         }
     },
     
