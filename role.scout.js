@@ -1,5 +1,5 @@
 // TODO
-// Expand scouting logic to track owned rooms as 
+
 
 
 var roleScout = {
@@ -37,6 +37,7 @@ var roleScout = {
         console.log('Scout in target room:', creep.memory.initialRoom);
 
         // Attempt to move towards the controller if it's an unowned room
+        const controller = creep.room.controller;
         if (controller && !controller.owner) {
           // Initialize move attempt counter if not already set
           if (creep.memory.moveAttempts === undefined) {
@@ -93,6 +94,7 @@ var roleScout = {
         if (!creep.memory.initialRoom) {
             creep.memory.initialRoom = creep.room.name;
         }
+        
         if (!creep.memory.availableExits) {
             // Store available exits from the initial room
             creep.memory.availableExits = Game.map.describeExits(creep.memory.initialRoom);
@@ -103,41 +105,39 @@ var roleScout = {
             creep.memory.exploredRooms = [];
         }
 
-        if (!creep.memory.exitOrder) {
-            // Define the order in which exits will be checked based on the clockwise direction
-            creep.memory.exitOrder = [FIND_EXIT_RIGHT, FIND_EXIT_BOTTOM, FIND_EXIT_LEFT, FIND_EXIT_TOP];
+        // Get the actual available directions based on the room's exits
+        if (!creep.memory.availableDirections) {
+            creep.memory.availableDirections = Object.keys(creep.memory.availableExits);
         }
-
-        if (!creep.memory.currentExitIndex) {
-            creep.memory.currentExitIndex = 0; // Start with the first direction in the order
-        }
-    
-        // Increment and loop the index to cycle through directions
-        let attemptedAllDirections = false;
-        let nextRoom = null;
-        while (!nextRoom && !attemptedAllDirections) {
-            const direction = creep.memory.exitOrder[creep.memory.currentExitIndex];
-            nextRoom = creep.memory.availableExits[direction];
-            if (!nextRoom || creep.memory.exploredRooms.includes(nextRoom)) {
-                // If the room is not available or already explored, move to the next direction
-                creep.memory.currentExitIndex = (creep.memory.currentExitIndex + 1) % creep.memory.exitOrder.length;
-                nextRoom = null; // Reset nextRoom to null to continue the search
-                // Check if we have attempted all directions
-                attemptedAllDirections = creep.memory.currentExitIndex === 0;
-            }
-        }
-    
-        if (nextRoom) {
-            // Add the room to the list of explored rooms to avoid revisiting
-            creep.memory.exploredRooms.push(nextRoom);
-            
-            return nextRoom;
-        } else {
-            // Mark scouting as complete if all directions have been attempted
+        
+        // If there are no available directions, mark scouting as complete
+        if (creep.memory.availableDirections.length === 0) {
+            if (!Memory.rooms[creep.memory.initialRoom]) Memory.rooms[creep.memory.initialRoom] = {};
             Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
-
             return null;
         }
+        
+        // Try each available direction until we find an unexplored room
+        for (let i = 0; i < creep.memory.availableDirections.length; i++) {
+            const direction = creep.memory.availableDirections[i];
+            const nextRoom = creep.memory.availableExits[direction];
+            
+            // Skip if this room has already been explored
+            if (nextRoom && !creep.memory.exploredRooms.includes(nextRoom)) {
+                // Add the room to the list of explored rooms to avoid revisiting
+                creep.memory.exploredRooms.push(nextRoom);
+                
+                // Remove this direction from available directions
+                creep.memory.availableDirections.splice(i, 1);
+                
+                return nextRoom;
+            }
+        }
+        
+        // If we've explored all available rooms, mark scouting as complete
+        if (!Memory.rooms[creep.memory.initialRoom]) Memory.rooms[creep.memory.initialRoom] = {};
+        Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
+        return null;
     },
             
     recordRoomInfo: function(creep) {

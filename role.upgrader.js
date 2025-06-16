@@ -9,8 +9,10 @@ var roleUpgrader = {
             creep.memory.harvestingTicks = 0;
         }
 
-        if (Game.cpu.bucket === 10000) {
-            this.genPix(creep);
+        if (Game.time % 25 === 0) {
+            if (Game.cpu.bucket === 10000) {
+                this.genPix(creep);
+            }
         }
 
         // Check if the creep is currently harvesting or needs to start harvesting
@@ -32,7 +34,14 @@ var roleUpgrader = {
         }
 
         if (creep.memory.harvesting) {
-            utility.harvestEnergy(creep);
+            // Check if spawner is available for energy withdrawal
+            if (Memory.rooms[creep.room.name] && 
+                Memory.rooms[creep.room.name].spawning && 
+                Memory.rooms[creep.room.name].spawning.nextSpawnRole === null) {
+                this.withdrawFromSpawner(creep);
+            } else {
+                utility.harvestEnergy(creep);
+            }
             // Increment the harvestingTicks counter if still harvesting
             creep.memory.harvestingTicks++;
         } else {
@@ -41,6 +50,24 @@ var roleUpgrader = {
             creep.memory.harvestingTicks = 0;
         }
         creep.giveWay();
+    },
+    
+    withdrawFromSpawner: function(creep) {
+        const spawns = creep.room.find(FIND_MY_SPAWNS);
+        if (spawns.length > 0) {
+            const spawn = spawns[0];
+            if (spawn.store.getUsedCapacity(RESOURCE_ENERGY) > 200) { // Leave some energy for spawning
+                if (creep.withdraw(spawn, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                    creep.say('🔌');
+                    movement.moveToWithCache(creep, spawn.pos);
+                } else {
+                    creep.memory.harvesting = false;
+                    creep.memory.harvestingTicks = 0;
+                }
+                return true;
+            }
+        }
+        return false;
     },
 
     upgradeController: function(creep) {
