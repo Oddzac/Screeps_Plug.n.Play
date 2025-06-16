@@ -104,6 +104,7 @@ calculateDesiredCounts: function(room) {
     const scouted = roomMemory.scoutingComplete;
     const roomClaimsAvailable = Memory.conquest && Memory.conquest.roomClaimsAvailable ? Memory.conquest.roomClaimsAvailable : 0;
     
+    // Allow scouting at any phase - information gathering is always useful
     if (!scouted) {
         const scouts = _.filter(Game.creeps, creep => creep.memory.role === 'scout' && creep.memory.home === room.name).length;
         if (scouts < 1) {
@@ -111,7 +112,9 @@ calculateDesiredCounts: function(room) {
         }
     }
     
-    if (phase >= 4 && roomClaimsAvailable > 0) {
+    // Only spawn claimers at phase 5+ when we have storage and are more established
+    // This is a reasonable time to expand to a second room
+    if (phase >= 5 && roomClaimsAvailable > 0) {
         const claimers = _.filter(Game.creeps, creep => creep.memory.role === 'claimer' && creep.memory.home === room.name).length;
         if (claimers < 1) {
             desiredCounts.claimer = 1;
