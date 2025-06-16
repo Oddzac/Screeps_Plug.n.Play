@@ -246,17 +246,33 @@ global.Connect = function(roomName, pointA, pointB) {
 
 
 global.Refresh = function() {
+    // Clear path cache
+    memories.clearPathCache();
+    
+    // Update memory
     memories.immediateMemory();
     memories.shortTerm();
     memories.longTerm();
+    
+    // Update market data
     terminals.updateMarketPrices();
+    
+    // Update room-specific data
     for (const roomName in Game.rooms) {
         const room = Game.rooms[roomName];
 
         if(room.terminal && room.controller && room.controller.my) {
             terminals.adjustPrices(room);
         }
+        
+        // Force update structure counts and phase
+        if(room.controller && room.controller.my) {
+            memories.updateStructureCounts(room);
+            memories.updateRoomPhase(room);
+        }
     }
+    
+    console.log('Refresh complete: Memory updated, path cache cleared, structure counts updated');
 }
 
 global.Rebuild = function(roomName) {

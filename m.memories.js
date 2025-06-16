@@ -161,6 +161,21 @@ var memories = {
             }
         }
     },
+    
+    // Clear all path caches
+    clearPathCache: function() {
+        if (Memory.pathCache) {
+            Memory.pathCache = {};
+            console.log('Path cache cleared');
+        }
+        
+        // Also reset any creep stuck counters
+        for (const name in Game.creeps) {
+            if (Game.creeps[name].memory.stuckCount) {
+                delete Game.creeps[name].memory.stuckCount;
+            }
+        }
+    },
 
         
     //Initialize Memory
