@@ -81,16 +81,27 @@ var roleHarvester = {
     },
 
     transferResources: function(creep) {
-        var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        // First priority: spawns and extensions
+        let target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType === STRUCTURE_SPAWN || 
-                        structure.structureType === STRUCTURE_EXTENSION ||
-                        structure.structureType === STRUCTURE_CONTAINER ||
-                        structure.structureType === STRUCTURE_STORAGE || 
-                        structure.structureType === STRUCTURE_LINK) && 
-                        _.sum(structure.store) < structure.storeCapacity; // Checks if the structure is not full
+                        structure.structureType === STRUCTURE_EXTENSION) && 
+                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
             }
         });
+        
+        // Second priority: links, containers, storage
+        if(!target) {
+            target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType === STRUCTURE_LINK || 
+                            structure.structureType === STRUCTURE_CONTAINER ||
+                            structure.structureType === STRUCTURE_STORAGE) && 
+                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                }
+            });
+        }
+        
         if(target) {
             // Attempt to transfer each resource type the creep is carrying
             for(const resourceType in creep.store) {

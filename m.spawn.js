@@ -209,7 +209,7 @@ calculateDesiredCounts: function(room) {
         // Check if we have enough energy
         if (energyAvailable < energyToUse) {
             // Only log this periodically to reduce console spam
-            if (Game.time % 100 === 0 && nextSpawnRole) {
+            if (Game.time % 50 === 0 && nextSpawnRole) {
                 console.log(`Waiting for energy to spawn ${nextSpawnRole} in ${room.name} (${energyAvailable}/${energyToUse})`);
             }
             return;
