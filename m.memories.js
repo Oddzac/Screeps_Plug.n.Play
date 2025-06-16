@@ -321,8 +321,12 @@ var memories = {
         // Update RCL in memory
         roomMemory.phase.RCL = rcl;
         
-        // Update phase based on RCL and structure requirements
+        // First, update structure counts in memory
+        this.updateStructureCounts(room);
+        
+        // Get updated structure counts
         const structureCount = roomMemory.construct.structureCount;
+        const extensionsBuilt = structureCount.extensions.built;
         const containersBuilt = structureCount.containers.built;
         const storageBuilt = structureCount.storage.built;
         const extractorBuilt = structureCount.extractor.built;
@@ -330,70 +334,135 @@ var memories = {
         const terminalBuilt = structureCount.terminal.built;
         const towersBuilt = structureCount.towers.built;
         
-        let newPhase = rcl; // Default to RCL as phase
-        let transitioned = false;
+        // Determine phase based on RCL and structures
+        let newPhase = 1; // Start at phase 1
         
-        // Phase transition logic with proper comparison operators
-        switch (previousPhase) {
-            case 1:
-                // Phase 1 to Phase 2 transition: RCL reaches 2
-                if (rcl >= 2) {
-                    newPhase = 2;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            case 2:
-                // Phase 2 to Phase 3 transition: RCL reaches 3
-                if (rcl >= 3) {
-                    newPhase = 3;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            case 3:
-                // Phase 3 to Phase 4 transition: RCL reaches 4
-                if (rcl >= 4) {
-                    newPhase = 4;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            case 4:
-                // Phase 4 to Phase 5 transition: RCL reaches 5
-                if (rcl >= 5) {
-                    newPhase = 5;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            case 5:
-                if (rcl >= 6) {
-                    newPhase = 6;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            case 6:
-                if (rcl >= 7) {
-                    newPhase = 7;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            case 7:
-                if (rcl >= 8) {
-                    newPhase = 8;
-                    transitioned = (previousPhase !== newPhase);
-                }
-                break;
-            default:
-                newPhase = rcl;
-                break;
+        // Phase determination logic based on RCL and structures
+        if (rcl >= 2 && extensionsBuilt >= 5) {
+            newPhase = 2; // Phase 2: RCL 2 with at least 5 extensions
         }
+        
+        if (rcl >= 3 && extensionsBuilt >= 10 && containersBuilt >= 2) {
+            newPhase = 3; // Phase 3: RCL 3 with at least 10 extensions and 2 containers
+        }
+        
+        if (rcl >= 4 && storageBuilt >= 1) {
+            newPhase = 4; // Phase 4: RCL 4 with storage
+        }
+        
+        if (rcl >= 5 && linksBuilt >= 2) {
+            newPhase = 5; // Phase 5: RCL 5 with at least 2 links
+        }
+        
+        if (rcl >= 6 && terminalBuilt >= 1) {
+            newPhase = 6; // Phase 6: RCL 6 with terminal
+        }
+        
+        if (rcl >= 7) {
+            newPhase = 7; // Phase 7: RCL 7
+        }
+        
+        if (rcl >= 8) {
+            newPhase = 8; // Phase 8: RCL 8
+        }
+        
+        // Check if phase has changed
+        const transitioned = previousPhase !== newPhase;
         
         // Update phase in memory
         roomMemory.phase.Phase = newPhase;
         
         // Log phase transition and perform actions
         if (transitioned) {
-            console.log(`Room ${room.name} has advanced to Phase ${newPhase}.`);
+            console.log(`Room ${room.name} has advanced to Phase ${newPhase} (from Phase ${previousPhase}).`);
             this.handlePhaseTransitionActions(room, newPhase);
         }
+    },
+    
+    // Helper function to update structure counts in memory
+    updateStructureCounts: function(room) {
+        if (!room || !Memory.rooms[room.name]) return;
+        
+        const roomMemory = Memory.rooms[room.name];
+        const structureCount = roomMemory.construct.structureCount;
+        
+        // Find all structures in the room
+        const structures = room.find(FIND_STRUCTURES);
+        
+        // Reset counts
+        structureCount.extensions.built = 0;
+        structureCount.containers.built = 0;
+        structureCount.storage.built = 0;
+        structureCount.extractor.built = 0;
+        structureCount.links.built = 0;
+        structureCount.terminal.built = 0;
+        structureCount.towers.built = 0;
+        
+        // Count each structure type
+        structures.forEach(structure => {
+            switch (structure.structureType) {
+                case STRUCTURE_EXTENSION:
+                    structureCount.extensions.built++;
+                    break;
+                case STRUCTURE_CONTAINER:
+                    structureCount.containers.built++;
+                    break;
+                case STRUCTURE_STORAGE:
+                    structureCount.storage.built++;
+                    break;
+                case STRUCTURE_EXTRACTOR:
+                    structureCount.extractor.built++;
+                    break;
+                case STRUCTURE_LINK:
+                    structureCount.links.built++;
+                    break;
+                case STRUCTURE_TERMINAL:
+                    structureCount.terminal.built++;
+                    break;
+                case STRUCTURE_TOWER:
+                    structureCount.towers.built++;
+                    break;
+            }
+        });
+        
+        // Also count construction sites
+        const sites = room.find(FIND_CONSTRUCTION_SITES);
+        
+        // Reset pending counts
+        structureCount.extensions.pending = 0;
+        structureCount.containers.pending = 0;
+        structureCount.storage.pending = 0;
+        structureCount.extractor.pending = 0;
+        structureCount.links.pending = 0;
+        structureCount.terminal.pending = 0;
+        structureCount.towers.pending = 0;
+        
+        // Count each construction site type
+        sites.forEach(site => {
+            switch (site.structureType) {
+                case STRUCTURE_EXTENSION:
+                    structureCount.extensions.pending++;
+                    break;
+                case STRUCTURE_CONTAINER:
+                    structureCount.containers.pending++;
+                    break;
+                case STRUCTURE_STORAGE:
+                    structureCount.storage.pending++;
+                    break;
+                case STRUCTURE_EXTRACTOR:
+                    structureCount.extractor.pending++;
+                    break;
+                case STRUCTURE_LINK:
+                    structureCount.links.pending++;
+                    break;
+                case STRUCTURE_TERMINAL:
+                    structureCount.terminal.pending++;
+                    break;
+                case STRUCTURE_TOWER:
+                    structureCount.towers.pending++;
+                    break;
+            }
+        });
     },
     
     handlePhaseTransitionActions: function(room, newPhase) {

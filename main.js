@@ -52,6 +52,11 @@ module.exports.loop = function() {
         for (const roomName in Game.rooms) {
             const room = Game.rooms[roomName];
             
+            // Update room phase every tick to ensure it's accurate
+            if (room.controller && room.controller.my) {
+                memories.updateRoomPhase(room);
+            }
+            
             memories.spawnMode(room);
             construction.countStructures(room);
             // Memory Cleanup?
