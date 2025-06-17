@@ -5,7 +5,32 @@ var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
 
 var roleHauler = {
+    // Clean up energy requests by removing non-existent haulers
+    cleanupEnergyRequests: function(roomName) {
+        if (!Memory.rooms[roomName].energyRequests) return;
+        
+        for (const requestId in Memory.rooms[roomName].energyRequests) {
+            const request = Memory.rooms[roomName].energyRequests[requestId];
+            
+            // Skip if no assignedHaulers array
+            if (!request.assignedHaulers) continue;
+            
+            // Filter out non-existent haulers
+            request.assignedHaulers = request.assignedHaulers.filter(id => Game.getObjectById(id));
+            
+            // If assignedTo refers to a non-existent creep, clear it
+            if (request.assignedTo && !Game.getObjectById(request.assignedTo)) {
+                delete request.assignedTo;
+            }
+        }
+    },
+    
     run: function(creep) {
+        // Periodically clean up energy requests (once every 20 ticks)
+        if (Game.time % 20 === 0) {
+            this.cleanupEnergyRequests(creep.room.name);
+        }
+        
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
             delete creep.memory.assignedRequest;
@@ -98,8 +123,15 @@ var roleHauler = {
         for (const requestId in Memory.rooms[creep.room.name].energyRequests) {
             const request = Memory.rooms[creep.room.name].energyRequests[requestId];
             
-            // Skip if already assigned
-            if (request.assignedTo) continue;
+            // Count how many haulers are already assigned to this request
+            let assignedHaulers = 0;
+            if (request.assignedHaulers) {
+                // Count valid haulers (filter out non-existent creeps)
+                assignedHaulers = request.assignedHaulers.filter(id => Game.getObjectById(id)).length;
+            }
+            
+            // Skip if already at the limit of 2 haulers
+            if (assignedHaulers >= 2) continue;
             
             // Calculate priority score (lower is better)
             let score = 0;
@@ -131,8 +163,17 @@ var roleHauler = {
         }
         
         if (bestRequest) {
-            // Assign this hauler to the request
+            // Initialize the assignedHaulers array if it doesn't exist
+            if (!Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedHaulers) {
+                Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedHaulers = [];
+            }
+            
+            // Add this hauler to the assignedHaulers array
+            Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedHaulers.push(creep.id);
+            
+            // Also maintain the legacy assignedTo field for backward compatibility
             Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedTo = creep.id;
+            
             creep.memory.assignedRequest = bestRequest.id;
             return true;
         }
@@ -173,12 +214,26 @@ var roleHauler = {
             
             if (result === OK) {
                 creep.say('🔋');
+                
+                // Remove this hauler from the assignedHaulers array
+                if (request.assignedHaulers) {
+                    const index = request.assignedHaulers.indexOf(creep.id);
+                    if (index > -1) {
+                        request.assignedHaulers.splice(index, 1);
+                    }
+                }
+                
                 // Clear the assignment but keep the request active if they still need more
                 if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                    delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+                    // Only clear assignedTo if it matches this creep's ID
+                    if (request.assignedTo === creep.id) {
+                        delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+                    }
                 } else {
+                    // If the builder is full, delete the entire request
                     delete Memory.rooms[roomName].energyRequests[requestId];
                 }
+                
                 delete creep.memory.assignedRequest;
                 return true;
             }
