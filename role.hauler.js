@@ -77,6 +77,11 @@ var roleHauler = {
             this.cleanupEnergyRequests(creep.room.name);
         }
         
+        // Check for high-priority resources to collect (dropped resources, tombstones, ruins)
+        if (creep.store.getFreeCapacity() > 0 && this.checkForHighPriorityResources(creep)) {
+            return; // If we found and are collecting high-priority resources, skip the rest of the function
+        }
+        
         if (creep.store.getUsedCapacity() === 0) {
             creep.memory.isCollecting = true;
             delete creep.memory.assignedRequest;
@@ -120,6 +125,89 @@ var roleHauler = {
             this.deliverResources(creep);
         }
         creep.giveWay();
+    },
+    
+    // New function to check for and collect high-priority resources
+    checkForHighPriorityResources: function(creep) {
+        // Skip if we're full
+        if (creep.store.getFreeCapacity() === 0) return false;
+        
+        // Skip for specialized haulers that should stick to their assigned tasks
+        if (creep.memory.task === 'linkHauler') return false;
+        
+        let highPriorityTarget = null;
+        let highestValue = 0;
+        
+        // Check for dropped resources
+        const droppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
+            filter: r => r.amount > 50 // Only consider resources with significant amounts
+        });
+        
+        for (const resource of droppedResources) {
+            // Calculate value based on amount and distance
+            const distance = creep.pos.getRangeTo(resource);
+            const value = resource.amount / (distance + 1); // Higher amount and shorter distance = higher value
+            
+            if (value > highestValue) {
+                highestValue = value;
+                highPriorityTarget = resource;
+            }
+        }
+        
+        // Check for tombstones with resources
+        const tombstones = creep.room.find(FIND_TOMBSTONES, {
+            filter: t => _.sum(t.store) > 0
+        });
+        
+        for (const tombstone of tombstones) {
+            const distance = creep.pos.getRangeTo(tombstone);
+            const value = _.sum(tombstone.store) / (distance + 1);
+            
+            if (value > highestValue) {
+                highestValue = value;
+                highPriorityTarget = tombstone;
+            }
+        }
+        
+        // Check for ruins with resources
+        const ruins = creep.room.find(FIND_RUINS, {
+            filter: r => _.sum(r.store) > 0
+        });
+        
+        for (const ruin of ruins) {
+            const distance = creep.pos.getRangeTo(ruin);
+            const value = _.sum(ruin.store) / (distance + 1);
+            
+            if (value > highestValue) {
+                highestValue = value;
+                highPriorityTarget = ruin;
+            }
+        }
+        
+        // If we found a high-priority target, collect from it
+        if (highPriorityTarget) {
+            // Save current task to resume after collecting
+            if (!creep.memory.previousTask) {
+                creep.memory.previousTask = creep.memory.task;
+            }
+            
+            // Temporarily switch to collection mode
+            creep.memory.isCollecting = true;
+            
+            // Collect from the target
+            this.moveToAndCollect(creep, highPriorityTarget);
+            
+            // Signal that we found and are handling a high-priority resource
+            return true;
+        }
+        
+        // If we had a previous task and no high-priority targets now, restore it
+        if (creep.memory.previousTask && !highPriorityTarget) {
+            creep.memory.task = creep.memory.previousTask;
+            delete creep.memory.previousTask;
+        }
+        
+        return false;
     },
     
     deliverToSpawnStructures: function(creep) {
@@ -648,30 +736,64 @@ var roleHauler = {
     // Initialize targets array.
     targets = [];
 
-    // Add dropped resources and tombstones with resources to the targets list.
-    droppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
+    // Add dropped resources with higher priority
+    const droppedResources = creep.room.find(FIND_DROPPED_RESOURCES, {
         filter: (r) => (storageBuilt && r.amount > 20) || (!storageBuilt && r.resourceType === RESOURCE_ENERGY && r.amount > 20)
     });
+    
+    // Add tombstones with resources
     const tombstonesWithResources = creep.room.find(FIND_TOMBSTONES, {
         filter: (t) => _.sum(t.store) > 0
     });
-    const ruinssWithResources = creep.room.find(FIND_RUINS, {
+    
+    // Add ruins with resources
+    const ruinsWithResources = creep.room.find(FIND_RUINS, {
         filter: (t) => _.sum(t.store) > 0
     });
-
-    targets = targets.concat(droppedResources, tombstonesWithResources, ruinssWithResources);
-
-    // Directly work with the assigned container if specified and valid.
+    
+    // Calculate value for each resource source based on amount and distance
+    const valuedTargets = [];
+    
+    // Process dropped resources
+    for (const resource of droppedResources) {
+        const distance = creep.pos.getRangeTo(resource);
+        // Higher priority for dropped resources (multiply by 2)
+        const value = (resource.amount / (distance + 1)) * 2;
+        valuedTargets.push({ target: resource, value: value });
+    }
+    
+    // Process tombstones
+    for (const tombstone of tombstonesWithResources) {
+        const distance = creep.pos.getRangeTo(tombstone);
+        // Higher priority for tombstones (multiply by 1.5)
+        const value = (_.sum(tombstone.store) / (distance + 1)) * 1.5;
+        valuedTargets.push({ target: tombstone, value: value });
+    }
+    
+    // Process ruins
+    for (const ruin of ruinsWithResources) {
+        const distance = creep.pos.getRangeTo(ruin);
+        // Higher priority for ruins (multiply by 1.5)
+        const value = (_.sum(ruin.store) / (distance + 1)) * 1.5;
+        valuedTargets.push({ target: ruin, value: value });
+    }
+    
+    // Add assigned container if it exists and has resources
     if (creep.memory.containerId) {
         const assignedContainer = Game.getObjectById(creep.memory.containerId);
-        if (assignedContainer && _.sum(assignedContainer.store) > 0 && !targets.includes(assignedContainer)) {
-            targets.push(assignedContainer);
+        if (assignedContainer && _.sum(assignedContainer.store) > 0) {
+            const distance = creep.pos.getRangeTo(assignedContainer);
+            const value = _.sum(assignedContainer.store) / (distance + 1);
+            valuedTargets.push({ target: assignedContainer, value: value });
         }
     }
-
-    // Find the closest target and prioritize it.
-    if (targets.length > 0) {
-        target = creep.pos.findClosestByPath(targets);
+    
+    // Sort targets by value (highest first)
+    valuedTargets.sort((a, b) => b.value - a.value);
+    
+    // Select the highest value target
+    if (valuedTargets.length > 0) {
+        target = valuedTargets[0].target;
     } else if (!creep.memory.containerId || creep.memory.task !== 'spawnHauler' && creep.memory.task !== 'linkHauler') {
         // If no targets and no specific task, consider finding a new container to assign.
         const containers = creep.room.find(FIND_STRUCTURES, {
@@ -707,7 +829,12 @@ var roleHauler = {
         let actionResult;
     
         // If room storage does not exist, prevent collecting non-energy resources
-        if (!creep.room.storage && target instanceof Resource && target.resourceType !== RESOURCE_ENERGY) {
+        // Exception: Always collect from tombstones and ruins regardless of resource type
+        if (!creep.room.storage && 
+            target instanceof Resource && 
+            target.resourceType !== RESOURCE_ENERGY && 
+            !(target instanceof Tombstone) && 
+            !(target instanceof Ruin)) {
             console.log('Storage not available. Skipping non-energy resource collection for', creep.name);
             return; // Exit the function to avoid collecting non-energy resources
         }
@@ -740,23 +867,72 @@ var roleHauler = {
             }
             // Proceed to withdraw the selected surplus resource
             actionResult = creep.withdraw(target, resourceType);
-    
         } else if (target instanceof Resource) {
+            // Always prioritize picking up dropped resources
             actionResult = creep.pickup(target);
-    
+            if (actionResult === OK) {
+                creep.say('💰'); // Show a special emoji for picking up dropped resources
+            }
+        } else if (target instanceof Tombstone || target instanceof Ruin) {
+            // For tombstones and ruins, prioritize energy first, then other resources
+            let resourceType = RESOURCE_ENERGY;
+            
+            // Check if there's energy in the store
+            if (target.store[RESOURCE_ENERGY] && target.store[RESOURCE_ENERGY] > 0) {
+                resourceType = RESOURCE_ENERGY;
+            } else {
+                // If no energy, get the most abundant resource
+                resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b, null);
+            }
+            
+            if (resourceType) {
+                actionResult = creep.withdraw(target, resourceType);
+                if (actionResult === OK) {
+                    creep.say('⚱️'); // Special emoji for tombstones/ruins
+                }
+            } else {
+                // No resources available
+                actionResult = ERR_NOT_ENOUGH_RESOURCES;
+            }
         } else if (target.store) {
-            // Withdraw the most abundant resource for post-storage, or energy for pre-storage
-            let resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b, RESOURCE_ENERGY);
-            actionResult = creep.withdraw(target, resourceType);
+            // For containers and other structures with store
+            // Prioritize energy for regular haulers
+            if (creep.memory.task === 'collector' && target.store[RESOURCE_ENERGY] > 0) {
+                actionResult = creep.withdraw(target, RESOURCE_ENERGY);
+            } else {
+                // Otherwise get the most abundant resource
+                let resourceType = Object.keys(target.store).reduce((a, b) => target.store[a] > target.store[b] ? a : b, RESOURCE_ENERGY);
+                actionResult = creep.withdraw(target, resourceType);
+            }
         }
     
         if (actionResult === ERR_NOT_IN_RANGE) {
             movement.moveToWithCache(creep, target);
             creep.say('🔄');
+        } else if (actionResult === OK) {
+            // Successfully collected resources
+            // If we were temporarily collecting high-priority resources, restore previous task
+            if (creep.memory.previousTask) {
+                creep.memory.task = creep.memory.previousTask;
+                delete creep.memory.previousTask;
+                
+                // If we're now full, switch to delivery mode
+                if (creep.store.getFreeCapacity() === 0) {
+                    creep.memory.isCollecting = false;
+                }
+            }
         } else if (actionResult !== OK) {
             // Typically when assigned source becomes empty
-            this.waitNear(creep); // Hold tight. Conditions may change
-            //this.assignCollectionTask(creep); // Re-evaluate collection task
+            // Clear any temporary task assignment
+            if (creep.memory.previousTask) {
+                creep.memory.task = creep.memory.previousTask;
+                delete creep.memory.previousTask;
+            }
+            
+            // Try to find another high-priority resource
+            if (!this.checkForHighPriorityResources(creep)) {
+                this.waitNear(creep); // Hold tight if no other resources found
+            }
         }
     },
     
