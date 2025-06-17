@@ -180,6 +180,16 @@ var roleBuilder = {
             }
         }
         
+        // Get existing assigned haulers if any
+        let existingAssignedHaulers = [];
+        let haulerCount = 0;
+        
+        if (Memory.rooms[creep.room.name].energyRequests[creep.id] && 
+            Memory.rooms[creep.room.name].energyRequests[creep.id].assignedHaulers) {
+            existingAssignedHaulers = Memory.rooms[creep.room.name].energyRequests[creep.id].assignedHaulers;
+            haulerCount = existingAssignedHaulers.length;
+        }
+        
         // Create or update request with additional information
         Memory.rooms[creep.room.name].energyRequests[creep.id] = {
             id: creep.id,
@@ -190,8 +200,8 @@ var roleBuilder = {
             working: creep.memory.working || false,
             lastUpdated: Game.time,
             targetSite: targetSiteInfo,
-            assignedHaulers: Memory.rooms[creep.room.name].energyRequests[creep.id]?.assignedHaulers || [],
-            haulerCount: Memory.rooms[creep.room.name].energyRequests[creep.id]?.assignedHaulers?.length || 0
+            assignedHaulers: existingAssignedHaulers,
+            haulerCount: haulerCount
         };
     },
     
