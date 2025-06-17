@@ -25,14 +25,47 @@ var roleScout = {
         } else {
             console.log('Scout Calling chooseNextRoom for:', creep.memory.initialRoom);
             creep.memory.targetRoom = this.chooseNextRoom(creep);
+            
+            // If no target room is found, mark scouting as complete
+            if (!creep.memory.targetRoom) {
+                if (!Memory.rooms[creep.memory.initialRoom]) Memory.rooms[creep.memory.initialRoom] = {};
+                Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
+                console.log(`Scout in ${creep.room.name} has completed scouting. No more rooms to explore.`);
+                return; // Exit the function early
+            }
         }
     }
 
     // Move to the target room if it's not the current room
     if (creep.room.name !== creep.memory.targetRoom) {
         const exitDir = creep.room.findExitTo(creep.memory.targetRoom);
+        
+        // Check if the exit direction is valid
+        if (exitDir === ERR_NO_PATH || exitDir === ERR_INVALID_ARGS) {
+            console.log(`Scout ${creep.name} cannot find path to ${creep.memory.targetRoom}. Marking as inaccessible.`);
+            
+            // Mark this room as inaccessible in the scout's memory
+            if (!creep.memory.inaccessibleRooms) {
+                creep.memory.inaccessibleRooms = [];
+            }
+            creep.memory.inaccessibleRooms.push(creep.memory.targetRoom);
+            
+            // Reset target room to force choosing a new one
+            creep.memory.targetRoom = null;
+            return;
+        }
+        
         const exit = creep.pos.findClosestByRange(exitDir);
-        creep.moveTo(exit);
+        if (exit) {
+            creep.moveTo(exit);
+        } else {
+            // If no exit found, mark room as inaccessible
+            if (!creep.memory.inaccessibleRooms) {
+                creep.memory.inaccessibleRooms = [];
+            }
+            creep.memory.inaccessibleRooms.push(creep.memory.targetRoom);
+            creep.memory.targetRoom = null;
+        }
     } else if (creep.room.name === creep.memory.targetRoom) {
         console.log('Scout in target room:', creep.memory.initialRoom);
 
@@ -105,6 +138,11 @@ var roleScout = {
             creep.memory.exploredRooms = [];
         }
 
+        if (!creep.memory.inaccessibleRooms) {
+            // Initialize an array to keep track of rooms that are inaccessible
+            creep.memory.inaccessibleRooms = [];
+        }
+
         // Get the actual available directions based on the room's exits
         if (!creep.memory.availableDirections) {
             creep.memory.availableDirections = Object.keys(creep.memory.availableExits);
@@ -117,13 +155,16 @@ var roleScout = {
             return null;
         }
         
-        // Try each available direction until we find an unexplored room
+        // Try each available direction until we find an unexplored and accessible room
         for (let i = 0; i < creep.memory.availableDirections.length; i++) {
             const direction = creep.memory.availableDirections[i];
             const nextRoom = creep.memory.availableExits[direction];
             
-            // Skip if this room has already been explored
-            if (nextRoom && !creep.memory.exploredRooms.includes(nextRoom)) {
+            // Skip if this room has already been explored or is known to be inaccessible
+            if (nextRoom && 
+                !creep.memory.exploredRooms.includes(nextRoom) && 
+                !creep.memory.inaccessibleRooms.includes(nextRoom)) {
+                
                 // Add the room to the list of explored rooms to avoid revisiting
                 creep.memory.exploredRooms.push(nextRoom);
                 
@@ -134,10 +175,22 @@ var roleScout = {
             }
         }
         
-        // If we've explored all available rooms, mark scouting as complete
-        if (!Memory.rooms[creep.memory.initialRoom]) Memory.rooms[creep.memory.initialRoom] = {};
-        Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
-        return null;
+        // Check if we've tried all possible rooms
+        const totalExits = Object.keys(creep.memory.availableExits).length;
+        const exploredCount = creep.memory.exploredRooms.length;
+        const inaccessibleCount = creep.memory.inaccessibleRooms.length;
+        
+        // If all exits have been either explored or found inaccessible, mark scouting as complete
+        if (exploredCount + inaccessibleCount >= totalExits) {
+            if (!Memory.rooms[creep.memory.initialRoom]) Memory.rooms[creep.memory.initialRoom] = {};
+            Memory.rooms[creep.memory.initialRoom].scoutingComplete = true;
+            console.log(`Scout in ${creep.room.name} has completed scouting. Explored: ${exploredCount}, Inaccessible: ${inaccessibleCount}`);
+            return null;
+        }
+        
+        // If we get here, we need to try a different approach - reset and try again
+        creep.memory.availableDirections = Object.keys(creep.memory.availableExits);
+        return this.chooseNextRoom(creep);
     },
             
     recordRoomInfo: function(creep) {

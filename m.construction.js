@@ -1,5 +1,22 @@
 var memories = require('./m.memories');
 
+// RCL structure limits
+const STRUCTURE_LIMITS = {
+    [STRUCTURE_SPAWN]: [0, 1, 1, 1, 1, 1, 1, 2, 3],
+    [STRUCTURE_EXTENSION]: [0, 0, 5, 10, 20, 30, 40, 50, 60],
+    [STRUCTURE_TOWER]: [0, 0, 0, 1, 1, 2, 2, 3, 6],
+    [STRUCTURE_STORAGE]: [0, 0, 0, 0, 1, 1, 1, 1, 1],
+    [STRUCTURE_LINK]: [0, 0, 0, 0, 0, 2, 3, 4, 6],
+    [STRUCTURE_EXTRACTOR]: [0, 0, 0, 0, 0, 0, 1, 1, 1],
+    [STRUCTURE_LAB]: [0, 0, 0, 0, 0, 0, 3, 6, 10],
+    [STRUCTURE_TERMINAL]: [0, 0, 0, 0, 0, 0, 1, 1, 1],
+    [STRUCTURE_CONTAINER]: [5, 5, 5, 5, 5, 5, 5, 5, 5],
+    [STRUCTURE_FACTORY]: [0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [STRUCTURE_OBSERVER]: [0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [STRUCTURE_POWER_SPAWN]: [0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [STRUCTURE_NUKER]: [0, 0, 0, 0, 0, 0, 0, 0, 1]
+};
+
 var construction = {
     
     manageConstruction: function(room) {
@@ -21,13 +38,13 @@ var construction = {
             this.countStructures(room);
         }
         
-        // Get structure counts and phase
+        // Get structure counts and RCL
         const structureCount = Memory.rooms[room.name].construct.structureCount;
-        const phase = Memory.rooms[room.name].phase.Phase;
+        const rcl = room.controller.level;
         
-        // Log current phase and structure counts for debugging (less frequently)
+        // Log current RCL and structure counts for debugging (less frequently)
         if (Game.time % 500 === 0) {
-            console.log(`Room ${room.name} Phase: ${phase}, Extensions: ${structureCount.extensions.built}/${structureCount.extensions.pending}`);
+            console.log(`Room ${room.name} RCL: ${rcl}, Extensions: ${structureCount.extensions.built}/${STRUCTURE_LIMITS[STRUCTURE_EXTENSION][rcl]}`);
         }
         
         // Check for construction sites - limit total number to avoid CPU waste
@@ -42,8 +59,8 @@ var construction = {
             return;
         }
         
-        // Determine what to build next based on phase and priorities
-        let buildTarget = this.determineBuildTarget(room, phase, structureCount);
+        // Determine what to build next based on RCL and priorities
+        let buildTarget = this.determineBuildTarget(room, rcl, structureCount);
         
         // Execute the appropriate build function if we have a target
         if (buildTarget) {
@@ -51,82 +68,56 @@ var construction = {
         }
     },
     
-    // Helper function to determine what to build next based on phase and priorities
-    determineBuildTarget: function(room, phase, structureCount) {
-        // Check for extensions first - they're always useful
-        const extensionsAvailable = this.checkExtensionsAvailable(room);
-        if (extensionsAvailable > 0) {
-            return { function: 'placeExtensions', priority: 100 };
-        }
-        
+    // Helper function to determine what to build next based on RCL and priorities
+    determineBuildTarget: function(room, rcl, structureCount) {
         // Create an array of possible build targets with priorities
         let buildTargets = [];
         
-        // Add potential build targets based on phase
-        switch (phase) {
-            case 1:
-                // Phase 1: Focus on containers near sources
-                if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
-                    buildTargets.push({ function: 'placeContainersNearSources', priority: 90 });
-                }
-                break;
-                
-            case 2:
-            case 3:
-                // Phase 2-3: Ensure containers are built, then place towers
-                if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
-                    buildTargets.push({ function: 'placeContainersNearSources', priority: 90 });
-                }
-                
-                // Place towers if available
-                if (this.checkTowersAvailable(room) > 0) {
-                    buildTargets.push({ function: 'placeTower', priority: 80 });
-                }
-                
-                // Add roads between key structures
-                buildTargets.push({ function: 'placeRoads', priority: 70 });
-                break;
-                
-            case 4:
-                // Phase 4: Place storage if needed
-                if (structureCount.storage.built < 1 && structureCount.storage.pending < 1) {
-                    buildTargets.push({ function: 'placeStorage', priority: 90 });
-                }
-                
-                // Place towers if available
-                if (this.checkTowersAvailable(room) > 0) {
-                    buildTargets.push({ function: 'placeTower', priority: 80 });
-                }
-                
-                // Add roads between key structures
-                buildTargets.push({ function: 'placeRoads', priority: 70 });
-                break;
-                
-            case 5:
-            case 6:
-                // Phase 5-6: Place links if needed
-                if (structureCount.links.built < 2 && structureCount.links.pending < 1) {
-                    buildTargets.push({ function: 'placeLinks', priority: 90 });
-                }
-                
-                // Place towers if available
-                if (this.checkTowersAvailable(room) > 0) {
-                    buildTargets.push({ function: 'placeTower', priority: 80 });
-                }
-                
-                // Add roads between key structures
-                buildTargets.push({ function: 'placeRoads', priority: 70 });
-                break;
-                
-            default:
-                // Higher phases: Focus on advanced structures
-                if (this.checkTowersAvailable(room) > 0) {
-                    buildTargets.push({ function: 'placeTower', priority: 90 });
-                }
-                
-                // Add roads between key structures
-                buildTargets.push({ function: 'placeRoads', priority: 80 });
-                break;
+        // Check for spawn first at RCL 1 if none exists
+        if (rcl >= 1 && (!structureCount.spawns || structureCount.spawns.built === 0) && 
+            (!structureCount.spawns || structureCount.spawns.pending === 0)) {
+            return { function: 'placeSpawn', priority: 200 };
+        }
+        
+        // Check for extensions - they're always useful for energy capacity
+        const extensionsAvailable = this.checkExtensionsAvailable(room);
+        if (extensionsAvailable > 0) {
+            buildTargets.push({ function: 'placeExtensions', priority: 100 });
+        }
+        
+        // Add potential build targets based on RCL
+        if (rcl >= 1) {
+            // RCL 1+: Focus on containers near sources
+            if ((structureCount.containers.built + structureCount.containers.pending) < 2) {
+                buildTargets.push({ function: 'placeContainersNearSources', priority: 95 });
+            }
+        }
+        
+        if (rcl >= 2) {
+            // RCL 2+: Add roads between key structures
+            buildTargets.push({ function: 'placeRoads', priority: 70 });
+        }
+        
+        if (rcl >= 3) {
+            // RCL 3+: Place towers
+            const towersAvailable = this.checkTowersAvailable(room);
+            if (towersAvailable > 0) {
+                buildTargets.push({ function: 'placeTower', priority: 90 });
+            }
+        }
+        
+        if (rcl >= 4) {
+            // RCL 4+: Place storage
+            if (structureCount.storage.built === 0 && structureCount.storage.pending === 0) {
+                buildTargets.push({ function: 'placeStorage', priority: 85 });
+            }
+        }
+        
+        if (rcl >= 5) {
+            // RCL 5+: Place links
+            if (structureCount.links.built < 2 && structureCount.links.pending === 0) {
+                buildTargets.push({ function: 'placeLinks', priority: 80 });
+            }
         }
         
         // Sort by priority (highest first) and return the top target
@@ -235,7 +226,7 @@ var construction = {
 
     //Construction Memories - Structure Awareness
 
-    // Count structures - Container, Storage, Extractor, Link, Terminal, Tower
+    // Count all structure types
     countStructures: function(room) {
         if (!room) return;
         
@@ -250,6 +241,7 @@ var construction = {
         
         if (!Memory.rooms[room.name].construct.structureCount) {
             Memory.rooms[room.name].construct.structureCount = {
+                spawns: {built: 0, pending: 0},
                 extensions: {built: 0, pending: 0},
                 containers: {built: 0, pending: 0},
                 storage: {built: 0, pending: 0},
@@ -257,6 +249,11 @@ var construction = {
                 links: {built: 0, pending: 0},
                 terminal: {built: 0, pending: 0},
                 towers: {built: 0, pending: 0},
+                labs: {built: 0, pending: 0},
+                factory: {built: 0, pending: 0},
+                observer: {built: 0, pending: 0},
+                powerSpawn: {built: 0, pending: 0},
+                nuker: {built: 0, pending: 0}
             };
         }
 
@@ -264,13 +261,19 @@ var construction = {
         
         // Define mapping between structure types and memory keys
         const structureTypeMap = {
+            [STRUCTURE_SPAWN]: 'spawns',
             [STRUCTURE_EXTENSION]: 'extensions',
             [STRUCTURE_CONTAINER]: 'containers',
             [STRUCTURE_STORAGE]: 'storage',
             [STRUCTURE_EXTRACTOR]: 'extractor',
             [STRUCTURE_LINK]: 'links',
             [STRUCTURE_TERMINAL]: 'terminal',
-            [STRUCTURE_TOWER]: 'towers'
+            [STRUCTURE_TOWER]: 'towers',
+            [STRUCTURE_LAB]: 'labs',
+            [STRUCTURE_FACTORY]: 'factory',
+            [STRUCTURE_OBSERVER]: 'observer',
+            [STRUCTURE_POWER_SPAWN]: 'powerSpawn',
+            [STRUCTURE_NUKER]: 'nuker'
         };
         
         // Reset structure counts
@@ -334,9 +337,8 @@ var construction = {
     },
 
     checkExtensionsAvailable: function(room) {
-        // Maximum extensions allowed by controller level
-        const extensionsLimits = [0, 0, 5, 10, 20, 30, 40, 50, 60]; // Indexed by controller level
         const controllerLevel = room.controller.level;
+        const maxAllowed = STRUCTURE_LIMITS[STRUCTURE_EXTENSION][controllerLevel];
 
         // Ensure structure count exists
         if (!Memory.rooms[room.name].construct || !Memory.rooms[room.name].construct.structureCount) {
@@ -349,30 +351,70 @@ var construction = {
         const totalExtensions = extensions + extensionSites;
 
         // Calculate the number of extensions that can still be built
-        const extensionsAvailable = extensionsLimits[controllerLevel] - totalExtensions;
+        const extensionsAvailable = maxAllowed - totalExtensions;
 
         // Log for debugging
         if (Game.time % 100 === 0) {
             console.log(`Room ${room.name} - Extensions: ${extensions} built, ${extensionSites} pending, ${extensionsAvailable} available`);
         }
 
-        return extensionsAvailable;
+        return Math.max(0, extensionsAvailable);
     },
 
     checkTowersAvailable: function(room) {
-        // Maximum towers allowed by controller level
-        const towersLimits = [0, 0, 0, 1, 1, 2, 2, 3, 6]; // Indexed by controller level
         const controllerLevel = room.controller.level;
+        const maxAllowed = STRUCTURE_LIMITS[STRUCTURE_TOWER][controllerLevel];
 
         // Get current number of towers and tower construction sites
-        const towers = Memory.rooms[room.name].construct.structureCount.towers.built;
-        const towerSites = Memory.rooms[room.name].construct.structureCount.towers.pending;
+        const towers = Memory.rooms[room.name].construct.structureCount.towers.built || 0;
+        const towerSites = Memory.rooms[room.name].construct.structureCount.towers.pending || 0;
         const totalTowers = towers + towerSites;
 
         // Calculate the number of towers that can still be built
-        const towersAvailable = towersLimits[controllerLevel] - totalTowers;
+        const towersAvailable = maxAllowed - totalTowers;
 
-        return towersAvailable;
+        return Math.max(0, towersAvailable);
+    },
+    
+    // Generic function to check how many structures of a given type can be built
+    getStructuresAvailable: function(room, structureType) {
+        const rcl = room.controller.level;
+        const maxAllowed = STRUCTURE_LIMITS[structureType][rcl];
+        
+        // Get current count of structures and construction sites
+        let currentCount = 0;
+        
+        // Use the structure count from memory if available
+        if (Memory.rooms[room.name].construct && Memory.rooms[room.name].construct.structureCount) {
+            const structureKey = this.getStructureKeyForType(structureType);
+            if (structureKey && Memory.rooms[room.name].construct.structureCount[structureKey]) {
+                const counts = Memory.rooms[room.name].construct.structureCount[structureKey];
+                currentCount = (counts.built || 0) + (counts.pending || 0);
+            }
+        }
+        
+        return Math.max(0, maxAllowed - currentCount);
+    },
+    
+    // Helper function to get the memory key for a structure type
+    getStructureKeyForType: function(structureType) {
+        const structureKeys = {
+            [STRUCTURE_SPAWN]: 'spawns',
+            [STRUCTURE_EXTENSION]: 'extensions',
+            [STRUCTURE_CONTAINER]: 'containers',
+            [STRUCTURE_STORAGE]: 'storage',
+            [STRUCTURE_TOWER]: 'towers',
+            [STRUCTURE_LINK]: 'links',
+            [STRUCTURE_EXTRACTOR]: 'extractor',
+            [STRUCTURE_LAB]: 'labs',
+            [STRUCTURE_TERMINAL]: 'terminal',
+            [STRUCTURE_FACTORY]: 'factory',
+            [STRUCTURE_OBSERVER]: 'observer',
+            [STRUCTURE_POWER_SPAWN]: 'powerSpawn',
+            [STRUCTURE_NUKER]: 'nuker'
+        };
+        
+        return structureKeys[structureType];
     },
 
     // Site Placement Methods
@@ -761,6 +803,82 @@ var construction = {
             }
         }
         
+        return false;
+    },
+    
+    // Method to place terminal
+    placeTerminal: function(room) {
+        // Find a suitable position for terminal, preferably near storage
+        const storage = room.storage;
+        if (!storage) return false;
+        
+        // Try to place terminal near storage
+        const terrain = room.getTerrain();
+        
+        // Search in a spiral pattern from the storage
+        for (let radius = 2; radius <= 4; radius++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                for (let dy = -radius; dy <= radius; dy++) {
+                    // Only check positions on the edge of the current radius
+                    if (Math.abs(dx) === radius || Math.abs(dy) === radius) {
+                        const x = storage.pos.x + dx;
+                        const y = storage.pos.y + dy;
+                        
+                        // Check if the position is valid
+                        if (x >= 0 && x < 50 && y >= 0 && y < 50 && 
+                            terrain.get(x, y) !== TERRAIN_MASK_WALL) {
+                            
+                            const pos = new RoomPosition(x, y, room.name);
+                            
+                            // Check if the position is already occupied
+                            const structures = room.lookForAt(LOOK_STRUCTURES, x, y);
+                            const constructionSites = room.lookForAt(LOOK_CONSTRUCTION_SITES, x, y);
+                            
+                            if (structures.length === 0 && constructionSites.length === 0) {
+                                const result = room.createConstructionSite(pos, STRUCTURE_TERMINAL);
+                                if (result === OK) {
+                                    console.log(`Placed terminal construction site at ${pos}`);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        console.log(`Failed to place terminal in room ${room.name}`);
+        return false;
+    },
+    
+    // Method to place extractor
+    placeExtractor: function(room) {
+        // Find mineral in the room
+        const minerals = room.find(FIND_MINERALS);
+        if (minerals.length === 0) return false;
+        
+        const mineral = minerals[0];
+        
+        // Check if there's already an extractor on this mineral
+        const extractors = mineral.pos.lookFor(LOOK_STRUCTURES);
+        if (extractors.some(s => s.structureType === STRUCTURE_EXTRACTOR)) {
+            return false; // Extractor already exists
+        }
+        
+        // Check for construction sites
+        const extractorSites = mineral.pos.lookFor(LOOK_CONSTRUCTION_SITES);
+        if (extractorSites.some(s => s.structureType === STRUCTURE_EXTRACTOR)) {
+            return false; // Extractor is already being built
+        }
+        
+        // Place extractor on the mineral
+        const result = room.createConstructionSite(mineral.pos, STRUCTURE_EXTRACTOR);
+        if (result === OK) {
+            console.log(`Placed extractor construction site at ${mineral.pos}`);
+            return true;
+        }
+        
+        console.log(`Failed to place extractor in room ${room.name}`);
         return false;
     },
 
