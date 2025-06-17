@@ -239,22 +239,33 @@ var construction = {
             Memory.rooms[room.name].construct = {};
         }
         
+        // Define the structure keys we need to track
+        const structureKeys = {
+            spawns: true,
+            extensions: true,
+            containers: true,
+            storage: true,
+            extractor: true,
+            links: true,
+            terminal: true,
+            towers: true,
+            labs: true,
+            factory: true,
+            observer: true,
+            powerSpawn: true,
+            nuker: true
+        };
+        
+        // Create or update the structure count object
         if (!Memory.rooms[room.name].construct.structureCount) {
-            Memory.rooms[room.name].construct.structureCount = {
-                spawns: {built: 0, pending: 0},
-                extensions: {built: 0, pending: 0},
-                containers: {built: 0, pending: 0},
-                storage: {built: 0, pending: 0},
-                extractor: {built: 0, pending: 0},
-                links: {built: 0, pending: 0},
-                terminal: {built: 0, pending: 0},
-                towers: {built: 0, pending: 0},
-                labs: {built: 0, pending: 0},
-                factory: {built: 0, pending: 0},
-                observer: {built: 0, pending: 0},
-                powerSpawn: {built: 0, pending: 0},
-                nuker: {built: 0, pending: 0}
-            };
+            Memory.rooms[room.name].construct.structureCount = {};
+        }
+        
+        // Ensure all structure types are initialized
+        for (const key in structureKeys) {
+            if (!Memory.rooms[room.name].construct.structureCount[key]) {
+                Memory.rooms[room.name].construct.structureCount[key] = {built: 0, pending: 0};
+            }
         }
 
         const structuresCount = Memory.rooms[room.name].construct.structureCount;
