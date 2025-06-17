@@ -163,6 +163,23 @@ var roleBuilder = {
             Memory.rooms[creep.room.name].energyRequests = {};
         }
         
+        // Get target site information if available
+        let targetSiteInfo = null;
+        if (creep.memory.targetSiteId) {
+            const targetSite = Game.getObjectById(creep.memory.targetSiteId);
+            if (targetSite) {
+                targetSiteInfo = {
+                    id: targetSite.id,
+                    pos: {
+                        x: targetSite.pos.x,
+                        y: targetSite.pos.y,
+                        roomName: targetSite.pos.roomName
+                    },
+                    structureType: targetSite.structureType
+                };
+            }
+        }
+        
         // Create or update request with additional information
         Memory.rooms[creep.room.name].energyRequests[creep.id] = {
             id: creep.id,
@@ -171,7 +188,10 @@ var roleBuilder = {
             timestamp: Game.time,
             task: creep.memory.task || 'unknown',
             working: creep.memory.working || false,
-            lastUpdated: Game.time
+            lastUpdated: Game.time,
+            targetSite: targetSiteInfo,
+            assignedHaulers: Memory.rooms[creep.room.name].energyRequests[creep.id]?.assignedHaulers || [],
+            haulerCount: Memory.rooms[creep.room.name].energyRequests[creep.id]?.assignedHaulers?.length || 0
         };
     },
     
@@ -298,14 +318,42 @@ var roleBuilder = {
             this.assignTask(creep);
         }
         
-        // Update position in energy request if it exists
+        // Update position and target site in energy request if it exists
         if (Memory.rooms[creep.room.name].energyRequests && 
             Memory.rooms[creep.room.name].energyRequests[creep.id]) {
+            
+            // Update position
             Memory.rooms[creep.room.name].energyRequests[creep.id].pos = {
                 x: creep.pos.x, 
                 y: creep.pos.y, 
                 roomName: creep.room.name
             };
+            
+            // Update working status
+            Memory.rooms[creep.room.name].energyRequests[creep.id].working = creep.memory.working || false;
+            
+            // Update target site information if available
+            if (creep.memory.targetSiteId) {
+                const targetSite = Game.getObjectById(creep.memory.targetSiteId);
+                if (targetSite) {
+                    Memory.rooms[creep.room.name].energyRequests[creep.id].targetSite = {
+                        id: targetSite.id,
+                        pos: {
+                            x: targetSite.pos.x,
+                            y: targetSite.pos.y,
+                            roomName: targetSite.pos.roomName
+                        },
+                        structureType: targetSite.structureType
+                    };
+                } else {
+                    // Clear target site info if the site no longer exists
+                    delete Memory.rooms[creep.room.name].energyRequests[creep.id].targetSite;
+                }
+            } else {
+                // Clear target site info if the builder has no target
+                delete Memory.rooms[creep.room.name].energyRequests[creep.id].targetSite;
+            }
+            
             Memory.rooms[creep.room.name].energyRequests[creep.id].lastUpdated = Game.time;
         }
         

@@ -5,23 +5,69 @@ var movement = require('./u.movement');
 var giveWay = require("./u.giveWay");
 
 var roleHauler = {
-    // Clean up energy requests by removing non-existent haulers
+    // Clean up energy requests by removing non-existent haulers and stale requests
     cleanupEnergyRequests: function(roomName) {
         if (!Memory.rooms[roomName].energyRequests) return;
         
+        const currentTime = Game.time;
+        const requestsToDelete = [];
+        
         for (const requestId in Memory.rooms[roomName].energyRequests) {
             const request = Memory.rooms[roomName].energyRequests[requestId];
+            
+            // Check if the request is stale (older than 100 ticks)
+            if (request.timestamp && currentTime - request.timestamp > 100) {
+                requestsToDelete.push(requestId);
+                continue;
+            }
+            
+            // Check if the target creep still exists
+            const targetCreep = Game.getObjectById(requestId);
+            if (!targetCreep) {
+                requestsToDelete.push(requestId);
+                continue;
+            }
+            
+            // Check if the target creep still needs energy
+            if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+                requestsToDelete.push(requestId);
+                continue;
+            }
+            
+            // Clean up locks that are too old (prevent deadlocks)
+            if (request.lockTime && currentTime - request.lockTime > 5) {
+                delete request.lockId;
+                delete request.lockTime;
+            }
             
             // Skip if no assignedHaulers array
             if (!request.assignedHaulers) continue;
             
             // Filter out non-existent haulers
-            request.assignedHaulers = request.assignedHaulers.filter(id => Game.getObjectById(id));
+            const previousLength = request.assignedHaulers.length;
+            request.assignedHaulers = request.assignedHaulers.filter(id => {
+                const hauler = Game.getObjectById(id);
+                // Keep only existing haulers that still have this request assigned
+                return hauler && hauler.memory.assignedRequest === requestId;
+            });
             
-            // If assignedTo refers to a non-existent creep, clear it
-            if (request.assignedTo && !Game.getObjectById(request.assignedTo)) {
-                delete request.assignedTo;
+            // If we removed haulers, update the count
+            if (request.assignedHaulers.length !== previousLength) {
+                request.haulerCount = request.assignedHaulers.length;
             }
+            
+            // If assignedTo refers to a non-existent creep or a creep that's no longer assigned to this request, clear it
+            if (request.assignedTo) {
+                const assignedHauler = Game.getObjectById(request.assignedTo);
+                if (!assignedHauler || assignedHauler.memory.assignedRequest !== requestId) {
+                    delete request.assignedTo;
+                }
+            }
+        }
+        
+        // Delete all identified stale requests
+        for (const requestId of requestsToDelete) {
+            delete Memory.rooms[roomName].energyRequests[requestId];
         }
     },
     
@@ -120,8 +166,18 @@ var roleHauler = {
         let bestRequest = null;
         let bestScore = -Infinity;
         
+        // Use a critical section approach to prevent race conditions
+        // Generate a unique lock ID for this creep
+        const lockId = `hauler_${creep.id}_${Game.time}`;
+        
+        // First pass: find the best request without modifying anything
         for (const requestId in Memory.rooms[creep.room.name].energyRequests) {
             const request = Memory.rooms[creep.room.name].energyRequests[requestId];
+            
+            // Skip if this request is currently being processed by another hauler
+            if (request.lockId && request.lockTime && Game.time - request.lockTime < 2) {
+                continue;
+            }
             
             // Count how many haulers are already assigned to this request
             let assignedHaulers = 0;
@@ -133,7 +189,7 @@ var roleHauler = {
             // Skip if already at the limit of 2 haulers
             if (assignedHaulers >= 2) continue;
             
-            // Calculate priority score (lower is better)
+            // Calculate priority score (higher is better)
             let score = 0;
             
             // Prioritize by task type
@@ -162,20 +218,52 @@ var roleHauler = {
             }
         }
         
+        // If we found a suitable request, try to lock and claim it
         if (bestRequest) {
-            // Initialize the assignedHaulers array if it doesn't exist
-            if (!Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedHaulers) {
-                Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedHaulers = [];
+            // Attempt to acquire a lock on this request
+            const requestRef = Memory.rooms[creep.room.name].energyRequests[bestRequest.id];
+            
+            // Check if someone else has locked it since our first pass
+            if (requestRef.lockId && requestRef.lockTime && Game.time - requestRef.lockTime < 2) {
+                return false; // Someone else got it first
             }
             
-            // Add this hauler to the assignedHaulers array
-            Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedHaulers.push(creep.id);
+            // Set our lock
+            requestRef.lockId = lockId;
+            requestRef.lockTime = Game.time;
             
-            // Also maintain the legacy assignedTo field for backward compatibility
-            Memory.rooms[creep.room.name].energyRequests[bestRequest.id].assignedTo = creep.id;
+            // Double-check the hauler count now that we have the lock
+            // This prevents race conditions where multiple haulers try to claim the same request
+            let assignedHaulers = 0;
+            if (requestRef.assignedHaulers) {
+                assignedHaulers = requestRef.assignedHaulers.filter(id => Game.getObjectById(id)).length;
+            }
             
-            creep.memory.assignedRequest = bestRequest.id;
-            return true;
+            // If still under the limit, assign ourselves
+            if (assignedHaulers < 2) {
+                // Initialize the assignedHaulers array if it doesn't exist
+                if (!requestRef.assignedHaulers) {
+                    requestRef.assignedHaulers = [];
+                }
+                
+                // Add this hauler to the assignedHaulers array
+                requestRef.assignedHaulers.push(creep.id);
+                
+                // Also maintain the legacy assignedTo field for backward compatibility
+                requestRef.assignedTo = creep.id;
+                
+                creep.memory.assignedRequest = bestRequest.id;
+                
+                // Release the lock
+                delete requestRef.lockId;
+                delete requestRef.lockTime;
+                
+                return true;
+            } else {
+                // Release the lock if we can't claim it
+                delete requestRef.lockId;
+                delete requestRef.lockTime;
+            }
         }
         
         return false;
@@ -208,49 +296,207 @@ var roleHauler = {
             Memory.rooms[roomName].energyRequests[requestId].task = targetCreep.memory.task;
         }
         
-        // Move to target and transfer energy
-        if (creep.pos.isNearTo(targetCreep)) {
-            const result = creep.transfer(targetCreep, RESOURCE_ENERGY);
+        // Get the builder's target construction site if they have one
+        let builderTargetSite = null;
+        if (targetCreep.memory.task === "building" && targetCreep.memory.targetSiteId) {
+            builderTargetSite = Game.getObjectById(targetCreep.memory.targetSiteId);
+        }
+        
+        // If the builder has a target site and is not full of energy, go to the site instead of directly to the builder
+        if (builderTargetSite && !targetCreep.memory.harvesting && 
+            targetCreep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
             
-            if (result === OK) {
-                creep.say('🔋');
-                
-                // Remove this hauler from the assignedHaulers array
-                if (request.assignedHaulers) {
-                    const index = request.assignedHaulers.indexOf(creep.id);
-                    if (index > -1) {
-                        request.assignedHaulers.splice(index, 1);
-                    }
-                }
-                
-                // Clear the assignment but keep the request active if they still need more
-                if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                    // Only clear assignedTo if it matches this creep's ID
-                    if (request.assignedTo === creep.id) {
-                        delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+            // Check if the builder is near their target site
+            const builderAtSite = targetCreep.pos.inRangeTo(builderTargetSite, 3);
+            
+            if (builderAtSite) {
+                // Builder is at the site, approach carefully to avoid blocking
+                if (creep.pos.inRangeTo(targetCreep, 1)) {
+                    // We're already adjacent, transfer energy
+                    const result = creep.transfer(targetCreep, RESOURCE_ENERGY);
+                    
+                    if (result === OK) {
+                        creep.say('🔋');
+                        
+                        // Remove this hauler from the assignedHaulers array
+                        if (request.assignedHaulers) {
+                            const index = request.assignedHaulers.indexOf(creep.id);
+                            if (index > -1) {
+                                request.assignedHaulers.splice(index, 1);
+                            }
+                        }
+                        
+                        // Clear the assignment but keep the request active if they still need more
+                        if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                            // Only clear assignedTo if it matches this creep's ID
+                            if (request.assignedTo === creep.id) {
+                                delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+                            }
+                        } else {
+                            // If the builder is full, delete the entire request
+                            delete Memory.rooms[roomName].energyRequests[requestId];
+                        }
+                        
+                        delete creep.memory.assignedRequest;
+                        return true;
                     }
                 } else {
-                    // If the builder is full, delete the entire request
-                    delete Memory.rooms[roomName].energyRequests[requestId];
+                    // Find a position near the builder that doesn't block their path to the construction site
+                    const siteToBuilderVector = {
+                        x: targetCreep.pos.x - builderTargetSite.pos.x,
+                        y: targetCreep.pos.y - builderTargetSite.pos.y
+                    };
+                    
+                    // Calculate a position that's not in the direct path between builder and site
+                    // Try to approach from the side or behind relative to the construction site
+                    let approachPositions = [];
+                    
+                    // Check positions around the builder
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            if (dx === 0 && dy === 0) continue; // Skip the builder's position
+                            
+                            const posX = targetCreep.pos.x + dx;
+                            const posY = targetCreep.pos.y + dy;
+                            
+                            // Skip if out of bounds
+                            if (posX < 0 || posX > 49 || posY < 0 || posY > 49) continue;
+                            
+                            const pos = new RoomPosition(posX, posY, targetCreep.room.name);
+                            
+                            // Check if position is walkable
+                            const terrain = Game.map.getRoomTerrain(targetCreep.room.name);
+                            if (terrain.get(posX, posY) === TERRAIN_MASK_WALL) continue;
+                            
+                            // Check if position is occupied
+                            const lookResults = targetCreep.room.lookAt(posX, posY);
+                            let isBlocked = false;
+                            for (const result of lookResults) {
+                                if (result.type === 'creep' || 
+                                    (result.type === 'structure' && 
+                                     result.structure.structureType !== STRUCTURE_ROAD && 
+                                     result.structure.structureType !== STRUCTURE_CONTAINER)) {
+                                    isBlocked = true;
+                                    break;
+                                }
+                            }
+                            if (isBlocked) continue;
+                            
+                            // Calculate if this position is in the path between builder and site
+                            // We want to avoid positions that would block the builder's path
+                            const dotProduct = dx * siteToBuilderVector.x + dy * siteToBuilderVector.y;
+                            
+                            // Positions with negative dot product are more likely to be out of the way
+                            // (approaching from behind the builder relative to the site)
+                            approachPositions.push({
+                                pos: pos,
+                                score: dotProduct
+                            });
+                        }
+                    }
+                    
+                    // Sort positions by score (lower is better - less likely to block)
+                    approachPositions.sort((a, b) => a.score - b.score);
+                    
+                    if (approachPositions.length > 0) {
+                        // Move to the best position
+                        creep.say('🔄');
+                        movement.moveToWithCache(creep, approachPositions[0].pos);
+                    } else {
+                        // If no good position found, wait at a distance
+                        creep.say('⏳');
+                        movement.moveToWithCache(creep, targetCreep, 2);
+                    }
+                }
+            } else {
+                // Builder is not at the site yet, go to the site and wait nearby
+                if (creep.pos.inRangeTo(builderTargetSite, 3)) {
+                    // We're already at the site, just wait
+                    creep.say('⌛');
+                } else {
+                    // Move to the construction site
+                    creep.say('🏗️');
+                    movement.moveToWithCache(creep, builderTargetSite, 3);
                 }
                 
-                delete creep.memory.assignedRequest;
+                // If the builder gets close enough, approach them
+                if (creep.pos.inRangeTo(targetCreep, 2)) {
+                    const result = creep.transfer(targetCreep, RESOURCE_ENERGY);
+                    
+                    if (result === OK) {
+                        creep.say('🔋');
+                        
+                        // Remove this hauler from the assignedHaulers array
+                        if (request.assignedHaulers) {
+                            const index = request.assignedHaulers.indexOf(creep.id);
+                            if (index > -1) {
+                                request.assignedHaulers.splice(index, 1);
+                            }
+                        }
+                        
+                        // Clear the assignment but keep the request active if they still need more
+                        if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                            // Only clear assignedTo if it matches this creep's ID
+                            if (request.assignedTo === creep.id) {
+                                delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+                            }
+                        } else {
+                            // If the builder is full, delete the entire request
+                            delete Memory.rooms[roomName].energyRequests[requestId];
+                        }
+                        
+                        delete creep.memory.assignedRequest;
+                        return true;
+                    }
+                }
+            }
+            
+            return true;
+        } else {
+            // Standard behavior - move directly to the builder
+            if (creep.pos.isNearTo(targetCreep)) {
+                const result = creep.transfer(targetCreep, RESOURCE_ENERGY);
+                
+                if (result === OK) {
+                    creep.say('🔋');
+                    
+                    // Remove this hauler from the assignedHaulers array
+                    if (request.assignedHaulers) {
+                        const index = request.assignedHaulers.indexOf(creep.id);
+                        if (index > -1) {
+                            request.assignedHaulers.splice(index, 1);
+                        }
+                    }
+                    
+                    // Clear the assignment but keep the request active if they still need more
+                    if (targetCreep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                        // Only clear assignedTo if it matches this creep's ID
+                        if (request.assignedTo === creep.id) {
+                            delete Memory.rooms[roomName].energyRequests[requestId].assignedTo;
+                        }
+                    } else {
+                        // If the builder is full, delete the entire request
+                        delete Memory.rooms[roomName].energyRequests[requestId];
+                    }
+                    
+                    delete creep.memory.assignedRequest;
+                    return true;
+                }
+            } else {
+                // Check if the builder has moved significantly since last update
+                const lastUpdated = request.lastUpdated || 0;
+                const timeSinceUpdate = Game.time - lastUpdated;
+                
+                // If it's been a while since the position was updated, move to the actual builder position
+                if (timeSinceUpdate > 10) {
+                    creep.say('🔍');
+                    movement.moveToWithCache(creep, targetCreep);
+                } else {
+                    creep.say('🚚');
+                    movement.moveToWithCache(creep, targetCreep);
+                }
                 return true;
             }
-        } else {
-            // Check if the builder has moved significantly since last update
-            const lastUpdated = request.lastUpdated || 0;
-            const timeSinceUpdate = Game.time - lastUpdated;
-            
-            // If it's been a while since the position was updated, move to the actual builder position
-            if (timeSinceUpdate > 10) {
-                creep.say('🔍');
-                movement.moveToWithCache(creep, targetCreep);
-            } else {
-                creep.say('🚚');
-                movement.moveToWithCache(creep, targetCreep);
-            }
-            return true;
         }
         
         return true;
